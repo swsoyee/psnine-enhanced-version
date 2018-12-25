@@ -1,0 +1,116 @@
+@-moz-document domain("psnine.com") {
+/*主页*/
+li[style="background:#f5faec"]{
+    background: #184e1b !important;    
+}
+li[style="background:#fdf7f7"]{
+    background: #4e1818 !important;    
+}
+li[style="background:#faf8f0"]{
+    background: #4e4e18 !important;    
+}
+li[style="background:#f4f8fa"]{
+    background: #505050 !important; 
+}
+
+span[style="color:blue;"]{
+    color: #64a5ff !important;   
+}
+span[style="color:red;"]{
+    color: #ff6464 !important;   
+}
+span[style="color:brown;"]{
+    color: #ff8864 !important;   
+}
+.tit3 {
+    color: white;    
+}
+/*mark黑条鼠标放置反白*/
+.mark {
+    background: #bbb;
+    color: #bbb;
+}
+/*.mark:hover {*/
+/*    color: #2b2b2b !important;*/
+/*}*/
+/*[[mask]]*/
+
+/*背景底色*/
+body.bg {
+    background: #2b2b2b;
+}
+
+/*回帖背景色*/
+.list li {
+    background: #2b2b2b;
+    border: 1px solid #666666;
+}
+/*回帖字体颜色*/
+.content {
+    color: #bbb;    
+}
+/*回帖用户名底色*/
+.psnnode {
+    background: #656565;    
+}
+
+/*奖杯帖子标题头底色*/
+.box {
+    background: #3d3d3d;
+}
+
+/*游戏列表标题*/
+.title a {
+    color: #bbb;    
+}
+/*个别短标签颜色*/
+.text-strong, strong {
+    color: #bbb;    
+}
+/*排名字体*/
+.twoge {
+    color: white;    
+}
+
+/*store*/
+.storeinfo {
+    color: #bbb;    
+}
+
+/*warining*/
+.alert-warning {
+    background: #4d4d4d
+}
+.alert-info {
+    background: #5e5e5e;   
+}
+.alert-success {
+    background: #4b4b4b;    
+}
+h1,.title2 {
+  color: #ffffff;  
+}
+
+/*个人主页navi*/
+.inav {
+    background: #3d3d3d;  
+}
+.inav li.current {
+    background: #4b4b4b;
+}
+
+/*tip背景色*/
+.t2 {
+    background: #5e5e5e;    
+}
+blockquote {
+    background: #bababa;
+}
+}
+
+@-moz-document url-prefix("https://psnine.com/game"), regexp("https://psnine.com/news"), regexp("https://psnine.com/gene") {
+/*选中帖子高亮*/
+.list li:hover {
+    background: #000000;   
+}
+}
