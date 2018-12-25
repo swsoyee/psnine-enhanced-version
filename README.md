@@ -26,7 +26,7 @@
 
 
 ## 更新记录  
-- V 1.0.0 👑发布
+- v1.0 👑发布
 
 
 [Install with TamperMonkey]: https://userstyles.org/styles/userjs/167244/p9.user.js
