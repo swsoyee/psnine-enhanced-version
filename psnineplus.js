@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.28
+// @version      0.29
 // @description  PSN中文网的数折价格可视化，奖杯统计，楼主高亮，增加被@用户的留言内容等
 // @author       InfinityLoop
 // @include      *psnine.com/*
@@ -13,15 +13,15 @@
 
 (function() {
     'use strict';
-    // 功能1设置：高亮发帖楼主功能
+    // 功能1-1设置：高亮发帖楼主功能
     var highlightBack = "#3890ff" // 高亮背景色
     var highlightFront = "#ffffff" // 高亮字体颜色
-    // 功能2设置：高亮具体ID功能（默认管理员id）[注：此部分功能源于@mordom0404的P9工具包：https://greasyfork.org/zh-CN/scripts/29343-p9%E5%B7%A5%E5%85%B7%E5%8C%85]
+    // 功能1-2设置：高亮具体ID功能（默认管理员id）[注：此部分功能源于@mordom0404的P9工具包：https://greasyfork.org/zh-CN/scripts/29343-p9%E5%B7%A5%E5%85%B7%E5%8C%85]
     var highlightSpecificID = ["mechille", "sai8808", "jimmyleo","jimmyleohk"] // 需要高亮的ID数组
     var highlightSpecificBack = "#d9534f" // 高亮背景色
     var highlightSpecificFront = "#ffffff" // 高亮字体颜色
-
-    // 功能1：高亮发帖楼主
+    // 帖子优化
+    // 功能1-1：高亮发帖楼主
     if( /(gene|trade|topic)\//.test(window.location.href) & !/comment/.test(window.location.href)) {
         // 获取楼主ID
         var author = $(".title2").text()
@@ -32,7 +32,7 @@
             }
         })
     }
-    // 功能2：高亮管理员
+    // 功能1-2：高亮管理员
     var url = window.location.href;
     var d = url.indexOf("psnine.com");
     var h = url.substring(0, d);
@@ -40,7 +40,7 @@
         $('.meta>[href="' + h + 'psnine.com/psnid/' + v + '"]').css({ "background-color": highlightSpecificBack, "color": highlightSpecificFront })
     });
 
-    // 功能3：回复内容回溯，仅支持机因、主题 (效率原因只返回所@用户的最近一条回复)
+    // 功能1-3：回复内容回溯，仅支持机因、主题 (效率原因只返回所@用户的最近一条回复)
     if( /(gene|topic|trade)\//.test(window.location.href) & !/comment/.test(window.location.href)) {
         GM_addStyle (`.replyTraceback {background-color: rgb(0, 0, 0, 0.05) !important; padding: 10px !important; color: rgb(160, 160, 160, 1) !important; border: 1px solid !important;}`)
         // 如果有“查看更早的评论”需要额外处理
@@ -115,8 +115,32 @@
             }
         }
     }
-
-    // 功能4：商城价格走势图
+    
+    // 功能1-4：主题中存在 -插图- 一项时，提供预览悬浮窗
+    $("a[target='_blank']").html(function(i, url){
+    if(url == " -插图- ") {
+        var xOffset = 5;
+		var yOffset = 5;
+        var imgUrl = $(this).attr('href');
+        $(this).hover(function(e){
+            $("body").append($('<span id="hoverImage"><img src="' + imgUrl + '" onload="if (this.width > 500) this.width=500;"</img></span>'))
+            $("#hoverImage")
+                .css({"position": "absolute", "border": "1px solid #ccc", "display": "none", "padding": "5px", "background": "#333"})
+                .css("top",(e.pageY - xOffset) + "px")
+                .css("left",(e.pageX + yOffset) + "px")
+                .fadeIn(500)
+        }, function(){
+            $("#hoverImage").remove()
+        })
+        $(this).mousemove(function(e){
+            $("#hoverImage")
+                .css("top",(e.pageY - xOffset) + "px")
+                .css("left",(e.pageX + yOffset) + "px");
+        });		
+    }
+})
+    // 商城优化
+    // 功能2-1：商城价格走势图
     if( /dd/.test(window.location.href) ) {
         // 日期转换函数
         function converntTime(value) {
@@ -264,8 +288,8 @@
 
         $('#container').highcharts(json);
     }
-
-    // 功能5：游戏奖杯界面可视化
+    // 奖杯系统优化
+    // 功能3-1：游戏奖杯界面可视化
     if( /psngame\//.test(window.location.href) ) {
         // 游戏奖杯比例图
         var platinum = document.getElementsByClassName("text-platinum")[0].innerText.replace("白", "")
@@ -426,8 +450,8 @@
             $('#trophyGetTimeChart').highcharts(trophyGetTime);
         }
     }
-
-    // 功能6：点击跳转到页面底部
+    // 全局优化
+    // 功能4-1：点击跳转到页面底部
     var bottombar = document.getElementsByClassName("bottombar")[0]
 
     var toBottomSwitch = document.createElement("a")
