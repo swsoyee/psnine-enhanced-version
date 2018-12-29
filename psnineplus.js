@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.29
+// @version      0.31
 // @description  PSN中文网的数折价格可视化，奖杯统计，楼主高亮，增加被@用户的留言内容等
 // @author       InfinityLoop
 // @include      *psnine.com/*
@@ -39,45 +39,50 @@
     highlightSpecificID.map(function(v, i) {
         $('.meta>[href="' + h + 'psnine.com/psnid/' + v + '"]').css({ "background-color": highlightSpecificBack, "color": highlightSpecificFront })
     });
-
-    // 功能1-3：回复内容回溯，仅支持机因、主题 (效率原因只返回所@用户的最近一条回复)
+    // 功能1-3：主题中存在 -插图- 一项时，提供预览悬浮窗
+    $("a[target='_blank']").html(function(i, url){
+        if(url == " -插图- ") {
+            var xOffset = 5;
+            var yOffset = 5;
+            var imgUrl = $(this).attr('href');
+            $(this).hover(function(e){
+                $("body").append($('<span id="hoverImage"><img src="' + imgUrl + '" onload="if (this.width > 500) this.width=500;"</img></span>'))
+                $("#hoverImage")
+                    .css({"position": "absolute", "border": "1px solid #ccc", "display": "none", "padding": "5px", "background": "#333"})
+                    .css("top",(e.pageY - xOffset) + "px")
+                    .css("left",(e.pageX + yOffset) + "px")
+                    .fadeIn(500)
+            }, function(){
+                $("#hoverImage").remove()
+            })
+            $(this).mousemove(function(e){
+                $("#hoverImage")
+                    .css("top",(e.pageY - xOffset) + "px")
+                    .css("left",(e.pageX + yOffset) + "px");
+            });
+        }
+    })
+    // 功能1-4：回复内容回溯，仅支持机因、主题 (效率原因只返回所@用户的最近一条回复)
     if( /(gene|topic|trade)\//.test(window.location.href) & !/comment/.test(window.location.href)) {
         GM_addStyle (`.replyTraceback {background-color: rgb(0, 0, 0, 0.05) !important; padding: 10px !important; color: rgb(160, 160, 160, 1) !important; border: 1px solid !important;}`)
-        // 如果有“查看更早的评论”需要额外处理
-        var frameOffset = 0
-        if(document.getElementsByClassName("btn btn-gray").length > 0) {
-            frameOffset = 1
-        }
         // 匹配@的字符串
         var reg = /@(.+?)\s/g
-        // 每一层楼的回复外框 (1 ~ N + 1)
-        var allSourceOutside = document.getElementsByClassName("ml64")
-        // 每一层楼的回复框(1 ~ N+1) floor
-        var allSource = document.getElementsByClassName("content pb10")
-        // 每一层楼的回复者名字(2 ~ N+2) traceId
-        var userId = document.getElementsByClassName("meta")
+        // 每一层楼的回复外框 (1 ~ N)
+        var allSourceOutside = document.getElementsByClassName("ml64") // 30楼的话是30
+        // 每一层楼的回复框(1 ~ N) floor
+        var allSource = document.getElementsByClassName("content pb10") // 30楼的话是30
+        // 每一层楼的回复者名字( 2 ~ N + 1) traceId [0是楼主自己，1是编辑栏]
+        var userId = document.querySelectorAll("div.meta") // 30楼的话是31
         // 每一层的头像(0 ~ N - 1)
-        var avator = document.getElementsByClassName("post")
-        // 没tag的帖子会少一层meta，所以要对meta[0]做处理
-        var numberOffset = 0
-        if( userId[0].getElementsByClassName("node").length > 0) {
-            numberOffset = 2
-        } else {
-            numberOffset = 1
-        }
-        // 主题（topic）帖子tag偏移调整
-        var tagOffset = 0
-        if( /topic\//.test(window.location.href)) {
-            tagOffset = 1
-        }
-        // 闲游（trade）帖子tag偏移调整
+        var avator = document.querySelectorAll("a.l") // 30楼的话是29
+        // 闲游（trade）帖子tag偏移调整, 回复框(0 ~ N - 1 ) floor
         var tradeOffset = 0
         if( /trade\//.test(window.location.href)) {
             tradeOffset = 1
         }
-        for(var floor = allSource.length + numberOffset - 1; floor > 1 ; floor-- ) {
+        for(var floor = allSource.length - 1; floor > 1 ; floor-- ) {
             // 层内内容里包含链接
-            var content = allSource[floor - numberOffset].querySelectorAll("a")
+            var content = allSource[floor - tradeOffset].querySelectorAll("a")
             if(content.length > 0) {
                 for(var userNum = 0; userNum < content.length; userNum++ ){
                     // 对每一个链接的文本内容判断
@@ -86,16 +91,14 @@
                     if(linkContent != null) {
                         var replayBox = document.createElement("div")
                         replayBox.setAttribute("class", "replyTraceback")
-                        // 层主ID
-                        // var floorUserId = userId[floor].getElementsByClassName("psnnode")[0].innerText
                         // 从本层开始，回溯所@的用户的最近回复
-                        for(var traceId = floor + 1 - frameOffset + tagOffset; traceId > 1 + tagOffset; traceId-- ){
+                        for(var traceId = floor; traceId > 1; traceId-- ){
                             // 如果回溯到了的话，选取内容
                             // 回溯层用户名
-                            var thisUserID = userId[traceId - numberOffset + frameOffset].getElementsByClassName("psnnode")[0].innerText
+                            var thisUserID = userId[traceId].getElementsByClassName("psnnode")[0].innerText
                             if( thisUserID == linkContent[1].toLowerCase()){
                                 // 输出头像
-                                var avatorImgSource = avator[traceId - 1 - 2 * numberOffset + 2 * frameOffset - tagOffset].getElementsByTagName("img")
+                                var avatorImgSource = avator[traceId - 2].getElementsByTagName("img")
                                 // 如果有“查看更早的评论”需要额外处理
                                 if(avatorImgSource.length > 0){
                                     var avatorImg = avatorImgSource[0].getAttribute("src")
@@ -105,8 +108,8 @@
                                 replayBox.innerHTML = '<div class="responserHeader" style="display: inline-block; padding-right: 10px; color: #3890ff"><img src="' +
                                     avatorImg + '" height="25" width="25"> ' + linkContent[1] + '</img>'+
                                     '</div><div class="responserContent" style="display: inline-block;">' +
-                                    allSource[traceId - 2 * numberOffset + frameOffset - 2 * tagOffset - tradeOffset].innerText + "</div>"
-                                allSourceOutside[floor - numberOffset + tagOffset + tradeOffset].insertBefore(replayBox, allSource[floor - numberOffset])
+                                    allSource[traceId - 1 - tradeOffset].innerText + "</div>"
+                                allSourceOutside[floor].insertBefore(replayBox, allSource[floor - tradeOffset])
                                 break;
                             }
                         }
@@ -115,30 +118,7 @@
             }
         }
     }
-    
-    // 功能1-4：主题中存在 -插图- 一项时，提供预览悬浮窗
-    $("a[target='_blank']").html(function(i, url){
-    if(url == " -插图- ") {
-        var xOffset = 5;
-		var yOffset = 5;
-        var imgUrl = $(this).attr('href');
-        $(this).hover(function(e){
-            $("body").append($('<span id="hoverImage"><img src="' + imgUrl + '" onload="if (this.width > 500) this.width=500;"</img></span>'))
-            $("#hoverImage")
-                .css({"position": "absolute", "border": "1px solid #ccc", "display": "none", "padding": "5px", "background": "#333"})
-                .css("top",(e.pageY - xOffset) + "px")
-                .css("left",(e.pageX + yOffset) + "px")
-                .fadeIn(500)
-        }, function(){
-            $("#hoverImage").remove()
-        })
-        $(this).mousemove(function(e){
-            $("#hoverImage")
-                .css("top",(e.pageY - xOffset) + "px")
-                .css("left",(e.pageX + yOffset) + "px");
-        });		
-    }
-})
+
     // 商城优化
     // 功能2-1：商城价格走势图
     if( /dd/.test(window.location.href) ) {
