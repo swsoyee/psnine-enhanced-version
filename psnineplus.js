@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.27
+// @version      0.28
 // @description  PSN中文网的数折价格可视化，奖杯统计，楼主高亮，增加被@用户的留言内容等
 // @author       InfinityLoop
 // @include      *psnine.com/*
@@ -40,7 +40,7 @@
         $('.meta>[href="' + h + 'psnine.com/psnid/' + v + '"]').css({ "background-color": highlightSpecificBack, "color": highlightSpecificFront })
     });
 
-    // 回复内容回溯，仅支持机因、主题 (效率原因只返回所@用户的最近一条回复)
+    // 功能3：回复内容回溯，仅支持机因、主题 (效率原因只返回所@用户的最近一条回复)
     if( /(gene|topic|trade)\//.test(window.location.href) & !/comment/.test(window.location.href)) {
         GM_addStyle (`.replyTraceback {background-color: rgb(0, 0, 0, 0.05) !important; padding: 10px !important; color: rgb(160, 160, 160, 1) !important; border: 1px solid !important;}`)
         // 如果有“查看更早的评论”需要额外处理
@@ -116,7 +116,7 @@
         }
     }
 
-    // 商城价格走势图
+    // 功能4：商城价格走势图
     if( /dd/.test(window.location.href) ) {
         // 日期转换函数
         function converntTime(value) {
@@ -265,6 +265,7 @@
         $('#container').highcharts(json);
     }
 
+    // 功能5：游戏奖杯界面可视化
     if( /psngame\//.test(window.location.href) ) {
         // 游戏奖杯比例图
         var platinum = document.getElementsByClassName("text-platinum")[0].innerText.replace("白", "")
@@ -426,7 +427,7 @@
         }
     }
 
-    // 点击跳转到页面底部
+    // 功能6：点击跳转到页面底部
     var bottombar = document.getElementsByClassName("bottombar")[0]
 
     var toBottomSwitch = document.createElement("a")
