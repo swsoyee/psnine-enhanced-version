@@ -8,7 +8,7 @@
 |  ![增加楼主标识](https://github.com/swsoyee/psnine-night-mode-CSS/blob/master/screenshots/authorHighlight.png)  🗣增加蓝色`楼主`标识，更易区分`楼主`与`回帖者`<sup>1</sup>。   |   ![高亮管理员](https://github.com/swsoyee/psnine-night-mode-CSS/blob/master/screenshots/highlightID.png)   👮全局红色高亮`管理员ID`<sup>1</sup>。    |
 | ---- | ---- |
 |  ![回到底部](https://github.com/swsoyee/psnine-night-mode-CSS/blob/master/screenshots/bottom.png)   **⬇增加`回到底部`按钮，快速跳转`回复框`或者`翻页`处。**   |  ![插图预览功能](https://github.com/swsoyee/psnine-night-mode-CSS/blob/master/screenshots/hoverImage.png) **🖼鼠标悬浮预览`-插图-`内容，无需点击打开查看图片。**   |
-|![@其他用户](https://github.com/swsoyee/psnine-night-mode-CSS/blob/master/screenshots/replyContent.png)**💬被`@用户`的发言内容显示于同层便于查看<sup>2</sup>。**|![价格走势图](https://github.com/swsoyee/psnine-night-mode-CSS/blob/master/screenshots/priceTrendency.png)**📉[`数折`](https://psnine.com/dd/HP9000-CUSA08392_00-ASIAPLACEHOLDER1)中增加`价格走势图`，快速了解`走势`和`史低`。**|
+|![@其他用户](https://github.com/swsoyee/psnine-night-mode-CSS/blob/master/screenshots/replyContent.png)**💬帖子中被`@用户`的发言内容显示于同层便于查看<sup>2</sup>。**|![价格走势图](https://github.com/swsoyee/psnine-night-mode-CSS/blob/master/screenshots/priceTrendency.png)**📉[`数折`](https://psnine.com/dd/HP9000-CUSA08392_00-ASIAPLACEHOLDER1)中增加`价格走势图`，快速了解`走势`和`史低`。**|
 |![奖杯可视化](https://github.com/swsoyee/psnine-night-mode-CSS/blob/master/screenshots/trophySummary.png)**📈[`游戏`](https://psnine.com/psngame/15295)界面`奖杯类型比例`，`获得时间`等信息可视化。**|![黑条隐藏文字](https://github.com/swsoyee/psnine-night-mode-CSS/blob/master/screenshots/markHover.png)**🈲黑条隐藏文字鼠标悬浮显示**|
 
 ### 可用平台
@@ -18,10 +18,7 @@
 |<div align="center">Tampermonkey</div>|<div align="center">✔</div>|<div align="center">✔</div>|
 |<div align="center">Violentmonkey</div>|<div align="center">❓</div>|<div align="center">✔</div>|
 
-
-### 使用方法
-
-
+---  
 
 ## 🌙夜间模式CSS版
 
