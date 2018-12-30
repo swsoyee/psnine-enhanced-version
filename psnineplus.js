@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.35
+// @version      0.36
 // @description  数折价格可视化，显示人民币价格，奖杯统计，楼主高亮，被@用户的发言内容显示等多项功能优化P9体验
 // @author       InfinityLoop
 // @include      *psnine.com/*
@@ -513,7 +513,7 @@
 
     // 游戏页面优化
     if(filterNonePlatinum){
-        if(/psngame/.test(window.location.href)) {
+        if(/psngame/.test(window.location.href) & !/psnid/.test(window.location.href)) {
             // 功能5-1：降低没有白金的游戏的图标亮度
             $("tr").map(function(i,n){
                 // 读取白金数量
