@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.31
+// @version      0.32
 // @description  PSN中文网的数折价格可视化，奖杯统计，楼主高亮，增加被@用户的留言内容等
 // @author       InfinityLoop
 // @include      *psnine.com/*
@@ -13,6 +13,8 @@
 
 (function() {
     'use strict';
+    // 功能0-2设置：鼠标滑过黑条即可显示内容
+    var hoverUnmark = true // 设置为false则选中才显示
     // 功能1-1设置：高亮发帖楼主功能
     var highlightBack = "#3890ff" // 高亮背景色
     var highlightFront = "#ffffff" // 高亮字体颜色
@@ -20,6 +22,28 @@
     var highlightSpecificID = ["mechille", "sai8808", "jimmyleo","jimmyleohk"] // 需要高亮的ID数组
     var highlightSpecificBack = "#d9534f" // 高亮背景色
     var highlightSpecificFront = "#ffffff" // 高亮字体颜色
+
+
+    // 全局优化
+    // 功能0-1：点击跳转到页面底部
+    var bottombar = document.getElementsByClassName("bottombar")[0]
+
+    var toBottomSwitch = document.createElement("a")
+    toBottomSwitch.innerText = "B"
+    toBottomSwitch.setAttribute("href", "javascript:scroll(0, document.body.clientHeight)")
+    toBottomSwitch.setAttribute("class", "yuan mt10")
+    bottombar.appendChild(toBottomSwitch)
+    // 功能0-2：黑条文字鼠标悬浮显示
+    if(hoverUnmark){
+        $(".mark").hover(function(i){
+            var backGroundColor = $(".box.mt20").css("background-color")
+            $(this).css({"color": backGroundColor})
+        }, function(o){
+            var sourceColor = $(this).css("background-color")
+            $(this).css({"color": sourceColor})
+        })
+    }
+
     // 帖子优化
     // 功能1-1：高亮发帖楼主
     if( /(gene|trade|topic)\//.test(window.location.href) & !/comment/.test(window.location.href)) {
@@ -65,24 +89,17 @@
     // 功能1-4：回复内容回溯，仅支持机因、主题 (效率原因只返回所@用户的最近一条回复)
     if( /(gene|topic|trade)\//.test(window.location.href) & !/comment/.test(window.location.href)) {
         GM_addStyle (`.replyTraceback {background-color: rgb(0, 0, 0, 0.05) !important; padding: 10px !important; color: rgb(160, 160, 160, 1) !important; border: 1px solid !important;}`)
-        // 匹配@的字符串
-        var reg = /@(.+?)\s/g
-        // 每一层楼的回复外框 (1 ~ N)
-        var allSourceOutside = document.getElementsByClassName("ml64") // 30楼的话是30
-        // 每一层楼的回复框(1 ~ N) floor
-        var allSource = document.getElementsByClassName("content pb10") // 30楼的话是30
+        // 每一层楼的回复外框 (0 ~ N - 1)
+        var allSourceOutside = document.querySelectorAll(".post .ml64") // 30楼的话是29
+        // 每一层楼的回复框(0 ~ N - 1) floor
+        var allSource = document.querySelectorAll(".post .ml64 .content") // 30楼的话是29
         // 每一层楼的回复者名字( 2 ~ N + 1) traceId [0是楼主自己，1是编辑栏]
-        var userId = document.querySelectorAll("div.meta") // 30楼的话是31
+        var userId = document.querySelectorAll("div[class$=meta]") // 30楼的话是31
         // 每一层的头像(0 ~ N - 1)
-        var avator = document.querySelectorAll("a.l") // 30楼的话是29
-        // 闲游（trade）帖子tag偏移调整, 回复框(0 ~ N - 1 ) floor
-        var tradeOffset = 0
-        if( /trade\//.test(window.location.href)) {
-            tradeOffset = 1
-        }
-        for(var floor = allSource.length - 1; floor > 1 ; floor-- ) {
+        var avator = document.querySelectorAll(".post a.l") // 30楼的话是29
+        for(var floor = allSource.length - 1; floor > 0 ; floor-- ) {
             // 层内内容里包含链接
-            var content = allSource[floor - tradeOffset].querySelectorAll("a")
+            var content = allSource[floor].querySelectorAll("a")
             if(content.length > 0) {
                 for(var userNum = 0; userNum < content.length; userNum++ ){
                     // 对每一个链接的文本内容判断
@@ -92,7 +109,7 @@
                         var replayBox = document.createElement("div")
                         replayBox.setAttribute("class", "replyTraceback")
                         // 从本层开始，回溯所@的用户的最近回复
-                        for(var traceId = floor; traceId > 1; traceId-- ){
+                        for(var traceId = floor + 1; traceId > 1; traceId-- ){
                             // 如果回溯到了的话，选取内容
                             // 回溯层用户名
                             var thisUserID = userId[traceId].getElementsByClassName("psnnode")[0].innerText
@@ -105,11 +122,11 @@
                                     } else {
                                         break;
                                     }
-                                replayBox.innerHTML = '<div class="responserHeader" style="display: inline-block; padding-right: 10px; color: #3890ff"><img src="' +
+                                replayBox.innerHTML = '<div class="responserHeader" style="padding:3px 3px; border-radius:2px; background: rgb(23, 162, 184); display: inline-block; padding-right: 10px; color: #ffffff"><img src="' +
                                     avatorImg + '" height="25" width="25"> ' + linkContent[1] + '</img>'+
-                                    '</div><div class="responserContent" style="display: inline-block;">' +
-                                    allSource[traceId - 1 - tradeOffset].innerText + "</div>"
-                                allSourceOutside[floor].insertBefore(replayBox, allSource[floor - tradeOffset])
+                                    '</div><div class="responserContent" style="display: inline-block;">&nbsp' +
+                                    allSource[traceId - 2].innerText + "</div>"
+                                allSourceOutside[floor].insertBefore(replayBox, allSource[floor])
                                 break;
                             }
                         }
@@ -430,13 +447,4 @@
             $('#trophyGetTimeChart').highcharts(trophyGetTime);
         }
     }
-    // 全局优化
-    // 功能4-1：点击跳转到页面底部
-    var bottombar = document.getElementsByClassName("bottombar")[0]
-
-    var toBottomSwitch = document.createElement("a")
-    toBottomSwitch.innerText = "B"
-    toBottomSwitch.setAttribute("href", "javascript:scroll(0, document.body.clientHeight)")
-    toBottomSwitch.setAttribute("class", "yuan mt10")
-    bottombar.appendChild(toBottomSwitch)
 })();
