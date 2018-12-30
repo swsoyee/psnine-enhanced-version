@@ -1,17 +1,19 @@
-# PSN中文网功能增强插件
+# PSN中文网功能增强插件合辑
 ![Last commit](https://img.shields.io/github/last-commit/swsoyee/psnine-night-mode-CSS.svg)
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/)  
 
 ## 👑功能增强Javascript插件
 
-## 主要功能
-1. 帖子中增加蓝色高亮`楼主`标识，更易区分`楼主`与`回帖者`<sup>1</sup>；
-2. 全局红色高亮`管理员ID`<sup>1</sup>；
-3. 增加页面`回到底部`功能按钮，点击即可快速跳转到`回复框`或者`翻页按钮`处
-4. 机因中的`-插图-`标签可以鼠标悬浮预览，无需点击打开新标签查看图片；
-5. 帖子中`@其他用户`时，将其回复内容也显示在本楼层里方便查看<sup>2</sup>；
-6. 数折中增加`价格走势图`，无需下拉画面即可充分了解`价格走势`和`史低`价格；
-7. 游戏界面`奖杯类型比例`，`获得时间曲线`等信息直接可视化。
+### 主要功能
+|  ![增加楼主标识](https://github.com/swsoyee/psnine-night-mode-CSS/blob/master/screenshots/authorHighlight.png)  🗣增加蓝色`楼主`标识，更易区分`楼主`与`回帖者`<sup>1</sup>。   |   ![高亮管理员](https://github.com/swsoyee/psnine-night-mode-CSS/blob/master/screenshots/highlightID.png)   👮全局红色高亮`管理员ID`<sup>1</sup>。    |
+| ---- | ---- |
+|  ![回到底部](https://github.com/swsoyee/psnine-night-mode-CSS/blob/master/screenshots/bottom.png)   **⬇增加`回到底部`按钮，快速跳转`回复框`或者`翻页按钮`处。**   |  ![插图预览功能](https://github.com/swsoyee/psnine-night-mode-CSS/blob/master/screenshots/hoverImage.png) **🖼鼠标悬浮预览`-插图-`内容，无需点击打开查看图片。**   |
+|![@其他用户](https://github.com/swsoyee/psnine-night-mode-CSS/blob/master/screenshots/replyContent.png)**💬被`@用户`的发言内容显示于同层便于查看<sup>2</sup>。**|![价格走势图](https://github.com/swsoyee/psnine-night-mode-CSS/blob/master/screenshots/priceTrendency.png)**📉[`数折`](https://psnine.com/dd/HP9000-CUSA08392_00-ASIAPLACEHOLDER1)中增加`价格走势图`，快速了解`走势`和`史低`。**|
+|![奖杯可视化](https://github.com/swsoyee/psnine-night-mode-CSS/blob/master/screenshots/trophySummary.png)**📈[`游戏`](https://psnine.com/psngame/15295)界面`奖杯类型比例`，`获得时间`等信息可视化。**|![黑条隐藏文字](https://github.com/swsoyee/psnine-night-mode-CSS/blob/master/screenshots/markHover.png)**🈲黑条隐藏文字鼠标悬浮显示**|
+
+### 可用平台
+
+### 使用方法
 
 
 
@@ -54,10 +56,3 @@
 ## 附注
 1. idea来源于`mordom0404`的[`P9工具包`](https://greasyfork.org/zh-CN/scripts/29343-p9%E5%B7%A5%E5%85%B7%E5%8C%85)。
 2. 目前只返回所@用户的最近一条回复。
-
-|      |      |
-| ---- | ---- |
-|      |      |
-|      |      |
-|      |      |
-
