@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.36
+// @version      0.37
 // @description  数折价格可视化，显示人民币价格，奖杯统计，楼主高亮，被@用户的发言内容显示等多项功能优化P9体验
 // @author       InfinityLoop
 // @include      *psnine.com/*
@@ -65,11 +65,8 @@
         })
     }
     // 功能1-2：高亮管理员
-    var url = window.location.href;
-    var d = url.indexOf("psnine.com");
-    var h = url.substring(0, d);
-    highlightSpecificID.map(function(v, i) {
-        $('.meta>[href="' + h + 'psnine.com/psnid/' + v + '"]').css({ "background-color": highlightSpecificBack, "color": highlightSpecificFront })
+    highlightSpecificID.map(function(i, n) {
+        $('.meta>[href="' + window.location.href.match("(.*)\.com")[0] + '/psnid/' + i + '"]').css({ "background-color": highlightSpecificBack, "color": highlightSpecificFront })
     });
     // 功能1-3：主题中存在 -插图- 一项时，提供预览悬浮窗
     $("a[target='_blank']").html(function(i, url){
@@ -101,8 +98,8 @@
         var allSourceOutside = document.querySelectorAll(".post .ml64") // 30楼的话是29
         // 每一层楼的回复框(0 ~ N - 1) floor
         var allSource = document.querySelectorAll(".post .ml64 .content") // 30楼的话是29
-        // 每一层楼的回复者名字( 2 ~ N + 1) traceId [0是楼主自己，1是编辑栏]
-        var userId = document.querySelectorAll("div[class$=meta]") // 30楼的话是31
+        // 每一层楼的回复者名字( 0 ~ N - 1) traceId [0是楼主自己，1是编辑栏]
+        var userId = document.querySelectorAll(".ml64 [class$=meta]") // 30楼的话是29
         // 每一层的头像(0 ~ N - 1)
         var avator = document.querySelectorAll(".post a.l") // 30楼的话是29
         for(var floor = allSource.length - 1; floor > 0 ; floor-- ) {
@@ -117,13 +114,13 @@
                         var replayBox = document.createElement("div")
                         replayBox.setAttribute("class", "replyTraceback")
                         // 从本层开始，回溯所@的用户的最近回复
-                        for(var traceId = floor + 1; traceId > 1; traceId-- ){
+                        for(var traceId = floor; traceId > 1; traceId-- ){
                             // 如果回溯到了的话，选取内容
                             // 回溯层用户名
                             var thisUserID = userId[traceId].getElementsByClassName("psnnode")[0].innerText
                             if( thisUserID == linkContent[1].toLowerCase()){
                                 // 输出头像
-                                var avatorImgSource = avator[traceId - 2].getElementsByTagName("img")
+                                var avatorImgSource = avator[traceId].getElementsByTagName("img")
                                 // 如果有“查看更早的评论”需要额外处理
                                 if(avatorImgSource.length > 0){
                                     var avatorImg = avatorImgSource[0].getAttribute("src")
@@ -133,7 +130,7 @@
                                 replayBox.innerHTML = '<div class="responserHeader" style="padding:3px 3px; border-radius:2px; background: rgb(23, 162, 184); display: inline-block; padding-right: 10px; color: #ffffff"><img src="' +
                                     avatorImg + '" height="25" width="25"> ' + linkContent[1] + '</img>'+
                                     '</div><div class="responserContent" style="display: inline-block;">&nbsp' +
-                                    allSource[traceId - 2].innerText + "</div>"
+                                    allSource[traceId].innerText + "</div>"
                                 allSourceOutside[floor].insertBefore(replayBox, allSource[floor])
                                 break;
                             }
