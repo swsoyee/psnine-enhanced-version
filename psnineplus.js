@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.34
+// @version      0.35
 // @description  数折价格可视化，显示人民币价格，奖杯统计，楼主高亮，被@用户的发言内容显示等多项功能优化P9体验
 // @author       InfinityLoop
 // @include      *psnine.com/*
@@ -27,6 +27,9 @@
     var dollarRatio = 6.9 // 美元汇率
     var poundRatio = 7.8 // 英镑汇率
     var yenRatio = 0.06 // 日元汇率
+    // 功能5-1设置：是否在`游戏`页面启用降低无白金游戏的图标透明度
+    var filterNonePlatinum = true
+    var filterNonePlatinumAlpha = 0.2 // 透密 [0, 1] 不透明
 
 
     // 全局优化
@@ -325,6 +328,23 @@
                 $(".dd_price span:last-child").eq(i).after("</span><span class='dd_price_plus'>¥" + CNY[2].toFixed(2) + "</span>")
             }
         })
+
+        // 功能2-3：页面上方增加翻页
+        $(".dropmenu").after($(".page").clone())
+
+        // 功能2-4：根据降价幅度变更背景色
+        $(".dd_box").map(function(i,n){
+            var offPercent = Number($(this).children(".dd_pic").children("div").eq(0).text().replace("省", "").replace("%", ""))
+            if( offPercent >= 80 ){
+                $(".dd_title.mb10>a").eq(i).css({"color":"rgb(220,53,69)"})
+            } else if( offPercent >= 50 & offPercent < 80) {
+                $(".dd_title.mb10>a").eq(i).css({"color":"rgb(253,126,20)"})
+            } else if( offPercent >= 20 & offPercent < 50) {
+                $(".dd_title.mb10>a").eq(i).css({"color":"rgb(255,193,7)"})
+            } else {
+                $(".dd_title.mb10>a").eq(i).css({"color":"rgb(40,167,69)"})
+            }
+        })
     }
 
 
@@ -488,6 +508,22 @@
             // 插入页面
             $(".box.pd10").append (`<div id="trophyGetTimeChart" align="left" style="width: 460px; height: 200px; margin: 0 0; display: inline-block;"></div>`);
             $('#trophyGetTimeChart').highcharts(trophyGetTime);
+        }
+    }
+
+    // 游戏页面优化
+    if(filterNonePlatinum){
+        if(/psngame/.test(window.location.href)) {
+            // 功能5-1：降低没有白金的游戏的图标亮度
+            $("tr").map(function(i,n){
+                // 读取白金数量
+                var platinumNum = $(this).children(".pd1015.title.lh180").children("em").children(".text-platinum").text().replace("白", "")
+                if(platinumNum == 0) {
+                    $(this).children(".pdd15").children("a").children("img").css({"opacity": filterNonePlatinumAlpha})
+                }
+            })
+            // 功能5-2：页面上方增加翻页
+            $(".dropmenu").after($(".page").clone())
         }
     }
 })();
