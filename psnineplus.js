@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.33
+// @version      0.34
 // @description  数折价格可视化，显示人民币价格，奖杯统计，楼主高亮，被@用户的发言内容显示等多项功能优化P9体验
 // @author       InfinityLoop
 // @include      *psnine.com/*
@@ -140,6 +140,12 @@
             }
         }
     }
+    // 功能1-5：增加帖子楼层信息
+    $("span.r").map(function(i,n){
+        if(i > 0) {
+            $(this).children("a:last").after("&nbsp&nbsp<span>"+i+"楼</span>")
+        }
+    })
 
     // 商城优化
     // 功能2-1：商城价格走势图
