@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.32
-// @description  PSN中文网的数折价格可视化，奖杯统计，楼主高亮，增加被@用户的留言内容等
+// @version      0.33
+// @description  数折价格可视化，显示人民币价格，奖杯统计，楼主高亮，被@用户的发言内容显示等多项功能优化P9体验
 // @author       InfinityLoop
 // @include      *psnine.com/*
 // @include      *d7vg.com/*
@@ -22,6 +22,11 @@
     var highlightSpecificID = ["mechille", "sai8808", "jimmyleo","jimmyleohk"] // 需要高亮的ID数组
     var highlightSpecificBack = "#d9534f" // 高亮背景色
     var highlightSpecificFront = "#ffffff" // 高亮字体颜色
+    // 功能2-2设置：汇率设置
+    var dollarHKRatio = 0.88 // 港币汇率
+    var dollarRatio = 6.9 // 美元汇率
+    var poundRatio = 7.8 // 英镑汇率
+    var yenRatio = 0.06 // 日元汇率
 
 
     // 全局优化
@@ -284,7 +289,39 @@
         json.legend = legend;
 
         $('#container').highcharts(json);
+
+        // 功能2-2：外币转人民币
+        // 转换原始价格
+        function foreignCurrency(price, mark, ratio) {
+            return [Number(price[0].replace(mark, "")) * ratio, Number(price[1].replace(mark, "")) * ratio, Number(price[2].replace(mark, "")) * ratio]
+        }
+        $(".dd_price").map(function(i, n){
+            var price = [$(this).children().eq(0).text(), $(this).children().eq(1).text(), $(this).children().eq(2).text()]
+            var CNY = [0, 0, 0]
+            var offset = 3
+            if( /dd\//.test(window.location.href) ) {
+                offset = 2
+            }
+            var region = $(".dd_info p:nth-child(" + offset + ")").eq(i).text()
+            if( region == "港服" ){
+                CNY = foreignCurrency(price, "HK$", dollarHKRatio)
+            } else if( region == "美服" ) {
+                CNY = foreignCurrency(price, "$", dollarRatio)
+            } else if( region == "日服" ) {
+                CNY = foreignCurrency(price, "¥", yenRatio)
+            } else if( region == "英服" ) {
+                CNY = foreignCurrency(price, "£", poundRatio)
+            } else {
+                CNY = foreignCurrency(price, "¥", 1)
+            }
+            $(".dd_price span:last-child").eq(i).after("&nbsp&nbsp<s class='dd_price_old'>¥" + CNY[0].toFixed(2) + "</s><span class='dd_price_off'>¥" + CNY[1].toFixed(2) + "</span>")
+            if(CNY[2] > 0){
+                $(".dd_price span:last-child").eq(i).after("</span><span class='dd_price_plus'>¥" + CNY[2].toFixed(2) + "</span>")
+            }
+        })
     }
+
+
     // 奖杯系统优化
     // 功能3-1：游戏奖杯界面可视化
     if( /psngame\//.test(window.location.href) ) {
