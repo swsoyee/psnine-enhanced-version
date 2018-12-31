@@ -8,6 +8,11 @@
 // @include      *d7vg.com/*
 // @require      http://cdn.staticfile.org/jquery/2.1.4/jquery.min.js
 // @require      http://code.highcharts.com/highcharts.js
+// @license      CC BY-NC 4.0
+// @supportURL   https://github.com/swsoyee/psnine-night-mode-CSS/issues/new
+// @compatible   chrome
+// @compatible   firefox
+// @compatible   edge
 // @grant        GM_addStyle
 // ==/UserScript==
 
