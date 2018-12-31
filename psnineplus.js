@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.37
+// @version      0.38
 // @description  数折价格可视化，显示人民币价格，奖杯统计，楼主高亮，被@用户的发言内容显示等多项功能优化P9体验
 // @author       InfinityLoop
 // @include      *psnine.com/*
@@ -39,13 +39,8 @@
 
     // 全局优化
     // 功能0-1：点击跳转到页面底部
-    var bottombar = document.getElementsByClassName("bottombar")[0]
+    $(".bottombar").append("<a href='javascript:scroll(0, document.body.clientHeight)' class='yuan mt10'>B</a>")
 
-    var toBottomSwitch = document.createElement("a")
-    toBottomSwitch.innerText = "B"
-    toBottomSwitch.setAttribute("href", "javascript:scroll(0, document.body.clientHeight)")
-    toBottomSwitch.setAttribute("class", "yuan mt10")
-    bottombar.appendChild(toBottomSwitch)
     // 功能0-2：黑条文字鼠标悬浮显示
     if(hoverUnmark){
         $(".mark").hover(function(i){
