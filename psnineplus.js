@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.39
+// @version      0.40
 // @description  数折价格可视化，显示人民币价格，奖杯统计，楼主高亮，被@用户的发言内容显示等多项功能优化P9体验
 // @author       InfinityLoop
 // @include      *psnine.com/*
@@ -10,7 +10,7 @@
 // @require      http://code.highcharts.com/highcharts.js
 // @license      CC BY-NC 4.0
 // @supportURL   https://github.com/swsoyee/psnine-night-mode-CSS/issues/new
-// @compatible   chrome 
+// @compatible   chrome
 // @compatible   firefox
 // @compatible   edge
 // @grant        GM_addStyle
@@ -102,7 +102,7 @@
         var userId = document.querySelectorAll(".ml64 [class$=meta]") // 30楼的话是29
         // 每一层的头像(0 ~ N - 1)
         var avator = document.querySelectorAll(".post a.l") // 30楼的话是29
-        for(var floor = allSource.length - 1; floor > 1 ; floor -- ) {
+        for(var floor = allSource.length - 1; floor > 0 ; floor -- ) {
             // 层内内容里包含链接
             var content = allSource[floor].querySelectorAll("a")
             if(content.length > 0) {
