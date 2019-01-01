@@ -38,13 +38,13 @@
 
   .tit3
   {
-    color: white;
+    color: white !important;
   }
 /*mark黑条鼠标放置反白*/
   .mark
   {
-    background: #bbb;
-    color: #bbb;
+    background: #bbb !important;
+    color: #bbb !important;
   }
 /*.mark:hover {*/
 /*    color: #2b2b2b !important;*/
@@ -54,122 +54,122 @@
 /*背景底色*/
   body.bg
   {
-    background: #2b2b2b;
+    background: #2b2b2b !important;
   }
 
 /*回帖背景色*/
   .list li
   {
-    background: #2b2b2b;
-    border: 1px solid #666666;
+    background: #2b2b2b !important;
+    border: 1px solid #666666 !important;
   }
 /*回帖字体颜色*/
   .content
   {
-    color: #bbb;
+    color: #bbb !important;
   }
 /*回帖用户名底色*/
   .psnnode
   {
-    background: #656565;
+    background: #656565 !important;
   }
 
 /*奖杯帖子标题头底色*/
   .box
   {
-    background: #3d3d3d;
+    background: #3d3d3d !important;
   }
 
 /*游戏列表标题*/
   .title a
   {
-    color: #bbb;
+    color: #bbb !important;
   }
 /*个别短标签颜色*/
   .text-strong, strong
   {
-    color: #bbb;
+    color: #bbb !important;
   }
 /*排名字体*/
   .twoge
   {
-    color: white;
+    color: white !important;
   }
 
 /*store*/
   .storeinfo
   {
-    color: #bbb;
+    color: #bbb !important;
   }
 
 /*warining*/
   .alert-warning
   {
-    background: #4d4d4d;
+    background: #4d4d4d !important;
   }
 
   .alert-info
   {
-    background: #5e5e5e;
+    background: #5e5e5e !important;
   }
 
   .alert-success
   {
-    background: #4b4b4b;
+    background: #4b4b4b !important;
   }
 
   h1,.title2
   {
-    color: #ffffff;
+    color: #ffffff !important;
   }
 
 /*个人主页navi*/
   .inav
   {
-    background: #3d3d3d;
+    background: #3d3d3d !important;
   }
 
   .inav li.current
   {
-    background: #4b4b4b;
+    background: #4b4b4b !important;
   }
 
 /*tip背景色*/
 /*类型奖杯底色*/
   .ml100 p
   {
-    color: #ffffff;
+    color: #ffffff !important;
   }
 
   .t1
   {
-    background: #657caf;
+    background: #657caf !important;
   }
 
   .t2
   {
-    background: #845e2f;
+    background: #845e2f !important;
   }
 
   .t3
   {
-    background: #707070;
+    background: #707070 !important;
   }
 
   .t4
   {
-    background: #8b4d2d;
+    background: #8b4d2d !important;
   }
 
   blockquote
   {
-    background: #bababa;
+    background: #bababa !important;
   }
 
-/*j交易页面*/
+/*交易页面*/
   .tradelist li
   {
-    color: white;
+    color: white !important;
   }
 }
 
@@ -178,6 +178,6 @@
 /*选中帖子高亮*/
   .list li:hover
   {
-    background: #000000;
+    background: #000000 !important;
   }
 }
