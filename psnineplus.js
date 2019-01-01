@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.41
-// @description  数折价格可视化，显示人民币价格，奖杯统计，楼主高亮，被@用户的发言内容显示等多项功能优化P9体验
+// @version      0.42
+// @description  数折价格走势图，显示人民币价格，奖杯统计，发帖字数统计，楼主高亮，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @author       InfinityLoop
 // @include      *psnine.com/*
 // @include      *d7vg.com/*
@@ -142,12 +142,19 @@
             $(this).children("a:last").after("&nbsp&nbsp<span>"+i+"楼</span>")
         }
     })
-    // 功能1-6设置：屏蔽黑名单中的用户发言内容
+    // 功能1-6：屏蔽黑名单中的用户发言内容
     if (blockList.length > 0) {
         for(var blockUser = 0; blockUser < blockList.length; blockUser ++ ){
             console.log(blockList[blockUser])
             $("div.post:contains(" + blockList[blockUser] + ")").hide()
         }
+    }
+    // 功能1-7：实时统计创建机因时候的文字数
+    if( /set\/gene/.test(window.location.href)){
+        $(".pr20 > textarea[name='content']").before("<div style='color:#c09853'><p>字数：<span class='wordCount'>0</span>/600</p></div>")
+        $(".pr20 > textarea[name='content']").keyup(function(){
+            document.getElementsByClassName("wordCount")[0].innerHTML = document.getElementsByName("content")[0].value.replace(/\n|\r/gi,"").length
+        });
     }
 
     // 商城优化
