@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.40
+// @version      0.41
 // @description  数折价格可视化，显示人民币价格，奖杯统计，楼主高亮，被@用户的发言内容显示等多项功能优化P9体验
 // @author       InfinityLoop
 // @include      *psnine.com/*
@@ -27,6 +27,8 @@
     var highlightSpecificID = ["mechille", "sai8808", "jimmyleo","jimmyleohk"] // 需要高亮的ID数组
     var highlightSpecificBack = "#d9534f" // 高亮背景色
     var highlightSpecificFront = "#ffffff" // 高亮字体颜色
+    // 功能1-6设置：屏蔽黑名单中的用户发言内容
+    var blockList = [] // 请在左侧输入用户ID，用逗号进行分割，如： ['use_a', 'user_b', 'user_c'] 以此类推
     // 功能2-2设置：汇率设置
     var dollarHKRatio = 0.88 // 港币汇率
     var dollarRatio = 6.9 // 美元汇率
@@ -140,6 +142,13 @@
             $(this).children("a:last").after("&nbsp&nbsp<span>"+i+"楼</span>")
         }
     })
+    // 功能1-6设置：屏蔽黑名单中的用户发言内容
+    if (blockList.length > 0) {
+        for(var blockUser = 0; blockUser < blockList.length; blockUser ++ ){
+            console.log(blockList[blockUser])
+            $("div.post:contains(" + blockList[blockUser] + ")").hide()
+        }
+    }
 
     // 商城优化
     // 功能2-1：商城价格走势图
