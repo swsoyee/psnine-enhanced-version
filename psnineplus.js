@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.42
+// @version      0.43
 // @description  数折价格走势图，显示人民币价格，奖杯统计，发帖字数统计，楼主高亮，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @author       InfinityLoop
 // @include      *psnine.com/*
@@ -97,13 +97,13 @@
     if( /(gene|topic|trade)\//.test(window.location.href) & !/comment/.test(window.location.href)) {
         GM_addStyle (`.replyTraceback {background-color: rgb(0, 0, 0, 0.05) !important; padding: 10px !important; color: rgb(160, 160, 160, 1) !important; border: 1px solid !important;}`)
         // 每一层楼的回复外框 (0 ~ N - 1)
-        var allSourceOutside = document.querySelectorAll(".post .ml64") // 30楼的话是29
+        var allSourceOutside = document.querySelectorAll(".post > .ml64") // 30楼的话是29
         // 每一层楼的回复框(0 ~ N - 1) floor
-        var allSource = document.querySelectorAll(".post .ml64 .content") // 30楼的话是29
+        var allSource = document.querySelectorAll(".post .ml64 > .content") // 30楼的话是29
         // 每一层楼的回复者名字( 0 ~ N - 1)
-        var userId = document.querySelectorAll(".ml64 [class$=meta]") // 30楼的话是29
+        var userId = document.querySelectorAll(".post > .ml64 > [class$=meta]") // 30楼的话是29
         // 每一层的头像(0 ~ N - 1)
-        var avator = document.querySelectorAll(".post a.l") // 30楼的话是29
+        var avator = document.querySelectorAll(".post > a.l") // 30楼的话是29
         for(var floor = allSource.length - 1; floor > 0 ; floor -- ) {
             // 层内内容里包含链接
             var content = allSource[floor].querySelectorAll("a")
@@ -139,7 +139,7 @@
     // 功能1-5：增加帖子楼层信息
     $("span.r").map(function(i,n){
         if(i > 0) {
-            $(this).children("a:last").after("&nbsp&nbsp<span>"+i+"楼</span>")
+            $(this).children("a:last").after("&nbsp&nbsp<span>#"+i+"</span>")
         }
     })
     // 功能1-6：屏蔽黑名单中的用户发言内容
@@ -339,7 +339,7 @@
         // 功能2-3：页面上方增加翻页
         $(".dropmenu").after($(".page").clone())
 
-        // 功能2-4：根据降价幅度变更背景色
+        // 功能2-4：根据降价幅度变更标题颜色
         $(".dd_box").map(function(i,n){
             var offPercent = Number($(this).children(".dd_pic").children("div").eq(0).text().replace("省", "").replace("%", ""))
             if( offPercent >= 80 ){
@@ -352,6 +352,16 @@
                 $(".dd_title.mb10>a").eq(i).css({"color":"rgb(40,167,69)"})
             }
         })
+    }
+
+    // 功能2-5：活动页面根据降价幅度变更背景色
+    if(/huodong/.test(window.location.href)){
+        var unitContainer = $(".store_ul").children
+         console.log(unitContainer)
+        //for(var unitIndex = 0; unitIndex < unitContainer.length; unitIndex++ ){
+        //    var pricePer = Number(unitContainer.item(unitIndex).children[0].children[1].textContent.replace("省", "").replace("%", ""))
+        //    console.log(pricePer)
+       // }
     }
 
 

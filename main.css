@@ -80,29 +80,29 @@
     background: #3d3d3d !important;
   }
 
-/*游戏列表标题*/
+  /*游戏列表标题*/
   .title a
   {
     color: #bbb !important;
   }
-/*个别短标签颜色*/
+  /*个别短标签颜色*/
   .text-strong, strong
   {
     color: #bbb !important;
   }
-/*排名字体*/
+  /*排名字体*/
   .twoge
   {
     color: white !important;
   }
 
-/*store*/
+  /*store*/
   .storeinfo
   {
     color: #bbb !important;
   }
 
-/*warining*/
+  /*warining*/
   .alert-warning
   {
     background: #4d4d4d !important;
@@ -123,7 +123,7 @@
     color: #ffffff !important;
   }
 
-/*个人主页navi*/
+  /*个人主页navi*/
   .inav
   {
     background: #3d3d3d !important;
@@ -134,8 +134,8 @@
     background: #4b4b4b !important;
   }
 
-/*tip背景色*/
-/*类型奖杯底色*/
+  /*tip背景色*/
+  /*类型奖杯底色*/
   .ml100 p
   {
     color: #ffffff !important;
@@ -166,10 +166,14 @@
     background: #bababa !important;
   }
 
-/*交易页面*/
+  /*交易页面*/
   .tradelist li
   {
     color: white !important;
+  }
+  /*主题贴中的表格底色*/
+  .tbl {
+    background: #3c3c3c !important;
   }
 }
 
