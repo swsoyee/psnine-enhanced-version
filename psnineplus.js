@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.46
+// @version      0.47
 // @description  数折价格走势图，显示人民币价格，奖杯统计，发帖字数统计，楼主高亮，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @author       InfinityLoop
 // @include      *psnine.com/*
@@ -548,6 +548,7 @@
         // 功能4-3：汇总以获得和未获得奖杯
         $("#trophyGetTimeChart").after("<div class='earnedTropy'><p class='earnedTropyCount' style='color:#ffffff; padding:5px 5px; border-radius:5px; background-color:#000000; opacity:0.2'></p></div>")
 
+        GM_addStyle (`.tippy-tooltip.psnine-theme {background-color: ` + $(".box").css("background-color") + `}`)
         var tipColor = ""
         $(".imgbg.earned").map(function(i, v) {
             if($(this).parent().parent().next().find(".alert-success.pd5").length > 0 ){
@@ -559,7 +560,9 @@
             var tropySmallText = $(this).parent().parent().next()
             var tropySmallFrame = "<div><span>" + $(this).parent().parent().html() + "</span><p></p><span>" + tropySmallText.html() + "</span></div>"
             tippy('#tropyEarnedSmall' + i, {
-                content: tropySmallFrame
+                content: tropySmallFrame,
+                theme: 'psnine',
+                animateFill: false
             })
         })
         $(".earnedTropy").after("<div class='notEarnedTropy'><p></p><p class='notEarnedTropyCount' style='color:#ffffff; padding:5px 5px; border-radius:5px; background-color:#000000; opacity:0.2'></p></div>")
@@ -573,7 +576,9 @@
             var tropySmallText = $(this).parent().parent().next()
             var tropySmallFrame = "<div><span>" + $(this).parent().parent().html() + "</span><p></p><span>" + tropySmallText.html() + "</span></div>"
             tippy('#tropySmall' + i, {
-                content: tropySmallFrame
+                content: tropySmallFrame,
+                theme: 'psnine',
+                animateFill: false
             })
         })
         $(".earnedTropyCount").text("已获得奖杯：" + $(".imgbg.earned").length)
