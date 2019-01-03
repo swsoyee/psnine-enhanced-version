@@ -1,13 +1,14 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.43
+// @version      0.44
 // @description  数折价格走势图，显示人民币价格，奖杯统计，发帖字数统计，楼主高亮，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @author       InfinityLoop
 // @include      *psnine.com/*
 // @include      *d7vg.com/*
 // @require      http://cdn.staticfile.org/jquery/2.1.4/jquery.min.js
 // @require      http://code.highcharts.com/highcharts.js
+// @require      https://unpkg.com/tippy.js@3/dist/tippy.all.min.js
 // @license      CC BY-NC 4.0
 // @supportURL   https://github.com/swsoyee/psnine-night-mode-CSS/issues/new
 // @compatible   chrome
@@ -357,7 +358,7 @@
     // 功能2-5：活动页面根据降价幅度变更背景色
     if(/huodong/.test(window.location.href)){
         var unitContainer = $(".store_ul").children
-         console.log(unitContainer)
+        // console.log(unitContainer)
         //for(var unitIndex = 0; unitIndex < unitContainer.length; unitIndex++ ){
         //    var pricePer = Number(unitContainer.item(unitIndex).children[0].children[1].textContent.replace("省", "").replace("%", ""))
         //    console.log(pricePer)
@@ -526,6 +527,40 @@
             $(".box.pd10").append (`<div id="trophyGetTimeChart" align="left" style="width: 460px; height: 200px; margin: 0 0; display: inline-block;"></div>`);
             $('#trophyGetTimeChart').highcharts(trophyGetTime);
         }
+
+        // 功能4-3：汇总以获得和未获得奖杯
+        $("#trophyGetTimeChart").after("<div class='earnedTropy'><p class='earnedTropyCount' style='color:#ffffff; padding:5px 5px; border-radius:5px; background-color:#000000; opacity:0.2'></p></div>")
+
+        var tipColor = ""
+        $(".imgbg.earned").map(function(i, v) {
+            if($(this).parent().parent().next().find(".alert-success.pd5").length > 0 ){
+                tipColor = "#8cc14c"
+            } else {
+                tipColor = $(".box").css("background-color")
+            }
+            $(".earnedTropy").append("<span id='tropyEarnedSmall" + i + "' style='padding:2px; border-left: 3px solid " + tipColor + ";'><a href='" + $(this).parent().attr("href") + "'><img src='" + $(this).attr("src") + "' width='30px'></img><a></span>")
+            var tropySmallText = $(this).parent().parent().next()
+            var tropySmallFrame = "<div><div style='display: inline-block;'>" + $(this).parent().parent().html() + "</div><div style='display: inline-block; padding:5px;'><div>" + tropySmallText.children("p").html() + "</div><div>" + tropySmallText.children("em").html() + "</div></div></div>"
+            tippy('#tropyEarnedSmall' + i, {
+                content: tropySmallFrame
+            })
+        })
+        $(".earnedTropy").after("<div class='notEarnedTropy'><p></p><p class='notEarnedTropyCount' style='color:#ffffff; padding:5px 5px; border-radius:5px; background-color:#000000; opacity:0.2'></p></div>")
+        $("img[class$='imgbg']").map(function(i, v) {
+            if($(this).parent().parent().next().find(".alert-success.pd5").length > 0 ){
+                tipColor = "#8cc14c"
+            } else {
+                tipColor = $(".box").css("background-color")
+            }
+            $(".notEarnedTropy").append("<span id='tropySmall" + i + "' style='padding:2px; border-left: 3px solid " + tipColor + ";'><a href='" + $(this).parent().attr("href") + "'><img src='" + $(this).attr("src") + "' width='30px' style='filter: grayscale(100%);'></img></a></span>")
+            var tropySmallText = $(this).parent().parent().next()
+            var tropySmallFrame = "<div><div style='display: inline-block;'>" + $(this).parent().parent().html() + "</div><div style='display: inline-block; padding:5px;'><div>" + tropySmallText.children("p").html() + "</div><div>" + tropySmallText.children("em").html() + "</div></div></div>"
+            tippy('#tropySmall' + i, {
+                content: tropySmallFrame
+            })
+        })
+        $(".earnedTropyCount").text("已获得奖杯：" + $(".imgbg.earned").length)
+        $(".notEarnedTropyCount").text("未获得奖杯：" + $("img[class$='imgbg']").length)
     }
 
     // 游戏页面优化
