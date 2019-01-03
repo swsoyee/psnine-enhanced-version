@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.47
+// @version      0.48
 // @description  数折价格走势图，显示人民币价格，奖杯统计，发帖字数统计，楼主高亮，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @author       InfinityLoop
 // @include      *psnine.com/*
@@ -141,13 +141,25 @@
                         }
                         // 输出
                         if(outputID != -1) {
+                            var replyContents = ""
+                            if(allSource[outputID].innerText.length > 45) {
+                                replyContents = allSource[outputID].innerText.substring(0, 45) + "......"
+                            } else {
+                                replyContents = allSource[outputID].innerText
+                            }
                             var avatorImg = avator[outputID].getElementsByTagName("img")[0].getAttribute("src")
                             replayBox.innerHTML = '<div class="responserHeader" style="padding:3px 3px; border-radius:2px; background: rgb(23, 162, 184); display: inline-block; padding-right: 10px; color: #ffffff"><img src="' +
                                 avatorImg + '" height="25" width="25"> ' + linkContent[1] + '</img>'+
-                                '</div><div class="responserContent" style="display: inline-block;">&nbsp' +
-                                allSource[outputID].innerText + "</div>"
+                                '</div><div class="responserContent_' + floor + '_' + outputID + '" style="display: inline-block;">&nbsp' +
+                                replyContents + "</div>"
                             allSourceOutside[floor].insertBefore(replayBox, allSource[floor])
-                            break;
+                            // 如果内容超过45个字符，则增加悬浮显示全文内容功能
+                            if(allSource[outputID].innerText.length > 45) {
+                                tippy('.responserContent_' + floor + '_' + outputID, {
+                                    content: allSource[outputID].innerText,
+                                    animateFill: false
+                                })
+                            }
                         }
                     }
                 }
