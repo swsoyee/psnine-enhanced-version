@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.45
+// @version      0.46
 // @description  数折价格走势图，显示人民币价格，奖杯统计，发帖字数统计，楼主高亮，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @author       InfinityLoop
 // @include      *psnine.com/*
@@ -106,31 +106,48 @@
         // 每一层的头像(0 ~ N - 1)
         var avator = document.querySelectorAll(".post > a.l") // 30楼的话是29
         for(var floor = allSource.length - 1; floor > 0 ; floor -- ) {
-            // 层内内容里包含链接
+            // 层内内容里包含链接（B的发言中是否有A）
             var content = allSource[floor].querySelectorAll("a")
             if(content.length > 0) {
                 for(var userNum = 0; userNum < content.length; userNum++ ){
                     // 对每一个链接的文本内容判断
                     var linkContent = content[userNum].innerText.match("@(.+)")
-                    // 链接里是@用户生成的链接， linkContent为用户名
+                    // 链接里是@用户生成的链接， linkContent为用户名（B的发言中有A）
                     if(linkContent != null) {
                         var replayBox = document.createElement("div")
                         replayBox.setAttribute("class", "replyTraceback")
-                        // 从上层开始，回溯所@的用户的最近回复
+                        // 从上层开始，回溯所@的用户的最近回复（找最近的一条A的发言）
+                        var traceIdFirst = -1
+                        var traceIdTrue = -1
                         for(var traceId = floor - 1; traceId >= 0; traceId -- ){
                             // 如果回溯到了的话，选取内容
                             // 回溯层用户名
                             var thisUserID = userId[traceId].getElementsByClassName("psnnode")[0].innerText
                             if( thisUserID == linkContent[1].toLowerCase()){
-                                // 输出头像
-                                var avatorImg = avator[traceId].getElementsByTagName("img")[0].getAttribute("src")
-                                replayBox.innerHTML = '<div class="responserHeader" style="padding:3px 3px; border-radius:2px; background: rgb(23, 162, 184); display: inline-block; padding-right: 10px; color: #ffffff"><img src="' +
-                                    avatorImg + '" height="25" width="25"> ' + linkContent[1] + '</img>'+
-                                    '</div><div class="responserContent" style="display: inline-block;">&nbsp' +
-                                    allSource[traceId].innerText + "</div>"
-                                allSourceOutside[floor].insertBefore(replayBox, allSource[floor])
-                                break;
+                                // 判断回溯中的@（A的发言中有是否有B）
+                                if ( allSource[traceId].innerText.indexOf(userId[floor].getElementsByClassName("psnnode")[0].innerText) > -1) {
+                                    traceIdTrue = traceId;
+                                    break;
+                                } else if (traceIdFirst == -1) {
+                                    traceIdFirst = traceId;
+                                }
                             }
+                        }
+                        var outputID = -1
+                        if( traceIdTrue != -1){
+                            outputID = traceIdTrue
+                        } else if (traceIdFirst != -1) {
+                            outputID = traceIdFirst
+                        }
+                        // 输出
+                        if(outputID != -1) {
+                            var avatorImg = avator[outputID].getElementsByTagName("img")[0].getAttribute("src")
+                            replayBox.innerHTML = '<div class="responserHeader" style="padding:3px 3px; border-radius:2px; background: rgb(23, 162, 184); display: inline-block; padding-right: 10px; color: #ffffff"><img src="' +
+                                avatorImg + '" height="25" width="25"> ' + linkContent[1] + '</img>'+
+                                '</div><div class="responserContent" style="display: inline-block;">&nbsp' +
+                                allSource[outputID].innerText + "</div>"
+                            allSourceOutside[floor].insertBefore(replayBox, allSource[floor])
+                            break;
                         }
                     }
                 }
