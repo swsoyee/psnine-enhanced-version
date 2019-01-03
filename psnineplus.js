@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.44
+// @version      0.45
 // @description  数折价格走势图，显示人民币价格，奖杯统计，发帖字数统计，楼主高亮，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @author       InfinityLoop
 // @include      *psnine.com/*
@@ -540,7 +540,7 @@
             }
             $(".earnedTropy").append("<span id='tropyEarnedSmall" + i + "' style='padding:2px; border-left: 3px solid " + tipColor + ";'><a href='" + $(this).parent().attr("href") + "'><img src='" + $(this).attr("src") + "' width='30px'></img><a></span>")
             var tropySmallText = $(this).parent().parent().next()
-            var tropySmallFrame = "<div><div style='display: inline-block;'>" + $(this).parent().parent().html() + "</div><div style='display: inline-block; padding:5px;'><div>" + tropySmallText.children("p").html() + "</div><div>" + tropySmallText.children("em").html() + "</div></div></div>"
+            var tropySmallFrame = "<div><span>" + $(this).parent().parent().html() + "</span><p></p><span>" + tropySmallText.html() + "</span></div>"
             tippy('#tropyEarnedSmall' + i, {
                 content: tropySmallFrame
             })
@@ -554,7 +554,7 @@
             }
             $(".notEarnedTropy").append("<span id='tropySmall" + i + "' style='padding:2px; border-left: 3px solid " + tipColor + ";'><a href='" + $(this).parent().attr("href") + "'><img src='" + $(this).attr("src") + "' width='30px' style='filter: grayscale(100%);'></img></a></span>")
             var tropySmallText = $(this).parent().parent().next()
-            var tropySmallFrame = "<div><div style='display: inline-block;'>" + $(this).parent().parent().html() + "</div><div style='display: inline-block; padding:5px;'><div>" + tropySmallText.children("p").html() + "</div><div>" + tropySmallText.children("em").html() + "</div></div></div>"
+            var tropySmallFrame = "<div><span>" + $(this).parent().parent().html() + "</span><p></p><span>" + tropySmallText.html() + "</span></div>"
             tippy('#tropySmall' + i, {
                 content: tropySmallFrame
             })
