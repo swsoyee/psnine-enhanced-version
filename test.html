@@ -76,6 +76,42 @@
             width: 170px;
             padding: 0 10px;
         }
+        .setting-panel-box .row input#filterNonePlatinum{
+          height: 6px;
+          background-color: #e4e7ed;
+          margin: 16px 0;
+          border-radius: 3px;
+          position: relative;
+          cursor: pointer;
+          vertical-align: middle;
+          outline: none;
+          padding: 0;
+        }
+        .setting-panel-box .row input#filterNonePlatinum::-webkit-slider-thumb{
+          -webkit-appearance: none; 
+          appearance: none;
+          width: 16px;
+          height: 16px;
+          border: 2px solid #409eff;
+          background-color: #fff;
+          border-radius: 50%;
+          transition: .2s;
+          user-select: none;
+        }
+        .setting-panel-box .row input#filterNonePlatinum::-moz-range-thumb{
+          -webkit-appearance: none; 
+          appearance: none;
+          width: 16px;
+          height: 16px;
+          border: 2px solid #409eff;
+          background-color: #fff;
+          border-radius: 50%;
+          transition: .2s;
+          user-select: none;
+        }
+        .setting-panel-box .row #filterNonePlatinumValue{
+          margin-left: 5px;
+        }
         .setting-panel-box .row select{
             border: 1px solid #dcdfe6;
             color: #606266;
@@ -131,12 +167,10 @@
                 <option value="false">否</option>
             </select>
         </div>
-        <div class="row">
-            <label>降低无白金游戏图标透明度</label>
-            <select id="filterNonePlatinum">
-                <option value="true">是</option>
-                <option value="false">否</option>
-            </select>
+        <div class=row>
+          <label>无白金游戏图标透明度</label>
+          <input id="filterNonePlatinum" type="range" min="0" max="1" step="0.1">
+          <span id="filterNonePlatinumValue"></span>
         </div>
         <div class="row">
             <label>高亮用户(以英文逗号隔开)</label>
@@ -168,4 +202,7 @@
         </div>
     </div>
 </body>
+<script>
+  $(".setting-panel-box").addClass("show")
+</script>
 </html>
