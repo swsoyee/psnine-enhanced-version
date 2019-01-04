@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.51
+// @version      0.52
 // @description  数折价格走势图，显示人民币价格，奖杯统计，发帖字数统计，楼主高亮，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404
@@ -38,12 +38,11 @@
         poundRatio : 7.8, // 英镑汇率
         yenRatio : 0.06, // 日元汇率
         // 功能5-1设置：是否在`游戏`页面启用降低无白金游戏的图标透明度
-        filterNonePlatinum : true,
-        filterNonePlatinumAlpha : 0.2 // 透密 [0, 1] 不透明
+        filterNonePlatinumAlpha : 0.2 // 透密 [0, 1] 不透明，如果设置为1则关闭该功能
     }
     if(window.localStorage){
-        if(window.localStorage["psnine-night-mode-CSS-settings"]){
-            $.extend(settings,JSON.parse(window.localStorage["psnine-night-mode-CSS-settings"]))//用storage中的配置项覆盖默认设置
+        if(window.localStorage["psnine-enhanced-version-settings"]){
+            $.extend(settings,JSON.parse(window.localStorage["psnine-enhanced-version-settings"]))//用storage中的配置项覆盖默认设置
         }
     }else{
         console.log("浏览器不支持localStorage,使用默认配置项")
@@ -64,39 +63,6 @@
         })
     }
     // 功能0-3：markdown语法支持测试
-    // var originalContent = $("div.content.pb10").html().split("<br>")
-    // function repeat(target, n) {
-    //     var s = target, total = "";
-    //     while (n > 0) {
-    //         if (n % 2 == 1) {
-    //             total += s;
-    //         }
-    //         if (n == 1) {
-    //             break;
-    //          }
-    //         s += s;
-    //         n = n >> 1;//相当于将n除以2取其商，或者说是开2次方
-    //     }
-    //     return total;
-    // }
-    // for(var contentIndex = 0; contentIndex < originalContent.length; contentIndex ++ ) {
-    //     // 标题H1~H6
-    //    for(var hN = 1; hN < 7; hN ++ ) {
-    //         if(originalContent[contentIndex].substring(0, hN + 1) == repeat("#", hN) + " ") {
-    //             originalContent[contentIndex] = "<h" + hN + " class='markdown-body h" + hN + "'>" + originalContent[contentIndex].substring(hN + 1) + "</h" + hN + ">"
-    //         }
-    //     }
-    // }
-    // $("div.content.pb10").empty();
-    // originalContent.join("")
-    // $("div.content.pb10").append(originalContent.join(""))
-    // GM_addStyle (`.markdown-body.h1,.markdown-body.h2,.markdown-body.h3,.markdown-body.h4,.markdown-body.h5,.markdown-body.h6 {margin-top: 1em; margin-bottom: 16px; font-weight: bold; line-height: 1.4;}`)
-    // GM_addStyle (`.markdown-body.h1 {margin: 0.67em 0; padding-bottom: 0.3em; font-size: 2.25em; line-height: 1.2; border-bottom: 1px solid #eee;}`)
-    // GM_addStyle (`.markdown-body.h2 {padding-bottom: 0.3em; font-size: 1.75em; line-height: 1.225; border-bottom: 1px solid #eee;}`)
-    // GM_addStyle (`.markdown-body.h3 {font-size: 1.5em; line-height: 1.43;}`)
-    // GM_addStyle (`.markdown-body.h4 {font-size: 1.25em;}`)
-    // GM_addStyle (`.markdown-body.h5 {font-size: 1em;}`)
-    // GM_addStyle (`.markdown-body.h6 {font-size: 1em; color: #777;}`)
 
     // 帖子优化
     // 功能1-1：高亮发帖楼主
@@ -641,9 +607,10 @@
     }
 
     // 游戏页面优化
-    if(settings.filterNonePlatinum){
-        if(/psngame/.test(window.location.href) & !/psnid/.test(window.location.href)) {
-            // 功能5-1：降低没有白金的游戏的图标亮度
+
+    if(/psngame/.test(window.location.href) & !/psnid/.test(window.location.href)) {
+        // 功能5-1：降低没有白金的游戏的图标亮度
+        if(settings.filterNonePlatinumAlpha < 1){
             $("tr").map(function(i,n){
                 // 读取白金数量
                 var platinumNum = $(this).children(".pd1015.title.lh180").children("em").children(".text-platinum").text().replace("白", "")
@@ -651,9 +618,9 @@
                     $(this).children(".pdd15").children("a").children("img").css({"opacity": settings.filterNonePlatinumAlpha})
                 }
             })
-            // 功能5-2：页面上方增加翻页
-            $(".dropmenu").after($(".page").clone())
         }
+        // 功能5-2：页面上方增加翻页
+        $(".dropmenu").after($(".page").clone())
     }
 
     // 进入游戏页默认查看我自己的奖杯
@@ -672,21 +639,32 @@
             "minHeight":200
         });
     }
-   
-    //右上角头像下拉框中增加插件设定按钮
+
+    // 右上角头像下拉框中增加插件设定按钮
     if(window.localStorage){//如果支持localstorage
         var newSettings = JSON.parse(JSON.stringify(settings))
         $(".header .dropdown ul").append(`
-            <li><a href="javascript:void(0);" id="psnine-night-mode-CSS-opensetting">插件设置</a></li>
+            <li><a href="javascript:void(0);" id="psnine-enhanced-version-opensetting">插件设置</a></li>
         `)
         $("body").append(`
             <style>.setting-panel-box{z-index:999999;background-color:#fff;transition:all .4s ease;position:fixed;left:50%;transform:translateX(-50%);top:-5000px;width:500px;box-shadow:0 0 20px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;flex-direction:column;padding:10px;box-sizing:border-box;border-radius:4px}.setting-panel-box.show{top:20px}.setting-panel-box h4{margin-bottom:0}.setting-panel-box .row{display:flex;align-items:center;justify-content:flex-start;width:100%;margin-bottom:18px}.setting-panel-box .row label{line-height:32px;text-align:right;font-size:14px;color:#606266;padding:0 12px 0 0;width:190px}.setting-panel-box .row textarea{resize:vertical;min-height:30px;border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;line-height:26px;box-sizing:border-box;width:227px;padding:0 10px}.setting-panel-box .row input{border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;height:26px;line-height:26px;display:inline-block;width:170px;padding:0 10px}.setting-panel-box .row select{border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;height:26px;line-height:26px;display:inline-block;width:170px;padding:0 10px}.setting-panel-box button{-webkit-appearance:button;padding:9px 15px;font-size:12px;border-radius:3px;display:inline-block;line-height:1;white-space:nowrap;cursor:pointer;background:#fff;border:1px solid #dcdfe6;color:#606266;text-align:center;box-sizing:border-box;outline:0;margin:0;transition:.1s;font-weight:500;margin:0 10px}.setting-panel-box button:hover{color:#409eff;border-color:#c6e2ff;background-color:#ecf5ff}.setting-panel-box button.confirm{color:#fff;background-color:#3890ff}.setting-panel-box button.confirm:hover{background-color:#9ec9ff}</style>
-            <div class=setting-panel-box><h4>P9插件设置</h4><div class=row><label>鼠标划过刮刮卡显示内容</label><select id=hoverUnmark><option value=true>是<option value=false>否</select></div><div class=row><label>降低无白金游戏图标透明度</label><select id=filterNonePlatinum><option value=true>是<option value=false>否</select></div><div class=row><label>高亮用户(以英文逗号隔开)</label><textarea name="" id="highlightSpecificID" cols="30" rows="2"></textarea></div><div class=row><label>黑名单(以英文逗号隔开)</label><textarea name="" id="blockList" cols="30" rows="2"></textarea></div><div class=row><label>港币汇率</label><input type=number name="" id=dollarHKRatio></div><div class=row><label>美元汇率</label><input type=number name="" id=dollarRatio></div><div class=row><label>英镑汇率</label><input type=number name="" id=poundRatio></div><div class=row><label>日元汇率</label><input type=number name="" id=yenRatio></div><div class=btnbox><button class=cancel>取消</button><button class=confirm>确定</button></div></div>
+            <div class=setting-panel-box><h4>P9插件设置</h4><div class=row><label>鼠标划过刮刮卡显示内容</label><select id=hoverUnmark><option value=true>是<option value=false>否</select></div><div class=row><label>无白金游戏图标透明度</label><input type="range" min="0" max="1" value="0.2" step="0.1" class="slider" id="filterNonePlatinum">&nbsp<span id="filterNonePlatinumValue"></span></div><div class=row><label>高亮用户(以英文逗号隔开)</label><textarea name="" id="highlightSpecificID" cols="30" rows="2"></textarea></div><div class=row><label>黑名单(以英文逗号隔开)</label><textarea name="" id="blockList" cols="30" rows="2"></textarea></div><div class=row><label>港币汇率</label><input type=number name="" id=dollarHKRatio></div><div class=row><label>美元汇率</label><input type=number name="" id=dollarRatio></div><div class=row><label>英镑汇率</label><input type=number name="" id=poundRatio></div><div class=row><label>日元汇率</label><input type=number name="" id=yenRatio></div><div class=btnbox><button class=cancel>取消</button><button class=confirm>确定</button></div></div>
         `)
-        //点击打开设置面板
-        $("#psnine-night-mode-CSS-opensetting").on("click",function(){
+        // 滑动设置条样式
+        GM_addStyle (`.slider {-webkit-appearance: none; width: 100%; height: 15px; border-radius: 5px; background: #d3d3d3; outline: none; opacity: 0.7; -webkit-transition: .2s; transition: opacity .2s;}`)
+        GM_addStyle (`.slider:hover {opacity: 1;}`)
+        GM_addStyle (`.slider::-webkit-slider-thumb {-webkit-appearance: none; appearance: none; width: 25px; height: 25px; border-radius: 50%; background: #3890ff; cursor: pointer;}`)
+        GM_addStyle (`.slider::-moz-range-thumb {width: 25px; height: 25px; border-radius: 50%; background: #4CAF50; cursor: pointer;}`)
+
+        // 动态呈现所选的值
+        // 降低无白金透明度
+        var filterNonePlatinumSlider = $("#filterNonePlatinum");
+        var filterNonePlatinumSliderOutput = $("#filterNonePlatinumValue");
+
+        // 点击打开设置面板
+        $("#psnine-enhanced-version-opensetting").on("click",function(){
             $(".setting-panel-box").addClass("show")
-            //刮刮卡
+            // 刮刮卡
             if(newSettings.hoverUnmark){
                 $("#hoverUnmark option:nth-child(1)").attr("selected","true")
             }else{
@@ -694,25 +672,23 @@
             }
             $("#hoverUnmark").change(function(){
                 newSettings.hoverUnmark = JSON.parse($(this).children('option:selected').val())
-                console.log(newSettings)
+                // console.log(newSettings)
             })
-            //无白金淡化
-            if(newSettings.filterNonePlatinum){
-                $("#filterNonePlatinum option:nth-child(1)").attr("selected","true")
-            }else{
-                $("#filterNonePlatinum option:nth-child(2)").attr("selected","true")
-            }
-            $("#filterNonePlatinum").change(function(){
-                newSettings.filterNonePlatinum = JSON.parse($(this).children('option:selected').val())
-                console.log(newSettings)
+            // 降低无白金透明度设置
+            $("#filterNonePlatinum").val(newSettings.filterNonePlatinumAlpha)
+            // 初始显示透明度（用于预览）
+            filterNonePlatinumSliderOutput.html(Number(filterNonePlatinumSlider.val()) * 100 + "%");
+            // 动态变更所选透明度（用于预览）
+            filterNonePlatinumSlider.on("input", function() {
+                filterNonePlatinumSliderOutput.html(Number(filterNonePlatinumSlider.val()) * 100 + "%");
             })
-            //高亮用户
+            // 高亮用户
             var highlightSpecificIDText = newSettings.highlightSpecificID.join(",")
             $("#highlightSpecificID").val(highlightSpecificIDText)
-            //黑名单
+            // 黑名单
             var blockListText = newSettings.blockList.join(",")
             $("#blockList").val(blockListText)
-            //汇率
+            // 汇率
             $("#dollarHKRatio").val(newSettings.dollarHKRatio)
             $("#dollarRatio").val(newSettings.dollarRatio)
             $("#poundRatio").val(newSettings.poundRatio)
@@ -732,14 +708,15 @@
             if(blockListText){
                 newSettings.blockList = blockListText.split(",")
             }
+            newSettings.filterNonePlatinumAlpha = $("#filterNonePlatinum").val()
             newSettings.dollarHKRatio = $("#dollarHKRatio").val()
             newSettings.dollarRatio = $("#dollarRatio").val()
             newSettings.poundRatio = $("#poundRatio").val()
             newSettings.yenRatio = $("#yenRatio").val()
             $(".setting-panel-box").removeClass("show")
-            localStorage["psnine-night-mode-CSS-settings"] = JSON.stringify(newSettings)
+            localStorage["psnine-enhanced-version-settings"] = JSON.stringify(newSettings)
             window.location.reload()
         })
     }
-    
+
 })();
