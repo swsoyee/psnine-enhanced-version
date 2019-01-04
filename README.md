@@ -33,25 +33,25 @@
 - ↪ 进入游戏页默认跳转到自己主页下的该游戏页面<sup>3</sup>。
 - 📝 `奖杯心得`页面`输入框`可缩放大小<sup>3</sup>。
 
-### 🖼 画面截图 🖼 
+## 🖼 画面截图 🖼 
 |  ![增加楼主标识](https://raw.githubusercontent.com/swsoyee/psnine-night-mode-CSS/master/screenshots/authorHighlight.png)  🗣增加蓝色`楼主`标识，更易区分`楼主`与`回帖者`<sup>1</sup>。   |   ![高亮管理员](https://raw.githubusercontent.com/swsoyee/psnine-night-mode-CSS/master/screenshots/highlightID.png)   👮全局红色高亮`管理员ID`<sup>1</sup>。    |
 | ---- | ---- |
 |  ![回到底部](https://raw.githubusercontent.com/swsoyee/psnine-night-mode-CSS/master/screenshots/bottom.png)   **⬇增加`回到底部`按钮，快速跳转`回复框`或者`翻页`处。**   |  ![插图预览功能](https://raw.githubusercontent.com/swsoyee/psnine-night-mode-CSS/master/screenshots/hoverImage.png) **🖼鼠标悬浮预览`-插图-`内容，无需点击打开查看图片。**   |
 |![@其他用户](https://raw.githubusercontent.com/swsoyee/psnine-night-mode-CSS/master/screenshots/replyContent.png)**💬帖子中被`@用户`的发言内容显示于同层便于查看。**|![价格走势图](https://raw.githubusercontent.com/swsoyee/psnine-night-mode-CSS/master/screenshots/priceTrendency.png)**📉[`数折`](https://psnine.com/dd/HP9000-CUSA08392_00-ASIAPLACEHOLDER1)中增加`价格走势图`，快速了解`走势`和`史低`。**|
 |![奖杯可视化](https://raw.githubusercontent.com/swsoyee/psnine-night-mode-CSS/master/screenshots/trophySummary.png)**📈[`游戏`](https://psnine.com/psngame/15295)界面`奖杯类型比例`，`获得时间`等信息可视化。**|![黑条隐藏文字](https://raw.githubusercontent.com/swsoyee/psnine-night-mode-CSS/master/screenshots/markHover.png)**🈲黑条隐藏文字鼠标悬浮显示**|
 
-### 可用平台
-||Chrome|FireFox|
-| ---- | ---- | ---- |
-| | <img src="https://raw.githubusercontent.com/swsoyee/psnine-night-mode-CSS/master/icon/chrome-512.png" width="64px"></img>| <img src="https://raw.githubusercontent.com/swsoyee/psnine-night-mode-CSS/master/icon/512px-Firefox_Logo%2C_2017.svg.png" width="58px"></img> |
-|<div align="center">Tampermonkey</div>|<div align="center">🉑</div>|<div align="center">🉑</div>|
-|<div align="center">Violentmonkey</div>|<div align="center">🉑</div>|<div align="center">🉑</div>|
+## 可用平台
+||Chrome|FireFox|Edge|Maxthon|
+| ---- | ---- | ---- | ---- | ---- |
+| | <img src="https://raw.githubusercontent.com/swsoyee/psnine-night-mode-CSS/master/icon/chrome-512.png" width="64px"></img>| <img src="https://raw.githubusercontent.com/swsoyee/psnine-night-mode-CSS/master/icon/512px-Firefox_Logo%2C_2017.svg.png" width="58px"></img> | <img src="https://raw.githubusercontent.com/swsoyee/psnine-night-mode-CSS/master/icon/edge.png" width="64px"></img>| <img src="https://raw.githubusercontent.com/swsoyee/psnine-night-mode-CSS/master/icon/Maxthon.png" width="58px"></img> |
+|<div align="center">Tampermonkey</div>|<div align="center">🉑</div>|<div align="center">🉑</div>|<div align="center">🉑</div>||
+|<div align="center">Violentmonkey</div>|<div align="center">🉑</div>|<div align="center">🉑</div>||<div align="center">🉑</div>|
 
-### 安装地址
+## 安装地址
 
 详情参照[`Greasy Fork`](https://greasyfork.org/zh-CN/scripts/375985-psn%E4%B8%AD%E6%96%87%E7%BD%91%E5%8A%9F%E8%83%BD%E5%A2%9E%E5%BC%BA)。 
 
-### 附注
+## 附注
 1. idea来源于`mordom0404`的[`P9工具包`](https://greasyfork.org/zh-CN/scripts/29343-p9%E5%B7%A5%E5%85%B7%E5%8C%85)。
 2. 由于没有合适的外汇API，汇率为定值，可以自行在脚本中更改。
 3. 功能由[`mordom0404`](https://psnine.com/psnid/mordom0404)提供。
