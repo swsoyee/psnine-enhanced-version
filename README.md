@@ -33,6 +33,11 @@
 - ↪ 进入游戏页默认跳转到自己主页下的该游戏页面<sup>3</sup>。
 - 📝 `奖杯心得`页面`输入框`可缩放大小<sup>3</sup>。
 
+---
+点击P9页面的右上角`我的` ➡ `插件设置` 即可进行插件的具体设置<sup>3</sup>。
+
+---
+
 ## 🖼 画面截图 🖼 
 |  ![增加楼主标识](https://raw.githubusercontent.com/swsoyee/psnine-night-mode-CSS/master/screenshots/authorHighlight.png)  🗣增加蓝色`楼主`标识，更易区分`楼主`与`回帖者`<sup>1</sup>。   |   ![高亮管理员](https://raw.githubusercontent.com/swsoyee/psnine-night-mode-CSS/master/screenshots/highlightID.png)   👮全局红色高亮`管理员ID`<sup>1</sup>。    |
 | ---- | ---- |
@@ -78,23 +83,7 @@
 
 1. 确保浏览器（**Chrome**或者**Firefox**）等已经安装了[`Stylish`](https://chrome.google.com/webstore/detail/stylish-custom-themes-for/fjnbnpbmkenffdnngjfgmeleoegfcffe?utm_source=chrome-ntp-icon)或者[`Stylus`](https://chrome.google.com/webstore/detail/stylus/clngdbkpkpeebahjckkjfobafhncgmne?utm_source=chrome-ntp-icon)等插件并且开启；
 2. 跳转到[`Stylish页面`](https://userstyles.org/styles/167244/p9)后直接点击`⬇ Install Style`按键即可一键安装并且使用。
-3. 插件设置在P9右上角“我的”→“插件设置”中可以找到
-
 
 ### 更新记录
 - v1.1  🐞修改奖杯底色，部分页面的高亮颜色
 - v1.0  👑发布
-
----
-## 功能增强脚本
-
-详情参照[`greasyfork`](https://greasyfork.org/zh-CN/scripts/375985-psn%E4%B8%AD%E6%96%87%E7%BD%91%E5%8A%9F%E8%83%BD%E5%A2%9E%E5%BC%BA)。
-
-## TODO
-
-所有功能整合成单一脚本或者独立的浏览器插件形式。
-
-## 附注
-1. idea来源于`mordom0404`的[`P9工具包`](https://greasyfork.org/zh-CN/scripts/29343-p9%E5%B7%A5%E5%85%B7%E5%8C%85)。
-2. 目前只返回所@用户的最近一条回复。
-
