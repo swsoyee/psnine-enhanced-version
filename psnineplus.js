@@ -4,7 +4,7 @@
 // @version      0.49
 // @description  数折价格走势图，显示人民币价格，奖杯统计，发帖字数统计，楼主高亮，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
-// @author       InfinityLoop
+// @author       InfinityLoop,mordom0404
 // @include      *psnine.com/*
 // @include      *d7vg.com/*
 // @require      http://cdn.staticfile.org/jquery/2.1.4/jquery.min.js
@@ -20,33 +20,41 @@
 
 (function() {
     'use strict';
-    // 功能0-2设置：鼠标滑过黑条即可显示内容
-    var hoverUnmark = true // 设置为false则选中才显示
-    // 功能1-1设置：高亮发帖楼主功能
-    var highlightBack = "#3890ff" // 高亮背景色
-    var highlightFront = "#ffffff" // 高亮字体颜色
-    // 功能1-2设置：高亮具体ID功能（默认管理员id）[注：此部分功能源于@mordom0404的P9工具包：https://greasyfork.org/zh-CN/scripts/29343-p9%E5%B7%A5%E5%85%B7%E5%8C%85]
-    var highlightSpecificID = ["mechille", "sai8808", "jimmyleo","jimmyleohk"] // 需要高亮的ID数组
-    var highlightSpecificBack = "#d9534f" // 高亮背景色
-    var highlightSpecificFront = "#ffffff" // 高亮字体颜色
-    // 功能1-6设置：屏蔽黑名单中的用户发言内容
-    var blockList = [] // 请在左侧输入用户ID，用逗号进行分割，如： ['use_a', 'user_b', 'user_c'] 以此类推
-    // 功能2-2设置：汇率设置
-    var dollarHKRatio = 0.88 // 港币汇率
-    var dollarRatio = 6.9 // 美元汇率
-    var poundRatio = 7.8 // 英镑汇率
-    var yenRatio = 0.06 // 日元汇率
-    // 功能5-1设置：是否在`游戏`页面启用降低无白金游戏的图标透明度
-    var filterNonePlatinum = true
-    var filterNonePlatinumAlpha = 0.2 // 透密 [0, 1] 不透明
-
+    var settings = {
+        // 功能0-2设置：鼠标滑过黑条即可显示内容
+        hoverUnmark: true,// 设置为false则选中才显示
+        // 功能1-1设置：高亮发帖楼主功能
+        highlightBack : "#3890ff", // 高亮背景色
+        highlightFront : "#ffffff", // 高亮字体颜色
+        // 功能1-2设置：高亮具体ID功能（默认管理员id）[注：此部分功能源于@mordom0404的P9工具包：https://greasyfork.org/zh-CN/scripts/29343-p9%E5%B7%A5%E5%85%B7%E5%8C%85]
+        highlightSpecificID : ["mechille", "sai8808", "jimmyleo","jimmyleohk"], // 需要高亮的ID数组
+        highlightSpecificBack : "#d9534f", // 高亮背景色
+        highlightSpecificFront : "#ffffff", // 高亮字体颜色
+        // 功能1-6设置：屏蔽黑名单中的用户发言内容
+        blockList : [], // 请在左侧输入用户ID，用逗号进行分割，如： ['use_a', 'user_b', 'user_c'] 以此类推
+        // 功能2-2设置：汇率设置
+        dollarHKRatio : 0.88, // 港币汇率
+        dollarRatio : 6.9, // 美元汇率
+        poundRatio : 7.8, // 英镑汇率
+        yenRatio : 0.06, // 日元汇率
+        // 功能5-1设置：是否在`游戏`页面启用降低无白金游戏的图标透明度
+        filterNonePlatinum : true,
+        filterNonePlatinumAlpha : 0.2 // 透密 [0, 1] 不透明
+    }
+    if(window.localStorage){
+        if(window.localStorage["psnine-night-mode-CSS-settings"]){
+            $.extend(settings,JSON.parse(window.localStorage["psnine-night-mode-CSS-settings"]))//用storage中的配置项覆盖默认设置
+        }
+    }else{
+        console.log("浏览器不支持localStorage,使用默认配置项")
+    }
 
     // 全局优化
     // 功能0-1：点击跳转到页面底部
     $(".bottombar").append("<a href='javascript:scroll(0, document.body.clientHeight)' class='yuan mt10'>B</a>")
 
     // 功能0-2：黑条文字鼠标悬浮显示
-    if(hoverUnmark){
+    if(settings.hoverUnmark){
         $(".mark").hover(function(i){
             var backGroundColor = $(".box.mt20").css("background-color")
             $(this).css({"color": backGroundColor})
@@ -98,13 +106,13 @@
         $(".psnnode").map(function(i, n){
             // 匹配楼主ID，变更CSS
             if( $(n).text() == author) {
-                $(n).after('<div class="psnnode author" style="padding:0px 5px; border-radius:2px; display: inline-block;background-color:' + highlightBack + '; color: ' + highlightFront + '">楼主</div>')
+                $(n).after('<div class="psnnode author" style="padding:0px 5px; border-radius:2px; display: inline-block;background-color:' + settings.highlightBack + '; color: ' + settings.highlightFront + '">楼主</div>')
             }
         })
     }
     // 功能1-2：高亮管理员
-    highlightSpecificID.map(function(i, n) {
-        $('.meta>[href="' + window.location.href.match("(.*)\.com")[0] + '/psnid/' + i + '"]').css({ "background-color": highlightSpecificBack, "color": highlightSpecificFront })
+    settings.highlightSpecificID.map(function(i, n) {
+        $('.meta>[href="' + window.location.href.match("(.*)\.com")[0] + '/psnid/' + i + '"]').css({ "background-color": settings.highlightSpecificBack, "color": settings.highlightSpecificFront })
     });
     // 功能1-3：主题中存在 -插图- 一项时，提供预览悬浮窗
     $("a[target='_blank']").html(function(i, url){
@@ -208,10 +216,10 @@
         }
     })
     // 功能1-6：屏蔽黑名单中的用户发言内容
-    if (blockList.length > 0) {
-        for(var blockUser = 0; blockUser < blockList.length; blockUser ++ ){
-            console.log(blockList[blockUser])
-            $("div.post:contains(" + blockList[blockUser] + ")").hide()
+    if (settings.blockList.length > 0) {
+        for(var blockUser = 0; blockUser < settings.blockList.length; blockUser ++ ){
+            console.log(settings.blockList[blockUser])
+            $("div.post:contains(" + settings.blockList[blockUser] + ")").hide()
         }
     }
     // 功能1-7：实时统计创建机因时候的文字数
@@ -385,13 +393,13 @@
             }
             var region = $(".dd_info p:nth-child(" + offset + ")").eq(i).text()
             if( region == "港服" ){
-                CNY = foreignCurrency(price, "HK$", dollarHKRatio)
+                CNY = foreignCurrency(price, "HK$", settings.dollarHKRatio)
             } else if( region == "美服" ) {
-                CNY = foreignCurrency(price, "$", dollarRatio)
+                CNY = foreignCurrency(price, "$", settings.dollarRatio)
             } else if( region == "日服" ) {
-                CNY = foreignCurrency(price, "¥", yenRatio)
+                CNY = foreignCurrency(price, "¥", settings.yenRatio)
             } else if( region == "英服" ) {
-                CNY = foreignCurrency(price, "£", poundRatio)
+                CNY = foreignCurrency(price, "£", settings.poundRatio)
             } else {
                 CNY = foreignCurrency(price, "¥", 1)
             }
@@ -633,14 +641,14 @@
     }
 
     // 游戏页面优化
-    if(filterNonePlatinum){
+    if(settings.filterNonePlatinum){
         if(/psngame/.test(window.location.href) & !/psnid/.test(window.location.href)) {
             // 功能5-1：降低没有白金的游戏的图标亮度
             $("tr").map(function(i,n){
                 // 读取白金数量
                 var platinumNum = $(this).children(".pd1015.title.lh180").children("em").children(".text-platinum").text().replace("白", "")
                 if(platinumNum == 0) {
-                    $(this).children(".pdd15").children("a").children("img").css({"opacity": filterNonePlatinumAlpha})
+                    $(this).children(".pdd15").children("a").children("img").css({"opacity": settings.filterNonePlatinumAlpha})
                 }
             })
             // 功能5-2：页面上方增加翻页
@@ -663,6 +671,75 @@
             "resize":"vertical",
             "minHeight":200
         });
+    }
+    
+    //右上角头像下拉框中增加插件设定按钮
+    if(window.localStorage){//如果支持localstorage
+        var newSettings = JSON.parse(JSON.stringify(settings))
+        $(".header .dropdown ul").append(`
+            <li><a href="javascript:void(0);" id="psnine-night-mode-CSS-opensetting">插件设置</a></li>
+        `)
+        $("body").append(`
+            <style>.setting-panel-box{background-color:#fff;transition:all .4s ease;position:fixed;left:50%;transform:translateX(-50%);top:-5000px;width:500px;box-shadow:0 0 20px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;flex-direction:column;padding:10px;box-sizing:border-box;border-radius:4px}.setting-panel-box.show{top:20px}.setting-panel-box h4{margin-bottom:0}.setting-panel-box .row{display:flex;align-items:center;justify-content:flex-start;width:100%;margin-bottom:18px}.setting-panel-box .row label{line-height:32px;text-align:right;font-size:14px;color:#606266;padding:0 12px 0 0;width:190px}.setting-panel-box .row textarea{resize:vertical;min-height:30px;border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;line-height:26px;box-sizing:border-box;width:227px;padding:0 10px}.setting-panel-box .row input{border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;height:26px;line-height:26px;display:inline-block;width:170px;padding:0 10px}.setting-panel-box .row select{border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;height:26px;line-height:26px;display:inline-block;width:170px;padding:0 10px}.setting-panel-box button{-webkit-appearance:button;padding:9px 15px;font-size:12px;border-radius:3px;display:inline-block;line-height:1;white-space:nowrap;cursor:pointer;background:#fff;border:1px solid #dcdfe6;color:#606266;text-align:center;box-sizing:border-box;outline:0;margin:0;transition:.1s;font-weight:500;margin:0 10px}.setting-panel-box button:hover{color:#409eff;border-color:#c6e2ff;background-color:#ecf5ff}.setting-panel-box button.confirm{color:#fff;background-color:#3890ff}.setting-panel-box button.confirm:hover{background-color:#9ec9ff}</style>
+            <div class=setting-panel-box><h4>P9插件设置</h4><div class=row><label>鼠标划过刮刮卡显示内容</label><select id=hoverUnmark><option value=true>是<option value=false>否</select></div><div class=row><label>降低无白金游戏图标透明度</label><select id=filterNonePlatinum><option value=true>是<option value=false>否</select></div><div class=row><label>高亮用户(以英文逗号隔开)</label><textarea name="" id="highlightSpecificID" cols="30" rows="2"></textarea></div><div class=row><label>黑名单(以英文逗号隔开)</label><textarea name="" id="blockList" cols="30" rows="2"></textarea></div><div class=row><label>港币汇率</label><input type=number name="" id=dollarHKRatio></div><div class=row><label>美元汇率</label><input type=number name="" id=dollarRatio></div><div class=row><label>英镑汇率</label><input type=number name="" id=poundRatio></div><div class=row><label>日元汇率</label><input type=number name="" id=yenRatio></div><div class=btnbox><button class=cancel>取消</button><button class=confirm>确定</button></div></div>
+        `)
+        //点击打开设置面板
+        $("#psnine-night-mode-CSS-opensetting").on("click",function(){
+            $(".setting-panel-box").addClass("show")
+            //刮刮卡
+            if(newSettings.hoverUnmark){
+                $("#hoverUnmark option:nth-child(1)").attr("selected","true")
+            }else{
+                $("#hoverUnmark option:nth-child(2)").attr("selected","true")
+            }
+            $("#hoverUnmark").change(function(){
+                newSettings.hoverUnmark = JSON.parse($(this).children('option:selected').val())
+                console.log(newSettings)
+            })
+            //无白金淡化
+            if(newSettings.filterNonePlatinum){
+                $("#filterNonePlatinum option:nth-child(1)").attr("selected","true")
+            }else{
+                $("#filterNonePlatinum option:nth-child(2)").attr("selected","true")
+            }
+            $("#filterNonePlatinum").change(function(){
+                newSettings.filterNonePlatinum = JSON.parse($(this).children('option:selected').val())
+                console.log(newSettings)
+            })
+            //高亮用户
+            var highlightSpecificIDText = newSettings.highlightSpecificID.join(",")
+            $("#highlightSpecificID").val(highlightSpecificIDText)
+            //黑名单
+            var blockListText = newSettings.blockList.join(",")
+            $("#blockList").val(blockListText)
+            //汇率
+            $("#dollarHKRatio").val(newSettings.dollarHKRatio)
+            $("#dollarRatio").val(newSettings.dollarRatio)
+            $("#poundRatio").val(newSettings.poundRatio)
+            $("#yenRatio").val(newSettings.yenRatio)
+        })
+        //点击取消
+        $(".setting-panel-box .btnbox .cancel").on("click",function(){
+            $(".setting-panel-box").removeClass("show")
+        })
+        //点击确定
+        $(".setting-panel-box .btnbox .confirm").on("click",function(){
+            var highlightSpecificIDText = $.trim($("#highlightSpecificID").val().replace("，",",")).replace(/,$/,"").replace(/^,/,"")
+            if(highlightSpecificIDText){
+                newSettings.highlightSpecificID = highlightSpecificIDText.split(",")
+            }
+            var blockListText = $.trim($("#blockList").val().replace("，",",")).replace(/,$/,"").replace(/^,/,"")
+            if(blockListText){
+                newSettings.blockList = blockListText.split(",")
+            }
+            newSettings.dollarHKRatio = $("#dollarHKRatio").val()
+            newSettings.dollarRatio = $("#dollarRatio").val()
+            newSettings.poundRatio = $("#poundRatio").val()
+            newSettings.yenRatio = $("#yenRatio").val()
+            $(".setting-panel-box").removeClass("show")
+            localStorage["psnine-night-mode-CSS-settings"] = JSON.stringify(newSettings)
+            window.location.reload()
+        })
     }
     
 })();
