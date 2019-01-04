@@ -647,4 +647,22 @@
             $(".dropmenu").after($(".page").clone())
         }
     }
+
+    //进入游戏页默认查看我自己的奖杯
+    if(window.location.href.match(/psngame\/\d+$/) && !/psnid/.test(window.location.href)){//检查游戏页
+        var psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/)//从cookie中取出psnid
+        if(psnidCookie){
+            var psnid = psnidCookie[1]
+            window.location.href+=`?psnid=${psnid}`
+        }
+    }
+
+    //奖杯详情页输入框可缩放大小
+    if(window.location.href.match(/trophy\/\d+$/)){
+        $("#comment").css({
+            "resize":"vertical",
+            "minHeight":200
+        });
+    }
+    
 })();
