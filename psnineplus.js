@@ -1,8 +1,9 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.48
+// @version      0.49
 // @description  数折价格走势图，显示人民币价格，奖杯统计，发帖字数统计，楼主高亮，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
+// @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop
 // @include      *psnine.com/*
 // @include      *d7vg.com/*
@@ -54,6 +55,40 @@
             $(this).css({"color": sourceColor})
         })
     }
+    // 功能0-3：markdown语法支持测试
+    // var originalContent = $("div.content.pb10").html().split("<br>")
+    // function repeat(target, n) {
+    //     var s = target, total = "";
+    //     while (n > 0) {
+    //         if (n % 2 == 1) {
+    //             total += s;
+    //         }
+    //         if (n == 1) {
+    //             break;
+    //          }
+    //         s += s;
+    //         n = n >> 1;//相当于将n除以2取其商，或者说是开2次方
+    //     }
+    //     return total;
+    // }
+    // for(var contentIndex = 0; contentIndex < originalContent.length; contentIndex ++ ) {
+    //     // 标题H1~H6
+    //    for(var hN = 1; hN < 7; hN ++ ) {
+    //         if(originalContent[contentIndex].substring(0, hN + 1) == repeat("#", hN) + " ") {
+    //             originalContent[contentIndex] = "<h" + hN + " class='markdown-body h" + hN + "'>" + originalContent[contentIndex].substring(hN + 1) + "</h" + hN + ">"
+    //         }
+    //     }
+    // }
+    // $("div.content.pb10").empty();
+    // originalContent.join("")
+    // $("div.content.pb10").append(originalContent.join(""))
+    // GM_addStyle (`.markdown-body.h1,.markdown-body.h2,.markdown-body.h3,.markdown-body.h4,.markdown-body.h5,.markdown-body.h6 {margin-top: 1em; margin-bottom: 16px; font-weight: bold; line-height: 1.4;}`)
+    // GM_addStyle (`.markdown-body.h1 {margin: 0.67em 0; padding-bottom: 0.3em; font-size: 2.25em; line-height: 1.2; border-bottom: 1px solid #eee;}`)
+    // GM_addStyle (`.markdown-body.h2 {padding-bottom: 0.3em; font-size: 1.75em; line-height: 1.225; border-bottom: 1px solid #eee;}`)
+    // GM_addStyle (`.markdown-body.h3 {font-size: 1.5em; line-height: 1.43;}`)
+    // GM_addStyle (`.markdown-body.h4 {font-size: 1.25em;}`)
+    // GM_addStyle (`.markdown-body.h5 {font-size: 1em;}`)
+    // GM_addStyle (`.markdown-body.h6 {font-size: 1em; color: #777;}`)
 
     // 帖子优化
     // 功能1-1：高亮发帖楼主
@@ -96,7 +131,7 @@
     })
     // 功能1-4：回复内容回溯，仅支持机因、主题 (效率原因只返回所@用户的最近一条回复)
     if( /(gene|topic|trade)\//.test(window.location.href) & !/comment/.test(window.location.href)) {
-        GM_addStyle (`.replyTraceback {background-color: rgb(0, 0, 0, 0.05) !important; padding: 10px !important; color: rgb(160, 160, 160, 1) !important; border: 1px solid !important;}`)
+        GM_addStyle (`.replyTraceback {background-color: rgb(0, 0, 0, 0.05) !important; padding: 10px !important; color: rgb(160, 160, 160, 1) !important; border-bottom: 1px solid !important;}`)
         // 每一层楼的回复外框 (0 ~ N - 1)
         var allSourceOutside = document.querySelectorAll(".post > .ml64") // 30楼的话是29
         // 每一层楼的回复框(0 ~ N - 1) floor
@@ -148,7 +183,7 @@
                                 replyContents = allSource[outputID].innerText
                             }
                             var avatorImg = avator[outputID].getElementsByTagName("img")[0].getAttribute("src")
-                            replayBox.innerHTML = '<div class="responserHeader" style="padding:3px 3px; border-radius:2px; background: rgb(23, 162, 184); display: inline-block; padding-right: 10px; color: #ffffff"><img src="' +
+                            replayBox.innerHTML = '<div class="responserHeader" style="display: inline-block; padding-right: 10px; color: #666"><img src="' +
                                 avatorImg + '" height="25" width="25"> ' + linkContent[1] + '</img>'+
                                 '</div><div class="responserContent_' + floor + '_' + outputID + '" style="display: inline-block;">&nbsp' +
                                 replyContents + "</div>"
@@ -189,7 +224,7 @@
 
     // 商城优化
     // 功能2-1：商城价格走势图
-    if( /dd/.test(window.location.href) ) {
+    if( /\/dd/.test(window.location.href) ) {
         // 日期转换函数
         function converntTime(value) {
             var timeArray = value.replace('年','-').replace('月','-').replace('日','').split("-")
