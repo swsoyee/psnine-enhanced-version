@@ -648,7 +648,7 @@
         }
     }
 
-    //进入游戏页默认查看我自己的奖杯
+    // 进入游戏页默认查看我自己的奖杯
     if(window.location.href.match(/psngame\/\d+$/) && !/psnid/.test(window.location.href)){//检查游戏页
         var psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/)//从cookie中取出psnid
         if(psnidCookie){
@@ -657,7 +657,7 @@
         }
     }
 
-    //奖杯详情页输入框可缩放大小
+    // 奖杯心得页面输入框可缩放大小
     if(window.location.href.match(/trophy\/\d+$/)){
         $("#comment").css({
             "resize":"vertical",
