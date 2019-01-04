@@ -22,7 +22,9 @@
     'use strict';
     var settings = {
         // 功能0-2设置：鼠标滑过黑条即可显示内容
-        hoverUnmark: true,// 设置为false则选中才显示
+		hoverUnmark: true,// 设置为false则选中才显示
+		//功能1-4：回复内容回溯
+		replyTraceback:true,
         // 功能1-1设置：高亮发帖楼主功能
         highlightBack : "#3890ff", // 高亮背景色
         highlightFront : "#ffffff", // 高亮字体颜色
@@ -104,7 +106,7 @@
         }
     })
     // 功能1-4：回复内容回溯，仅支持机因、主题 (效率原因只返回所@用户的最近一条回复)
-    if( /(gene|topic|trade)\//.test(window.location.href) & !/comment/.test(window.location.href)) {
+    if( /(gene|topic|trade)\//.test(window.location.href) && !/comment/.test(window.location.href ) && settings.replyTraceback) {
         GM_addStyle (`.replyTraceback {background-color: rgb(0, 0, 0, 0.05) !important; padding: 10px !important; color: rgb(160, 160, 160, 1) !important; border-bottom: 1px solid !important;}`)
         // 每一层楼的回复外框 (0 ~ N - 1)
         var allSourceOutside = document.querySelectorAll(".post > .ml64") // 30楼的话是29
@@ -642,6 +644,23 @@
         });
     }
 
+	//基因回复按钮hover触发显示
+	if(window.location.href.match(/gene\/\d+$/)){
+		$(".post .r").css({
+			opacity:0,
+			transition:"all 0.2s ease"
+		})
+		$(".post").hover(function(){
+			$(this).find(".r").css({
+				opacity:1
+			})
+		},function(){
+			$(this).find(".r").css({
+				opacity:0
+			})
+		})
+	}
+
     // 右上角头像下拉框中增加插件设定按钮
     if(window.localStorage){//如果支持localstorage
         var newSettings = JSON.parse(JSON.stringify(settings))
@@ -650,7 +669,7 @@
         `)
         $("body").append(`
             <style>.setting-panel-box{z-index:999999;background-color:#fff;transition:all .4s ease;position:fixed;left:50%;transform:translateX(-50%);top:-5000px;width:500px;box-shadow:0 0 20px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;flex-direction:column;padding:10px;box-sizing:border-box;border-radius:4px}.setting-panel-box.show{top:20px}.setting-panel-box h4{margin-bottom:0}.setting-panel-box .row{display:flex;align-items:center;justify-content:flex-start;width:100%;margin-bottom:18px}.setting-panel-box .row label{line-height:32px;text-align:right;font-size:14px;color:#606266;padding:0 12px 0 0;width:190px}.setting-panel-box .row textarea{resize:vertical;min-height:30px;border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;line-height:26px;box-sizing:border-box;width:227px;padding:0 10px}.setting-panel-box .row input{border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;height:26px;line-height:26px;display:inline-block;width:170px;padding:0 10px}.setting-panel-box .row input#filterNonePlatinum{height:6px;background-color:#e4e7ed;margin:16px 0;border-radius:3px;position:relative;cursor:pointer;vertical-align:middle;outline:none;padding:0}.setting-panel-box .row input#filterNonePlatinum::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border:2px solid #409eff;background-color:#fff;border-radius:50%;transition:.2s;user-select:none}.setting-panel-box .row input#filterNonePlatinum::-moz-range-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border:2px solid #409eff;background-color:#fff;border-radius:50%;transition:.2s;user-select:none}.setting-panel-box .row #filterNonePlatinumValue{margin-left:5px}.setting-panel-box .row select{border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;height:26px;line-height:26px;display:inline-block;width:170px;padding:0 10px}.setting-panel-box button{-webkit-appearance:button;padding:9px 15px;font-size:12px;border-radius:3px;display:inline-block;line-height:1;white-space:nowrap;cursor:pointer;background:#fff;border:1px solid #dcdfe6;color:#606266;text-align:center;box-sizing:border-box;outline:0;margin:0;transition:.1s;font-weight:500;margin:0 10px}.setting-panel-box button:hover{color:#409eff;border-color:#c6e2ff;background-color:#ecf5ff}.setting-panel-box button.confirm{color:#fff;background-color:#3890ff}.setting-panel-box button.confirm:hover{background-color:#9ec9ff}</style>
-            <div class=setting-panel-box><h4>P9插件设置</h4><div class=row><label>鼠标划过刮刮卡显示内容</label><select id=hoverUnmark><option value=true>是<option value=false>否</select></div><div class=row><label>无白金游戏图标透明度</label><input id=filterNonePlatinum type=range min=0 max=1 step=0.1><span id=filterNonePlatinumValue></span></div><div class=row><label>高亮用户(以英文逗号隔开)</label><textarea name="" id="highlightSpecificID" cols="30" rows="2"></textarea></div><div class=row><label>黑名单(以英文逗号隔开)</label><textarea name="" id="blockList" cols="30" rows="2"></textarea></div><div class=row><label>港币汇率</label><input type=number name="" id=dollarHKRatio></div><div class=row><label>美元汇率</label><input type=number name="" id=dollarRatio></div><div class=row><label>英镑汇率</label><input type=number name="" id=poundRatio></div><div class=row><label>日元汇率</label><input type=number name="" id=yenRatio></div><div class=btnbox><button class=cancel>取消</button><button class=confirm>确定</button></div></div>
+            <div class=setting-panel-box><h4>P9插件设置</h4><div class=row><label>鼠标划过刮刮卡显示内容</label><select id=hoverUnmark><option value=true>是<option value=false>否</select></div><div class=row><label>回复内容回溯</label><select id=replyTraceback><option value=true>显示<option value=false>隐藏</select></div><div class=row><label>无白金游戏图标透明度</label><input id=filterNonePlatinum type=range min=0 max=1 step=0.1><span id=filterNonePlatinumValue></span></div><div class=row><label>高亮用户(以英文逗号隔开)</label><textarea name="" id="highlightSpecificID" cols="30" rows="2"></textarea></div><div class=row><label>黑名单(以英文逗号隔开)</label><textarea name="" id="blockList" cols="30" rows="2"></textarea></div><div class=row><label>港币汇率</label><input type=number name="" id=dollarHKRatio></div><div class=row><label>美元汇率</label><input type=number name="" id=dollarRatio></div><div class=row><label>英镑汇率</label><input type=number name="" id=poundRatio></div><div class=row><label>日元汇率</label><input type=number name="" id=yenRatio></div><div class=btnbox><button class=cancel>取消</button><button class=confirm>确定</button></div></div>
         `)
 
         // 点击打开设置面板
@@ -666,6 +685,15 @@
                 newSettings.hoverUnmark = JSON.parse($(this).children('option:selected').val())
 			})
 			
+            // 回复内容回溯
+            if(newSettings.replyTraceback){
+                $("#replyTraceback option:nth-child(1)").attr("selected","true")
+            }else{
+                $("#replyTraceback option:nth-child(2)").attr("selected","true")
+            }
+            $("#replyTraceback").change(function(){
+                newSettings.replyTraceback = JSON.parse($(this).children('option:selected').val())
+			})
 
             // 降低无白金透明度设置
 			$("#filterNonePlatinum").val(newSettings.filterNonePlatinumAlpha)
