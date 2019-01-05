@@ -59,7 +59,7 @@ body.bg {
 
 /*回帖用户名底色*/
 .psnnode {
-  background: #656565 !important;
+  background: #656565;
 }
 
 /*奖杯帖子标题头底色*/
@@ -157,10 +157,22 @@ blockquote {
 }
 
 /*选中帖子高亮*/
-.genelist li:hover, .touchclick:hover,.list li:hover,.box .post:hover {
+.genelist li:hover, .touchclick:hover,.list li:hover {
   background: #333 !important;
 }
-
+/* 首页相关 */
 .cloud{
   background-color: #3c3c3c!important;
+}
+.showbar{
+  background: radial-gradient(at center top,#7B8492,#3c3c3c);
+}
+.side .darklist{
+  background-color: #3c3c3c;
+}
+.side .hd3{
+  background-color: #222;
+}
+.header,.header .dropdown ul{
+  background-color: #222;
 }
