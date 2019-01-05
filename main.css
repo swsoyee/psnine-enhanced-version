@@ -34,7 +34,7 @@ span[style="color:brown;"] {
 /*mark黑条鼠标放置反白*/
 .mark {
   background: #bbb !important;
-  color: #bbb !important;
+  color: #bbb;
 }
 
 /*.mark:hover {*/
@@ -175,4 +175,8 @@ blockquote {
 }
 .header,.header .dropdown ul{
   background-color: #222;
+}
+/* 交易问答等页面中楼中楼的颜色 */
+.list li .sonlist li {
+    background-color: #333;
 }

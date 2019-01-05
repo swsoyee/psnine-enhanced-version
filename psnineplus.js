@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.56
+// @version      0.57
 // @description  数折价格走势图，显示人民币价格，奖杯统计，发帖字数统计，楼主高亮，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404
@@ -58,7 +58,14 @@
     // 功能0-1：点击跳转到页面底部
     $(".bottombar").append("<a href='javascript:scroll(0, document.body.clientHeight)' class='yuan mt10'>B</a>")
 
-    // 功能0-2：黑条文字鼠标悬浮显示
+	// 功能0-2：夜间模式
+	if(settings.nightMode){
+		$("body").append(`
+            <style>li[style="background:#f5faec"]{background:#344836 !important}li[style="background:#fdf7f7"]{background:#4f3945 !important}li[style="background:#faf8f0"]{background:#4e4c39 !important}li[style="background:#f4f8fa"]{background:#505050 !important}span[style="color:blue;"]{color:#64a5ff !important}span[style="color:red;"]{color:#ff6464 !important}span[style="color:brown;"]{color:#ff8864 !important}.tit3{color:white !important}.mark{background:#bbb !important;color:#bbb}body.bg{background:#2b2b2b !important}.list li,.box .post,td,th{border-bottom:1px solid #333}.content{color:#bbb !important}.psnnode{background:#656565}.box{background:#3d3d3d !important}.title a{color:#bbb !important}.text-strong,strong{color:#bbb !important}.twoge{color:white !important}.storeinfo{color:#bbb !important}.alert-warning{background:#4d4d4d !important}.alert-info{background:#5e5e5e !important}.alert-success{background:#4b4b4b !important}h1,.title2{color:#fff !important}.inav{background:#3d3d3d !important}.inav li.current{background:#4b4b4b !important}.ml100 p{color:#fff !important}.t1{background:#657caf !important}.t2{background:#845e2f !important}.t3{background:#707070 !important}.t4{background:#8b4d2d !important}blockquote{background:#bababa !important}.text-gray{color:#bbb !important}.tradelist li{color:white !important}.tbl{background:#3c3c3c !important}.genelist li:hover,.touchclick:hover{background:#333 !important}.cloud{background-color:#3c3c3c!important}.showbar{background:radial-gradient(at center top,#7B8492,#3c3c3c)}.side .darklist{background-color:#3c3c3c}.side .hd3{background-color:#222}.header,.dropdown ul{background-color:#222}.list li .sonlist li{background-color:#333}.node{background-color:#3b4861}.rep{background-color:#3b4861}.btn-gray{background-color:#666}</style>
+		`)
+	}
+
+    // 功能0-3：黑条文字鼠标悬浮显示
     if(settings.hoverUnmark){
         $(".mark").hover(function(i){
             var backGroundColor = $(".box.mt20").css("background-color")
@@ -68,7 +75,7 @@
             $(this).css({"color": sourceColor})
         })
     }
-    // 功能0-3：markdown语法支持测试
+    // 功能0-4：markdown语法支持测试
 
     // 帖子优化
     // 功能1-1：高亮发帖楼主
@@ -82,7 +89,7 @@
             }
         })
     }
-    // 功能1-2：高亮管理员
+    // 功能1-2：高亮用户ID
     settings.highlightSpecificID.map(function(i, n) {
         $('.meta>[href="' + window.location.href.match("(.*)\.com")[0] + '/psnid/' + i + '"]').css({ "background-color": settings.highlightSpecificBack, "color": settings.highlightSpecificFront })
     });
@@ -182,7 +189,7 @@
         }
     }
     // 功能1-5：增加帖子楼层信息
-    $("span.r").map(function(i,n){
+    $("span[class^=r]").map(function(i,n){
         if(i > 0) {
             $(this).children("a:last").after("&nbsp&nbsp<span>#"+i+"</span>")
         }
@@ -617,7 +624,7 @@
                     tipColor = $(".box").css("background-color")
                 }
                 // 添加奖杯图标
-                $( `.${className}> .tropyContainer`).append(`<span id='${className}Small${i}' style='padding:2px; border-left: 3px solid ${tipColor};'><a href='` + $(this).parent().attr("href") + `'><img src='` + $(this).attr("src") + `' width='30px'></img><a></span>`)
+                $( `.${className}> .tropyContainer`).append(`<span id='${className}Small${i}' style='padding:3px; border-left: 3px solid ${tipColor};'><a href='` + $(this).parent().attr("href") + `'><img src='` + $(this).attr("src") + `' width='30px'></img><a></span>`)
                 // 添加鼠标悬浮弹出消息
                 tippy(`#${className}Small${i}`, {
                     content: "<div><span>" + $(this).parent().parent().html() + "</span><p></p><span>" + $(this).parent().parent().next().html() + "</span></div>",
@@ -637,6 +644,7 @@
         createTropyContainer($(".imgbg.earned"), "earnedTropy")
         // 创建未获得奖杯汇总框
         createTropyContainer($("img[class$='imgbg']"), "notEarnedTropy")
+        $('span[id^="notEarnedTropySmall"] > a > img').css({"filter": "grayscale(100%)"}) // 变黑白
         // 折叠奖杯汇总
         // 奖杯图标设置为不可见
         if( settings.foldTropySummary ) {
@@ -682,12 +690,6 @@
         });
     }
 
-	//夜间模式
-	if(settings.nightMode){
-		$("body").append(`
-			<style>li[style="background:#f5faec"]{background:#344836 !important}li[style="background:#fdf7f7"]{background:#4f3945 !important}li[style="background:#faf8f0"]{background:#4e4c39 !important}li[style="background:#f4f8fa"]{background:#505050 !important}span[style="color:blue;"]{color:#64a5ff !important}span[style="color:red;"]{color:#ff6464 !important}span[style="color:brown;"]{color:#ff8864 !important}.tit3{color:white !important}.mark{background:#bbb !important;color:#bbb !important}body.bg{background:#2b2b2b !important}.list li,.box .post,td,th{border-bottom:1px solid #333}.content{color:#bbb !important}.psnnode{background:#656565}.box{background:#3d3d3d !important}.title a{color:#bbb !important}.text-strong,strong{color:#bbb !important}.twoge{color:white !important}.storeinfo{color:#bbb !important}.alert-warning{background:#4d4d4d !important}.alert-info{background:#5e5e5e !important}.alert-success{background:#4b4b4b !important}h1,.title2{color:#fff !important}.inav{background:#3d3d3d !important}.inav li.current{background:#4b4b4b !important}.ml100 p{color:#fff !important}.t1{background:#657caf !important}.t2{background:#845e2f !important}.t3{background:#707070 !important}.t4{background:#8b4d2d !important}blockquote{background:#bababa !important}.text-gray{color:#bbb !important}.tradelist li{color:white !important}.tbl{background:#3c3c3c !important}.genelist li:hover,.touchclick:hover,.list li:hover{background:#333 !important}.cloud{background-color:#3c3c3c!important}.showbar{background:radial-gradient(at center top,#7B8492,#3c3c3c)}.side .darklist{background-color:#3c3c3c}.side .hd3{background-color:#222}.header,.header .dropdown ul{background-color:#222}</style>
-		`)
-	}
     // 右上角头像下拉框中增加插件设定按钮
     if(window.localStorage){ // 如果支持localstorage
         var newSettings = JSON.parse(JSON.stringify(settings))
