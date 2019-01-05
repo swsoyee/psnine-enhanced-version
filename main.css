@@ -160,3 +160,7 @@ blockquote {
 .genelist li:hover, .touchclick:hover,.list li:hover,.box .post:hover {
   background: #333 !important;
 }
+
+.cloud{
+  background-color: #3c3c3c!important;
+}
