@@ -42,7 +42,9 @@
         // 功能4-3设置：汇总以获得和未获得奖杯是否默认折叠
         foldTropySummary: false, // true则默认折叠，false则默认展开
         // 功能5-1设置：是否在`游戏`页面启用降低无白金游戏的图标透明度
-        filterNonePlatinumAlpha : 0.2 // 透密 [0, 1] 不透明，如果设置为1则关闭该功能
+		filterNonePlatinumAlpha : 0.2, // 透密 [0, 1] 不透明，如果设置为1则关闭该功能
+		//夜间模式
+		nightMode:true
     }
     if(window.localStorage){
         if(window.localStorage["psnine-night-mode-CSS-settings"]){
@@ -189,8 +191,16 @@
     if (settings.blockList.length > 0) {
 		settings.blockList.map((user,i)=>{
 			if(window.location.href.indexOf("gene")>-1){
-				$(`div.post:contains(${user})`).hide()
-				$(`.touchclick .psnnode:contains(${user})`).parents(".touchclick").hide()
+				$(`div.post .psnnode`).map(function(i,v){
+					if($(v).html()==user){
+						$(v).parents("div.post").hide()
+					}
+				})
+				$(`.touchclick .psnnode`).map(function(i,v){
+					if($(v).html()==user){
+						$(v).parents(".touchclick").hide()
+					}
+				})
 			}
 		})
     }
@@ -687,6 +697,12 @@
         });
     }
 
+	//夜间模式
+	if(settings.nightMode){
+		$("body").append(`
+			<style>li[style="background:#f5faec"]{background:#184e1b !important}li[style="background:#fdf7f7"]{background:#4e1818 !important}li[style="background:#faf8f0"]{background:#4e4e18 !important}li[style="background:#f4f8fa"]{background:#505050 !important}span[style="color:blue;"]{color:#64a5ff !important}span[style="color:red;"]{color:#ff6464 !important}span[style="color:brown;"]{color:#ff8864 !important}.tit3{color:white !important}.mark{background:#bbb !important;color:#bbb !important}body.bg{background:#2b2b2b !important}.list li{background:#2b2b2b;border:1px solid #666}.content{color:#bbb !important}.psnnode{background:#656565 !important}.box{background:#3d3d3d !important}.title a{color:#bbb !important}.text-strong,strong{color:#bbb !important}.twoge{color:white !important}.storeinfo{color:#bbb !important}.alert-warning{background:#4d4d4d !important}.alert-info{background:#5e5e5e !important}.alert-success{background:#4b4b4b !important}h1,.title2{color:#fff !important}.inav{background:#3d3d3d !important}.inav li.current{background:#4b4b4b !important}.ml100 p{color:#fff !important}.t1{background:#657caf !important}.t2{background:#845e2f !important}.t3{background:#707070 !important}.t4{background:#8b4d2d !important}blockquote{background:#bababa !important}.text-gray{color:#bbb !important}.tradelist li{color:white !important}.tbl{background:#3c3c3c !important}.genelist li:hover,.touchclick:hover{background:#000 !important}</style>
+		`)
+	}
     // 右上角头像下拉框中增加插件设定按钮
     if(window.localStorage){ // 如果支持localstorage
         var newSettings = JSON.parse(JSON.stringify(settings))
@@ -695,32 +711,25 @@
         `)
         $("body").append(`
             <style>.setting-panel-box{z-index:999999;background-color:#fff;transition:all .4s ease;position:fixed;left:50%;transform:translateX(-50%);top:-5000px;width:500px;box-shadow:0 0 20px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;flex-direction:column;padding:10px;box-sizing:border-box;border-radius:4px}.setting-panel-box.show{top:20px}.setting-panel-box h4{margin-bottom:0}.setting-panel-box .row{display:flex;align-items:center;justify-content:flex-start;width:100%;margin-bottom:18px}.setting-panel-box .row label{line-height:32px;text-align:right;font-size:14px;color:#606266;padding:0 12px 0 0;width:190px}.setting-panel-box .row textarea{resize:vertical;min-height:30px;border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;line-height:26px;box-sizing:border-box;width:227px;padding:0 10px}.setting-panel-box .row input{border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;height:26px;line-height:26px;display:inline-block;width:170px;padding:0 10px}.setting-panel-box .row input#filterNonePlatinum{height:6px;background-color:#e4e7ed;margin:16px 0;border-radius:3px;position:relative;cursor:pointer;vertical-align:middle;outline:none;padding:0}.setting-panel-box .row input#filterNonePlatinum::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border:2px solid #409eff;background-color:#fff;border-radius:50%;transition:.2s;user-select:none}.setting-panel-box .row input#filterNonePlatinum::-moz-range-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border:2px solid #409eff;background-color:#fff;border-radius:50%;transition:.2s;user-select:none}.setting-panel-box .row #filterNonePlatinumValue{margin-left:5px}.setting-panel-box .row select{border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;height:26px;line-height:26px;display:inline-block;width:170px;padding:0 10px}.setting-panel-box button{-webkit-appearance:button;padding:9px 15px;font-size:12px;border-radius:3px;display:inline-block;line-height:1;white-space:nowrap;cursor:pointer;background:#fff;border:1px solid #dcdfe6;color:#606266;text-align:center;box-sizing:border-box;outline:0;margin:0;transition:.1s;font-weight:500;margin:0 10px}.setting-panel-box button:hover{color:#409eff;border-color:#c6e2ff;background-color:#ecf5ff}.setting-panel-box button.confirm{color:#fff;background-color:#3890ff}.setting-panel-box button.confirm:hover{background-color:#9ec9ff}</style>
-            <div class=setting-panel-box><h4>P9插件设置</h4><div class=row><label>鼠标划过刮刮卡显示内容</label><select id=hoverUnmark><option value=true>是<option value=false>否</select></div><div class=row><label>回复内容回溯</label><select id=replyTraceback><option value=true>显示<option value=false>隐藏</select></div><div class=row><label>无白金游戏图标透明度</label><input id=filterNonePlatinum type=range min=0 max=1 step=0.1><span id=filterNonePlatinumValue></span></div><div class=row><label>高亮用户(以英文逗号隔开)</label><textarea name="" id="highlightSpecificID" cols="30" rows="2"></textarea></div><div class=row><label>黑名单(以英文逗号隔开)</label><textarea name="" id="blockList" cols="30" rows="2"></textarea></div><div class=row><label>港币汇率</label><input type=number name="" id=dollarHKRatio></div><div class=row><label>美元汇率</label><input type=number name="" id=dollarRatio></div><div class=row><label>英镑汇率</label><input type=number name="" id=poundRatio></div><div class=row><label>日元汇率</label><input type=number name="" id=yenRatio></div><div class=btnbox><button class=cancel>取消</button><button class=confirm>确定</button></div></div>
+            <div class=setting-panel-box><h4>P9插件设置</h4><div class=row><label>鼠标划过刮刮卡显示内容</label><select id=hoverUnmark><option value=true>启用<option value=false>关闭</select></div><div class=row><label>回复内容回溯</label><select id=replyTraceback><option value=true>启用<option value=false>关闭</select></div><div class=row><label>夜间模式</label><select id=nightMode><option value=true>启用<option value=false>关闭</select></div><div class=row><label>奖杯默认折叠</label><select id=foldTropySummary><option value=true>启用<option value=false>关闭</select></div><div class=row><label>无白金游戏图标透明度</label><input id=filterNonePlatinum type=range min=0 max=1 step=0.1><span id=filterNonePlatinumValue></span></div><div class=row><label>高亮用户(以英文逗号隔开)</label><textarea name="" id="highlightSpecificID" cols="30" rows="2"></textarea></div><div class=row><label>黑名单(以英文逗号隔开)</label><textarea name="" id="blockList" cols="30" rows="2"></textarea></div><div class=row><label>港币汇率</label><input type=number name="" id=dollarHKRatio></div><div class=row><label>美元汇率</label><input type=number name="" id=dollarRatio></div><div class=row><label>英镑汇率</label><input type=number name="" id=poundRatio></div><div class=row><label>日元汇率</label><input type=number name="" id=yenRatio></div><div class=btnbox><button class=cancel>取消</button><button class=confirm>确定</button></div></div>
         `)
 
         // 点击打开设置面板
         $("#psnine-enhanced-version-opensetting").on("click",function(){
-            $(".setting-panel-box").addClass("show")
-            // 刮刮卡
-            if(newSettings.hoverUnmark){
-                $("#hoverUnmark option:nth-child(1)").attr("selected","true")
-            }else{
-                $("#hoverUnmark option:nth-child(2)").attr("selected","true")
-            }
-            $("#hoverUnmark").change(function(){
-                newSettings.hoverUnmark = JSON.parse($(this).children('option:selected').val())
+			$(".setting-panel-box").addClass("show")
+			var switchSettings = ["hoverUnmark","replyTraceback","nightMode","foldTropySummary"] //只有truefalse的设置项
+			var self = this
+			switchSettings.map((name,i)=>{
+				if(newSettings[name]){
+					$(`#${name} option:nth-child(1)`).attr("selected","true")
+				}else{
+					$(`#${name} option:nth-child(2)`).attr("selected","true")
+				}
+				$(`#${name}`).change(function(){
+					newSettings[name] = JSON.parse($(this).children('option:selected').val())
+				})
 			})
-
-            // 回复内容回溯
-            if(newSettings.replyTraceback){
-                $("#replyTraceback option:nth-child(1)").attr("selected","true")
-            }else{
-                $("#replyTraceback option:nth-child(2)").attr("selected","true")
-            }
-            $("#replyTraceback").change(function(){
-                newSettings.replyTraceback = JSON.parse($(this).children('option:selected').val())
-			})
-
+            
             // 降低无白金透明度设置
 			$("#filterNonePlatinum").val(newSettings.filterNonePlatinumAlpha)
 			$("#filterNonePlatinumValue").html(newSettings.filterNonePlatinumAlpha * 100 + "%")
