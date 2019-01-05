@@ -6,42 +6,48 @@
 
 ### ⏫ 全局优化
 
+<img src="https://raw.githubusercontent.com/swsoyee/psnine-enhanced-version/master/screenshots/homepage.png" width="300" align="right" style="max-width: 50%">
+
 - 🌙 增加`黑夜模式`主题选择。 
 - 👮 红色高亮特定`用户ID`（默认高亮管理员）<sup>1</sup>。 
 - 🚫 增加`黑名单`功能，屏蔽不想看到的用户的一切发言。
 - ⏬ 增加`回到底部`按钮，快速跳转**回复框**或者**翻页**处。  
 - 🈲 `刮刮条文字`鼠标悬浮显示。 
-- ⚙ 点击P9页面的右上角`我的` ➡ `插件设置` 即可进行插件的具体设置<sup>1</sup>。
+- ⚙ 点击P9页面的右上角`我的` ➡ `插件设置` 即可进行插件的具体设置<sup>1</sup>。  
+
 
 ### 📜 帖子浏览强化
+
+<img src="https://raw.githubusercontent.com/swsoyee/psnine-enhanced-version/master/screenshots/replyContent.png" width="300" align="right" style="max-width: 50%">
 
 - 🗣 增加蓝色`楼主`标识，更易区分`楼主`与`回帖者`<sup>1</sup>。  
 - 🖼 鼠标悬浮预览`-插图-`内容，无需点击打开查看图片。  
 - 💬 帖子中被`@用户`的发言内容显示于同层，内容过长则截取部分内容，鼠标悬浮即可完整查看。  
 - 🏗 增加回帖`楼层数`信息。
-- 🈵 创建机因时实时`显示字数`，无字数被截后需重新修改的担忧。
+- 🈵 创建机因时实时`显示字数`，无字数被截后需重新修改的担忧。  
+
 
 ### 💸 数折查看强化
+
+<img src="https://raw.githubusercontent.com/swsoyee/psnine-enhanced-version/master/screenshots/foreignCurrency.png" width="300" align="right" style="max-width: 50%">
 
 - 📉 [`数折`](https://psnine.com/dd/HP9000-CUSA08392_00-ASIAPLACEHOLDER1)中增加`价格走势图`，快速了解**走势**和**史低**。 
 - 💱 [`数折`](https://psnine.com/dd)增加人民币价格换算，无需自己进行价格换算<sup>2</sup>。
 - ❤ 根据**降价幅度**变更游戏标题颜色`💚<20%` `💛<50%` `🧡<80%` `💖>80%`，快速区分最大优惠。
-- 📄 页面上方增加`翻页`按钮。
+- 📄 页面上方增加`翻页`按钮。  
+
 
 ### 🏆 奖杯信息强化
  
 - 📈 [`游戏`](https://psnine.com/psngame/15295)界面**奖杯类型比例**，**获得时间**等汇总图表。  
-- 🔖 [`游戏`](https://psnine.com/psngame)界面降低**无白金**的游戏图标可适度，方便区分有无白金。
+- 🔖 [`游戏`](https://psnine.com/psngame)界面降低**无白金**的游戏图标可适度，方便区分有无白金。  
+<img src="https://raw.githubusercontent.com/swsoyee/psnine-enhanced-version/master/screenshots/trophySummary.png" width="300" align="right" style="max-width: 50%">  
+
 - 🗃 `奖杯`界面增加`奖杯汇总列表`，无需滚屏迅速识别**未获得奖杯**和**Tips**有无。
 - ↪ 进入**游戏页**默认`跳转`到自己主页下的该游戏页面<sup>1</sup>。
-- 📝 `奖杯心得`页面输入框可缩放大小<sup>1</sup>。
+- 📝 `奖杯心得`页面输入框可缩放大小<sup>1</sup>。  
 
-## 🖼 画面截图
-|  ![增加楼主标识](https://raw.githubusercontent.com/swsoyee/psnine-night-mode-CSS/master/screenshots/authorHighlight.png)  🗣增加蓝色`楼主`标识，更易区分`楼主`与`回帖者`。   |   ![高亮管理员](https://raw.githubusercontent.com/swsoyee/psnine-night-mode-CSS/master/screenshots/highlightID.png)   👮红色高亮特定`用户ID`。    |
-| ---- | ---- |
-|  ![回到底部](https://raw.githubusercontent.com/swsoyee/psnine-night-mode-CSS/master/screenshots/bottom.png)   **⬇增加`回到底部`按钮，快速跳转`回复框`或者`翻页`处。**   |  ![插图预览功能](https://raw.githubusercontent.com/swsoyee/psnine-night-mode-CSS/master/screenshots/hoverImage.png) **🖼鼠标悬浮预览`-插图-`内容。**   |
-|![@其他用户](https://raw.githubusercontent.com/swsoyee/psnine-night-mode-CSS/master/screenshots/replyContent.png)**💬帖子中被`@用户`的发言内容显示于同层。**|![价格走势图](https://raw.githubusercontent.com/swsoyee/psnine-night-mode-CSS/master/screenshots/priceTrendency.png)**📉[`数折`](https://psnine.com/dd/HP9000-CUSA08392_00-ASIAPLACEHOLDER1)中增加`价格走势图`。**|
-|![奖杯可视化](https://raw.githubusercontent.com/swsoyee/psnine-night-mode-CSS/master/screenshots/trophySummary.png)**📈[`游戏`](https://psnine.com/psngame/15295)界面`奖杯类型比例`，`获得时间`等信息可视化。**|![黑条隐藏文字](https://raw.githubusercontent.com/swsoyee/psnine-night-mode-CSS/master/screenshots/markHover.png)**🈲刮刮条文字鼠标悬浮显示**|
+
 
 ## 💻 可用平台
 ||Chrome|FireFox|Edge|Maxthon|QQ浏览器|360浏览器|
