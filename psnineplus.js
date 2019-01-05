@@ -24,7 +24,7 @@
         // 功能0-2设置：鼠标滑过黑条即可显示内容
 		hoverUnmark: true,// 设置为false则选中才显示
 		//功能1-4：回复内容回溯
-		replyTraceback:true,
+		replyTraceback: true,
         // 功能1-1设置：高亮发帖楼主功能
         highlightBack : "#3890ff", // 高亮背景色
         highlightFront : "#ffffff", // 高亮字体颜色
@@ -105,7 +105,7 @@
             });
         }
     })
-    // 功能1-4：回复内容回溯，仅支持机因、主题 (效率原因只返回所@用户的最近一条回复)
+    // 功能1-4：回复内容回溯，仅支持机因、主题（目前仅限主贴，common下不会显示）
     if( /(gene|topic|trade)\//.test(window.location.href) && !/comment/.test(window.location.href ) && settings.replyTraceback) {
         GM_addStyle (`.replyTraceback {background-color: rgb(0, 0, 0, 0.05) !important; padding: 10px !important; color: rgb(160, 160, 160, 1) !important; border-bottom: 1px solid !important;}`)
         // 每一层楼的回复外框 (0 ~ N - 1)
@@ -199,6 +199,23 @@
             document.getElementsByClassName("wordCount")[0].innerHTML = document.getElementsByName("content")[0].value.replace(/\n|\r/gi,"").length
         });
     }
+    
+    // 功能1-8：基因回复按钮hover触发显示
+	if(window.location.href.match(/gene\/\d+$/)){
+		$(".post .r").css({
+			opacity:0,
+			transition:"all 0.2s ease"
+		})
+		$(".post").hover(function(){
+			$(this).find(".r").css({
+				opacity:1
+			})
+		},function(){
+			$(this).find(".r").css({
+				opacity:0
+			})
+		})
+	}
 
     // 商城优化
     // 功能2-1：商城价格走势图
@@ -644,25 +661,8 @@
         });
     }
 
-	//基因回复按钮hover触发显示
-	if(window.location.href.match(/gene\/\d+$/)){
-		$(".post .r").css({
-			opacity:0,
-			transition:"all 0.2s ease"
-		})
-		$(".post").hover(function(){
-			$(this).find(".r").css({
-				opacity:1
-			})
-		},function(){
-			$(this).find(".r").css({
-				opacity:0
-			})
-		})
-	}
-
     // 右上角头像下拉框中增加插件设定按钮
-    if(window.localStorage){//如果支持localstorage
+    if(window.localStorage){ // 如果支持localstorage
         var newSettings = JSON.parse(JSON.stringify(settings))
         $(".header .dropdown ul").append(`
             <li><a href="javascript:void(0);" id="psnine-enhanced-version-opensetting">插件设置</a></li>
@@ -716,11 +716,11 @@
             $("#poundRatio").val(newSettings.poundRatio)
             $("#yenRatio").val(newSettings.yenRatio)
         })
-        //点击取消
+        // 点击取消
         $(".setting-panel-box .btnbox .cancel").on("click",function(){
             $(".setting-panel-box").removeClass("show")
         })
-        //点击确定
+        // 点击确定
         $(".setting-panel-box .btnbox .confirm").on("click",function(){
             var highlightSpecificIDText = $.trim($("#highlightSpecificID").val().replace("，",",")).replace(/,$/,"").replace(/^,/,"")
             if(highlightSpecificIDText){
