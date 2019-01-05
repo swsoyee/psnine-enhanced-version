@@ -28,14 +28,14 @@
 - 🈵 创建机因时实时`显示字数`，无字数被截后需重新修改的担忧。  
 
 ---
-<img src="https://raw.githubusercontent.com/swsoyee/psnine-enhanced-version/master/screenshots/foreignCurrency.png" width="300" align="right" style="max-width: 50%">
+<img src="https://raw.githubusercontent.com/swsoyee/psnine-enhanced-version/master/screenshots/foreignCurrency.png" width="250" align="right" style="max-width: 50%">
 
 ### 💸 数折查看强化
 
 - 📉 [`数折`](https://psnine.com/dd/HP9000-CUSA08392_00-ASIAPLACEHOLDER1)中增加`价格走势图`，快速了解**走势**和**史低**。 
 - 💱 [`数折`](https://psnine.com/dd)增加人民币价格换算，无需自己进行价格换算<sup>2</sup>。
 - ❤ 根据**降价幅度**变更游戏标题颜色`💚<20%` `💛<50%` `🧡<80%` `💖>80%`，快速区分最大优惠。
-- 📄 页面上方增加`翻页`按钮。  
+- 📄 页面上方增加`翻页`按钮，提供更便利的浏览体验。  
 
 ---
 <img src="https://raw.githubusercontent.com/swsoyee/psnine-enhanced-version/master/screenshots/trophySummary.png" width="300" align="right" style="max-width: 50%">  
