@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.52
+// @version      0.53
 // @description  数折价格走势图，显示人民币价格，奖杯统计，发帖字数统计，楼主高亮，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404
@@ -39,6 +39,8 @@
         dollarRatio : 6.9, // 美元汇率
         poundRatio : 7.8, // 英镑汇率
         yenRatio : 0.06, // 日元汇率
+        // 功能4-3设置：汇总以获得和未获得奖杯是否默认折叠
+        foldTropySummary: false, // true则默认折叠，false则默认展开
         // 功能5-1设置：是否在`游戏`页面启用降低无白金游戏的图标透明度
         filterNonePlatinumAlpha : 0.2 // 透密 [0, 1] 不透明，如果设置为1则关闭该功能
     }
@@ -199,7 +201,7 @@
             document.getElementsByClassName("wordCount")[0].innerHTML = document.getElementsByName("content")[0].value.replace(/\n|\r/gi,"").length
         });
     }
-    
+
     // 功能1-8：基因回复按钮hover触发显示
 	if(window.location.href.match(/gene\/\d+$/)){
 		$(".post .r").css({
@@ -588,7 +590,7 @@
         }
 
         // 功能4-3：汇总以获得和未获得奖杯
-        $("#trophyGetTimeChart").after("<div class='earnedTropy'><p class='earnedTropyCount' style='color:#ffffff; padding:5px 5px; border-radius:5px; background-color:#000000; opacity:0.2'></p></div>")
+        $("#trophyGetTimeChart").after("<div class='earnedTropy'><p class='earnedTropyCount' style='border-radius: 2px; padding:5px; background-color:" + $("li.current").css("background-color") + ";'></p><div class='earnedTropyContainer' style='padding:5px;'></div></div>")
 
         GM_addStyle (`.tippy-tooltip.psnine-theme {background-color: ` + $(".box").css("background-color") + `}`)
         var tipColor = ""
@@ -598,7 +600,7 @@
             } else {
                 tipColor = $(".box").css("background-color")
             }
-            $(".earnedTropy").append("<span id='tropyEarnedSmall" + i + "' style='padding:2px; border-left: 3px solid " + tipColor + ";'><a href='" + $(this).parent().attr("href") + "'><img src='" + $(this).attr("src") + "' width='30px'></img><a></span>")
+            $(".earnedTropyContainer").append("<span id='tropyEarnedSmall" + i + "' style='padding:2px; border-left: 3px solid " + tipColor + ";'><a href='" + $(this).parent().attr("href") + "'><img src='" + $(this).attr("src") + "' width='30px'></img><a></span>")
             var tropySmallText = $(this).parent().parent().next()
             var tropySmallFrame = "<div><span>" + $(this).parent().parent().html() + "</span><p></p><span>" + tropySmallText.html() + "</span></div>"
             tippy('#tropyEarnedSmall' + i, {
@@ -607,14 +609,14 @@
                 animateFill: false
             })
         })
-        $(".earnedTropy").after("<div class='notEarnedTropy'><p></p><p class='notEarnedTropyCount' style='color:#ffffff; padding:5px 5px; border-radius:5px; background-color:#000000; opacity:0.2'></p></div>")
+        $(".earnedTropy").after("<div class='notEarnedTropy'><p class='notEarnedTropyCount' style='border-radius: 2px; padding:5px; background-color:" + $("li.current").css("background-color") + ";'></p><div class='notEarnedTropyContainer' style='padding:5px;'></div></div>")
         $("img[class$='imgbg']").map(function(i, v) {
             if($(this).parent().parent().next().find(".alert-success.pd5").length > 0 ){
                 tipColor = "#8cc14c"
             } else {
                 tipColor = $(".box").css("background-color")
             }
-            $(".notEarnedTropy").append("<span id='tropySmall" + i + "' style='padding:2px; border-left: 3px solid " + tipColor + ";'><a href='" + $(this).parent().attr("href") + "'><img src='" + $(this).attr("src") + "' width='30px' style='filter: grayscale(100%);'></img></a></span>")
+            $(".notEarnedTropyContainer").append("<span id='tropySmall" + i + "' style='padding:2px; border-left: 3px solid " + tipColor + ";'><a href='" + $(this).parent().attr("href") + "'><img src='" + $(this).attr("src") + "' width='30px' style='filter: grayscale(100%);'></img></a></span>")
             var tropySmallText = $(this).parent().parent().next()
             var tropySmallFrame = "<div><span>" + $(this).parent().parent().html() + "</span><p></p><span>" + tropySmallText.html() + "</span></div>"
             tippy('#tropySmall' + i, {
@@ -623,8 +625,32 @@
                 animateFill: false
             })
         })
-        $(".earnedTropyCount").text("已获得奖杯：" + $(".imgbg.earned").length)
-        $(".notEarnedTropyCount").text("未获得奖杯：" + $("img[class$='imgbg']").length)
+        // 给奖杯汇总标题填充文字
+        $(".earnedTropyCount").append("<span style='color:#808080;'>已获得奖杯：<span class='text-platinum'>白" + $(".imgbg.earned").parent().parent(".t1").length +
+                                    "</span><span class='text-gold'> 金" + $(".imgbg.earned").parent().parent(".t2").length +
+                                    "</span><span class='text-silver'> 银" + $(".imgbg.earned").parent().parent(".t3").length +
+                                    "</span><span class='text-bronze'> 铜" + $(".imgbg.earned").parent().parent(".t4").length +
+                                    "<span class='text-strong'> 总" + $(".imgbg.earned").length +
+                                    "</span></span>")
+        $(".notEarnedTropyCount").append("<span style='color:#808080;'>未获得奖杯：<span class='text-platinum'>白" + $("img[class$='imgbg']").parent().parent(".t1").length +
+                                    "</span><span class='text-gold'> 金" + $("img[class$='imgbg']").parent().parent(".t2").length +
+                                    "</span><span class='text-silver'> 银" + $("img[class$='imgbg']").parent().parent(".t3").length +
+                                    "</span><span class='text-bronze'> 铜" + $("img[class$='imgbg']").parent().parent(".t4").length +
+                                    "<span class='text-strong'> 总" + $("img[class$='imgbg']").length +
+                                    "</span></span>")
+        // 折叠奖杯汇总
+        // 奖杯图标设置为不可见
+        if( settings.foldTropySummary ) {
+            $(".earnedTropyContainer").css("display", "none");
+            $(".notEarnedTropyContainer").css("display", "none");
+        }
+        // 单击奖杯汇总标题后展开奖杯图标
+        $(".earnedTropyCount").click(function () {
+            $(".earnedTropyContainer").slideToggle();
+        })
+        $(".notEarnedTropyCount").click(function () {
+            $(".notEarnedTropyContainer").slideToggle();
+        })
     }
 
     // 游戏页面优化
@@ -684,7 +710,7 @@
             $("#hoverUnmark").change(function(){
                 newSettings.hoverUnmark = JSON.parse($(this).children('option:selected').val())
 			})
-			
+
             // 回复内容回溯
             if(newSettings.replyTraceback){
                 $("#replyTraceback option:nth-child(1)").attr("selected","true")
@@ -703,7 +729,7 @@
 				$("#filterNonePlatinumValue").html(value * 100 + "%")
 				newSettings.filterNonePlatinumAlpha = value
 			})
-			
+
             // 高亮用户
             var highlightSpecificIDText = newSettings.highlightSpecificID.length?newSettings.highlightSpecificID.join(","):""
             $("#highlightSpecificID").val(highlightSpecificIDText)
