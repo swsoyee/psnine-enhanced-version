@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
-// @namespace    https://github.com/swsoyee/psnine-enhanced-version
-// @version      0.57
+// @namespace    https://swsoyee.github.io
+// @version      0.58
 // @description  数折价格走势图，显示人民币价格，奖杯统计，发帖字数统计，楼主高亮，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404
@@ -613,7 +613,7 @@
         // 奖杯tips颜色
         var tipColor = ""
         // 创建奖杯汇总框架函数
-        function createTropyContainer (object, className) {
+        function createTropyContainer (object, className, title) {
             // 添加标题框在汇总图下
             $(".box.pd10").append(`<div class='${className}'><p class='tropyCount' style='${tropyTitleStyle}'></p><div class='tropyContainer' style='padding:5px;'></div></div>`)
             object.map(function(i, v) {
@@ -633,7 +633,7 @@
                 })
             })
             // 给奖杯汇总标题填充文字
-            $(`.${className}> .tropyCount`).append("<span style='color:#808080;'>已获得奖杯：<span class='text-platinum'>白" + object.parent().parent(".t1").length +
+            $(`.${className}> .tropyCount`).append("<span style='color:#808080;'>" + title + "：<span class='text-platinum'>白" + object.parent().parent(".t1").length +
                                                    "</span><span class='text-gold'> 金" + object.parent().parent(".t2").length +
                                                    "</span><span class='text-silver'> 银" + object.parent().parent(".t3").length +
                                                    "</span><span class='text-bronze'> 铜" + object.parent().parent(".t4").length +
@@ -641,9 +641,9 @@
                                                    "</span></span>")
         }
         // 创建已获得奖杯汇总框
-        createTropyContainer($(".imgbg.earned"), "earnedTropy")
+        createTropyContainer($(".imgbg.earned"), "earnedTropy", "已获得奖杯")
         // 创建未获得奖杯汇总框
-        createTropyContainer($("img[class$='imgbg']"), "notEarnedTropy")
+        createTropyContainer($("img[class$='imgbg']"), "notEarnedTropy", "未获得奖杯")
         $('span[id^="notEarnedTropySmall"] > a > img').css({"filter": "grayscale(100%)"}) // 变黑白
         // 折叠奖杯汇总
         // 奖杯图标设置为不可见
