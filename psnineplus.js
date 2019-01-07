@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.59
+// @version      0.60
 // @description  数折价格走势图，显示人民币价格，奖杯统计，发帖字数统计，楼主高亮，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404
@@ -46,6 +46,27 @@
 		//夜间模式
 		nightMode: false
     }
+    Highcharts.setOptions({
+        lang:{
+            contextButtonTitle:"图表导出菜单",
+            decimalPoint:".",
+            downloadJPEG:"下载JPEG图片",
+            downloadPDF:"下载PDF文件",
+            downloadPNG:"下载PNG文件",
+            downloadSVG:"下载SVG文件",
+            drillUpText:"返回 {series.name}",
+            loading:"加载中",
+            months:["一月","二月","三月","四月","五月","六月","七月","八月","九月","十月","十一月","十二月"],
+            noData:"没有数据",
+            numericSymbols: [ "千" , "兆" , "G" , "T" , "P" , "E"],
+            printChart:"打印图表",
+            resetZoom:"恢复缩放",
+            resetZoomTitle:"恢复图表",
+            shortMonths: ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"],
+            thousandsSep:",",
+            weekdays: ["星期一", "星期二", "星期三", "星期四", "星期五", "星期六","星期天"]
+        }
+    });
     if(window.localStorage){
         if(window.localStorage["psnine-night-mode-CSS-settings"]){
             $.extend(settings,JSON.parse(window.localStorage["psnine-night-mode-CSS-settings"]))//用storage中的配置项覆盖默认设置
