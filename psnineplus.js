@@ -347,12 +347,13 @@
         var xAxis = {
             type: 'datetime',
             dateTimeLabelFormats: {
-                day: '%e. %b',
-                month: '%b \'%y',
-                year: '%Y'
+                year: '%y年',
+                day: '%y年<br/>%b%e日',
+                week: '%y年<br/>%b%e日',
+                month: '%y年<br/>%b'
             },
             title: {
-                text: 'Date'
+                text: '日期'
             }
         };
         var yAxis = {
@@ -367,7 +368,7 @@
         };
         var tooltip = {
             headerFormat: '<b>{series.name}</b><br>',
-            pointFormat: '{point.x:%e. %b}: '+ replaceString + '{point.y:.2f}'
+            pointFormat: '{point.x:%y年%b%e日}: '+ replaceString + '{point.y:.2f}'
 
         };
         var plotOptions = {
