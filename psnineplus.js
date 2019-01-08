@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.62
+// @version      0.63
 // @description  数折价格走势图，显示人民币价格，奖杯统计，发帖字数统计，楼主高亮，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404
@@ -10,6 +10,7 @@
 // @require      http://cdn.staticfile.org/jquery/2.1.4/jquery.min.js
 // @require      http://code.highcharts.com/highcharts.js
 // @require      https://unpkg.com/tippy.js@3/dist/tippy.all.min.js
+// @require      https://cdn.jsdelivr.net/npm/js-bbcode-parser@2.0.0/parser.min.js
 // @license      MIT
 // @supportURL   https://github.com/swsoyee/psnine-night-mode-CSS/issues/new
 // @compatible   chrome
@@ -17,6 +18,7 @@
 // @compatible   edge
 // @grant        GM_addStyle
 // ==/UserScript==
+
 
 (function() {
     'use strict';
@@ -145,7 +147,7 @@
         }
     })
     // 功能1-4：回复内容回溯，仅支持机因、主题（目前仅限主贴，common下不会显示）
-    if( /(gene|topic|trade)\//.test(window.location.href) && !/comment/.test(window.location.href ) && settings.replyTraceback) {
+    if( /(gene|topic|trade)\//.test(window.location.href) && settings.replyTraceback) {
         GM_addStyle (`.replyTraceback {background-color: rgb(0, 0, 0, 0.05) !important; padding: 10px !important; color: rgb(160, 160, 160, 1) !important; border-bottom: 1px solid !important;}`)
         // 每一层楼的回复外框 (0 ~ N - 1)
         var allSourceOutside = document.querySelectorAll(".post > .ml64") // 30楼的话是29
@@ -266,6 +268,36 @@
 			})
 		})
 	}
+
+    // 功能1-9：发帖BBCode实时渲染
+    if( /node\/talk\/add/.test(window.location.href)){
+        $(".alert-warning.pd10.lh180").before("<div class='content pb10' style='padding:10px;' id='output'></div>")
+        function replaceAll(str,mapObj){
+            for(var i in mapObj) {
+                var re = new RegExp(i, "g");
+                str = str.replace(re, mapObj[i])
+            }
+            return str
+        }
+        var bbcode = {'\\[quote\\](.+?)\\[\/quote\\]': '<blockquote>$1</blockquote>',
+                      '\\[mark\\](.+?)\\[\/mark\\]': '<span class="mark">$1</span>',
+                      '\\[img\\](.+?)\\[\/img\\]': '<img src="$1"></img>',
+                      '\\[b\\](.+?)\\[\/b\\]': '<b>$1</b>',
+                      '\\[s\\](.+?)\\[\/s\\]': '<s>$1</s>',
+                      '\\[center\\](.+?)\\[\/center\\]': '<center>$1</center>',
+                      '\\[\\](.+?)\\[\/b\\]': '<b>$1</b>',
+                      '\\[color=(.+?)\\](.+?)\\[\/color\\]': '<span style="color:$1;">$2</span>',
+                      '\\[url\\](.+)\\[/url\\]': '<a href="$1">$1</a>',
+                      '\\[url=(.+)\\](.+)\\[/url\\]': '<a href="$1">$2</a>',
+                      //'\\[trophy=(.+)\\]\\[/trophy\\]': '<a href="$1">$2</a>',
+                      //'\\[trophy=(.+)\\](.+)\\[/trophy\\]': '<a href="$1">$2</a>',
+                      '\\n': '<br/>'}
+         $("textarea[name='content']").keyup(function(){
+             var bbcodeSource = document.getElementsByName("content")[0].value
+             var outputContent = replaceAll(bbcodeSource, bbcode)
+            $("#output").html(outputContent)
+        });
+    }
 
     // 商城优化
     // 功能2-1：商城价格走势图
