@@ -19,13 +19,13 @@
             left: 50%;
             transform: translateX(-50%);
             top: -5000px;
-            width: 550px;
+            width: 500px;
             box-shadow: 0 0 20px rgba(0,0,0,0.3);
             display: flex;
             align-items: left;
             justify-content: center;
             flex-direction: column;
-            padding: 10px;
+            padding: 10px 0;
             box-sizing: border-box;
             border-radius: 4px;
         }
@@ -39,6 +39,9 @@
         .setting-panel-box h4{
             margin-bottom: 10px;
             padding-left: 20px;
+            font-weight: 400;
+            color: #1f2f3d;
+            font-size: 22px;
         }
         .setting-panel-box .row{
             display: flex;
@@ -47,13 +50,13 @@
             width: 100%;
             margin-bottom: 5px;
             padding-left: 20px;
+            box-sizing: border-box;
         }
         .setting-panel-box .row label{
             line-height: 32px;
             text-align: left;
             font-size: 14px;
             color: #606266;
-            padding: 0 12px 0 0;
             width: 190px;
         }
         .setting-panel-box .row .mini{
@@ -61,9 +64,8 @@
             text-align: left;
             font-size: 14px;
             color: #606266;
-            margin: 10px;
-            padding: 0 12px 0 0;
-            width: 65px;
+            margin: 0 10px 0 0;
+            width: 50px;
         }
         .setting-panel-box .row textarea{
             resize: vertical;
@@ -141,6 +143,18 @@
             width: 227px;
             padding: 0 10px;
         }
+        .setting-panel-box .row span{
+            line-height: 32px;
+            text-align: left;
+            font-size: 14px;
+            color: #606266;
+            margin-right: 10px;
+        }
+        .setting-panel-box .btnbox{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
         .setting-panel-box button{
             -webkit-appearance: button;
             padding: 9px 15px;
@@ -176,72 +190,67 @@
     </style>
     <div class="setting-panel-box">
         <h2>PSN中文网功能增强插件设置</h2>
-        <h4>全局页面</h4>
         <div class="row">
-            <label>🌙 夜间模式配色</label>
+            <label>夜间模式</label>
             <select id="nightMode">
                 <option value="true">启用</option>
                 <option value="false">关闭</option>
             </select>
         </div>
         <div class="row">
-            <label>📰 恢复导航的新闻入口</label>
+            <label>导航增加新闻入口</label>
             <select id="addNews">
                 <option value="true">启用</option>
                 <option value="false">关闭</option>
             </select>
         </div>
         <div class="row">
-            <label>👑 高亮用户ID</label>
+            <label>高亮用户ID</label>
             <textarea name="" id="highlightSpecificID" cols="30" rows="2"></textarea>
         </div>
         <div class="row">
-            <label>🚫 黑名单ID</label>
+            <label>黑名单ID</label>
             <textarea name="" id="blockList" cols="30" rows="2"></textarea>
         </div>
-        <h4>帖子页面</h4>
         <div class="row">
-            <label>💬 机因中显示被@的内容</label>
+            <label>机因中显示被@的内容</label>
             <select id="replyTraceback">
                 <option value="true">启用</option>
                 <option value="false">关闭</option>
             </select>
         </div>
         <div class="row">
-            <label>🤫 悬浮显示刮刮卡内容</label>
+            <label>悬浮显示刮刮卡内容</label>
             <select id="hoverUnmark">
                 <option value="true">启用</option>
                 <option value="false">关闭</option>
             </select>
         </div>
-        <h4>奖杯页面</h4>
         <div class="row">
-            <label>🏆 奖杯默认折叠</label>
+            <label>奖杯默认折叠</label>
             <select id="foldTropySummary">
                 <option value="true">启用</option>
                 <option value="false">关闭</option>
             </select>
         </div>
-        <h4>游戏页面</h4>
         <div class=row>
-          <label>🙄 无白金游戏图标透明度</label>
+          <label>无白金游戏图标透明度</label>
           <input id="filterNonePlatinum" type="range" min="0" max="1" step="0.1">
           <span id="filterNonePlatinumValue"></span>
         </div>
-        <h4>数折页面</h4>
         <div class="row">
-            <label>💱 汇率</label>
-            💰<input type="number" class="mini" name="" id="dollarHKRatio">
-            💵<input type="number" class="mini" name="" id="dollarRatio">
+            <label>汇率</label>
+            <span>港币</span> <input type="number" class="mini" name="" id="dollarHKRatio">
+            <span>美元</span><input type="number" class="mini" name="" id="dollarRatio">
         </div>
         <div class="row">
             <label></label>
-            💷<input type="number" class="mini" name="" id="poundRatio">
-            💴<input type="number" class="mini" name="" id="yenRatio">
+            <span>英镑</span><input type="number" class="mini" name="" id="poundRatio">
+            <span>日元</span><input type="number" class="mini" name="" id="yenRatio">
         </div>
         <div class="btnbox">
-            <button class="cancel">❎ 取消</button>
-            <button class="confirm">✅ 确定</button>
+            <button class="confirm">确定</button>
+            <button class="cancel">取消</button>
         </div>
     </div>
 </body>
