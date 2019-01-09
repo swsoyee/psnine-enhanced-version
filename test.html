@@ -21,14 +21,25 @@
             top: -5000px;
             width: 500px;
             box-shadow: 0 0 20px rgba(0,0,0,0.3);
-            display: flex;
-            align-items: left;
-            justify-content: center;
-            flex-direction: column;
             padding: 10px 0;
             box-sizing: border-box;
             border-radius: 4px;
+            max-height: 700px;
+            overflow-y: scroll;
+            scrollbar-color: #dcdcdc #fff;
+            scrollbar-width: thin;
         }
+        .setting-panel-box::-webkit-scrollbar{
+            width: 4px;  
+            background-color: #fff; 
+        }
+        .setting-panel-box::-webkit-scrollbar-button {
+            display: none;
+        }
+        .setting-panel-box::-webkit-scrollbar-thumb{
+            background-color: #dcdcdc;
+        }
+        
         .setting-panel-box.show{
             top: 20px;
         }
