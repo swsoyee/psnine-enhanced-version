@@ -1,5 +1,5 @@
 # 🎮 PSN中文网功能增强插件
-![users](https://img.shields.io/badge/users-147-orange.svg)
+![users](https://img.shields.io/badge/users-154-orange.svg)
 ![Last commit](https://img.shields.io/github/last-commit/swsoyee/psnine-enhanced-version.svg)
 ![](https://img.shields.io/github/license/swsoyee/psnine-enhanced-version.svg)  
 
