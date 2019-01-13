@@ -31,7 +31,7 @@
 - 🏗 增加回帖`楼层数`信息。
 - 🈵 创建机因时实时**显示字数**，无字数被截后需重新修改的担忧。  
 - 📝 发表主题帖时`BBCode`转换结果**实时预览**（仅支持部分），所见即所得。
-- 🙋‍♂️ [`问答`]中根据解决状态对标题进行**着色**以便快速识别。
+- 🙋‍♂️ [`问答`](https://psnine.com/qa)中根据解决状态对标题进行**着色**以便快速识别。
 
 ---
 <img src="https://raw.githubusercontent.com/swsoyee/psnine-enhanced-version/master/screenshots/foreignCurrency.png" width="250" align="right" style="max-width: 50%">
