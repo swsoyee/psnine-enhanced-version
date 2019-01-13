@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.64
+// @version      0.65
 // @description  数折价格走势图，显示人民币价格，奖杯统计，发帖字数统计，楼主高亮，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404
@@ -39,6 +39,8 @@
         highlightSpecificFront : "#ffffff", // 高亮字体颜色
         // 功能1-6设置：屏蔽黑名单中的用户发言内容
         blockList : [], // 请在左侧输入用户ID，用逗号进行分割，如： ['use_a', 'user_b', 'user_c'] 以此类推
+        // 功能1-10设置：问答根据回答状态对标题着色
+        qaHighlightTitle: true,
         // 功能2-2设置：汇率设置
         dollarHKRatio : 0.88, // 港币汇率
         dollarRatio : 6.9, // 美元汇率
@@ -92,7 +94,7 @@
 	// 功能0-2：夜间模式
 	if(settings.nightMode){
 		$("body").append(`
-            <style>li[style="background:#f5faec"]{background:#344836 !important}li[style="background:#fdf7f7"]{background:#4f3945 !important}li[style="background:#faf8f0"]{background:#4e4c39 !important}li[style="background:#f4f8fa"]{background:#505050 !important}span[style="color:blue;"]{color:#64a5ff !important}span[style="color:red;"]{color:#ff6464 !important}span[style="color:brown;"]{color:#ff8864 !important}.tit3{color:white !important}.mark{background:#bbb !important;color:#bbb}body.bg{background:#2b2b2b !important}.list li,.box .post,td,th{border-bottom:1px solid #333}.content{color:#bbb !important}.psnnode{background:#656565}.box{background:#3d3d3d !important}.title a{color:#bbb !important}.text-strong,strong{color:#bbb !important}.twoge{color:white !important}.storeinfo{color:#bbb !important}.alert-warning{background:#4d4d4d !important}.alert-info{background:#5e5e5e !important}.alert-success{background:#4b4b4b !important}h1,.title2{color:#fff !important}.inav{background:#3d3d3d !important}.inav li.current{background:#4b4b4b !important}.ml100 p{color:#fff !important}.t1{background:#657caf !important}.t2{background:#845e2f !important}.t3{background:#707070 !important}.t4{background:#8b4d2d !important}blockquote{background:#bababa !important}.text-gray{color:#bbb !important}.tradelist li{color:white !important}.tbl{background:#3c3c3c !important}.genelist li:hover,.touchclick:hover{background:#333 !important}.cloud{background-color:#3c3c3c!important}.showbar{background:radial-gradient(at center top,#7B8492,#3c3c3c)}.side .darklist{background-color:#3c3c3c}.side .hd3{background-color:#222}.header,.dropdown ul{background-color:#222}.list li .sonlist li{background-color:#333}.node{background-color:#3b4861}.rep{background-color:#3b4861}.btn-gray{background-color:#666}</style>
+            <style>li[style="background:#f5faec"]{background:#344836 !important}li[style="background:#fdf7f7"]{background:#4f3945 !important}li[style="background:#faf8f0"]{background:#4e4c39 !important}li[style="background:#f4f8fa"]{background:#505050 !important}span[style="color:blue;"]{color:#64a5ff !important}span[style="color:red;"]{color:#ff6464 !important}span[style="color:brown;"]{color:#ff8864 !important}.tit3{color:white !important}.mark{background:#bbb !important;color:#bbb}body.bg{background:#2b2b2b !important}.list li,.box .post,td,th{border-bottom:1px solid #333}.content{color:#bbb !important}.psnnode{background:#656565}.box{background:#3d3d3d !important}.title a{color:#bbb}.text-strong,strong{color:#bbb !important}.twoge{color:white !important}.storeinfo{color:#bbb !important}.alert-warning{background:#4d4d4d !important}.alert-info{background:#5e5e5e !important}.alert-success{background:#4b4b4b !important}h1,.title2{color:#fff !important}.inav{background:#3d3d3d !important}.inav li.current{background:#4b4b4b !important}.ml100 p{color:#fff !important}.t1{background:#657caf !important}.t2{background:#845e2f !important}.t3{background:#707070 !important}.t4{background:#8b4d2d !important}blockquote{background:#bababa !important}.text-gray{color:#bbb !important}.tradelist li{color:white !important}.tbl{background:#3c3c3c !important}.genelist li:hover,.touchclick:hover{background:#333 !important}.cloud{background-color:#3c3c3c!important}.showbar{background:radial-gradient(at center top,#7B8492,#3c3c3c)}.side .darklist{background-color:#3c3c3c}.side .hd3{background-color:#222}.header,.dropdown ul{background-color:#222}.list li .sonlist li{background-color:#333}.node{background-color:#3b4861}.rep{background-color:#3b4861}.btn-gray{background-color:#666}</style>
 		`)
 	}
 
@@ -303,6 +305,15 @@
              var outputContent = replaceAll(bbcodeSource, bbcode)
             $("#output").html(outputContent)
         });
+    }
+
+    // 功能1-10：问答标题根据回答状况着色
+    if (/\/qa/.test(window.location.href) ) {
+        if(settings.qaHighlightTitle) {
+            $("div.meta > .r > span:nth-child(2)").map( function(i, v) {
+                $(this).parent().parent().prev().children("a").css("color", $(this).css("color"))
+            })
+        }
     }
 
     // 商城优化

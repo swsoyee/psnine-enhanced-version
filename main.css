@@ -69,7 +69,7 @@ body.bg {
 
 /*游戏列表标题*/
 .title a {
-  color: #bbb !important;
+  color: #bbb;
 }
 
 /*个别短标签颜色*/

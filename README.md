@@ -1,5 +1,5 @@
 # 🎮 PSN中文网功能增强插件
-![users](https://img.shields.io/badge/users-147-orange.svg)
+![users](https://img.shields.io/badge/users-156-orange.svg)
 ![Last commit](https://img.shields.io/github/last-commit/swsoyee/psnine-enhanced-version.svg)
 ![](https://img.shields.io/github/license/swsoyee/psnine-enhanced-version.svg)  
 
@@ -30,6 +30,7 @@
 - 🏗 增加回帖`楼层数`信息。
 - 🈵 创建机因时实时**显示字数**，无字数被截后需重新修改的担忧。  
 - 📝 发表主题帖时`BBCode`转换结果**实时预览**（仅支持部分），所见即所得。
+- 🙋‍♂️ [`问答`]中根据解决状态对标题进行**着色**以便快速识别。
 
 ---
 <img src="https://raw.githubusercontent.com/swsoyee/psnine-enhanced-version/master/screenshots/foreignCurrency.png" width="250" align="right" style="max-width: 50%">
@@ -45,7 +46,7 @@
 <img src="https://raw.githubusercontent.com/swsoyee/psnine-enhanced-version/master/screenshots/trophySummary.png" width="300" align="right" style="max-width: 50%">  
 
 ### 🏆 奖杯信息强化
- 
+
 - 📈 [`游戏`](https://psnine.com/psngame/15295)界面**奖杯类型比例**，**获得时间**等汇总图表。  
 - 🔖 [`游戏`](https://psnine.com/psngame)界面降低**无白金**的游戏图标可适度，方便区分有无白金。  
 - 🗃 `奖杯`界面增加`奖杯汇总列表`，无需滚屏迅速识别**未获得奖杯**和**Tips**有无。
