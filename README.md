@@ -1,6 +1,6 @@
 # 🎮 PSN中文网功能增强插件
 
-![users](https://img.shields.io/badge/users-156-orange.svg)
+![users](https://img.shields.io/badge/users-168-orange.svg)
 ![Last commit](https://img.shields.io/github/last-commit/swsoyee/psnine-enhanced-version.svg)
 ![](https://img.shields.io/github/license/swsoyee/psnine-enhanced-version.svg)  
 
@@ -85,6 +85,7 @@
 3. 如果使用插件内的**黑夜模式**时存在瞬时白转黑的情况，建议关闭插件中的**黑夜模式**，使用`Stylus`或者`Stylish`扩展安装[`CSS`](https://userstyles.org/styles/167244/p9)版`黑夜模式`，或者在[`Greasy Fork`](https://greasyfork.org/zh-CN/scripts/376181-p9%E5%A4%9C%E9%97%B4%E6%A8%A1%E5%BC%8F)上安装独立插件版**黑夜模式**。
 
 ## 🌙夜间模式CSS版
+
 <details>
 <summary>点击查看详情</summary>
 
@@ -101,6 +102,7 @@
 ⭐支持帖子的隐藏文字[musk]鼠标划过显示(可选)
 
 ### 更新记录
+- v1.8 🐞修复已知问题
 - v1.7 ➕新增多项配色
 - v1.6 🐞修复奖杯tips页面文字颜色过淡的问题
 - v1.5 🐞修复直接安装js版本时无法使用的问题
