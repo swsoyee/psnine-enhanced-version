@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.69
-// @description  数折价格走势图，显示人民币价格，奖杯统计，发帖字数统计，楼主高亮，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
+// @version      0.70
+// @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计，楼主高亮，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404
 // @include      *psnine.com/*
@@ -743,7 +743,7 @@
             $('#trophyGetTimeChart').highcharts(trophyGetTime);
         }
 
-        // 功能4-3：汇总以获得和未获得奖杯
+        // 功能3-3：汇总以获得和未获得奖杯
         var tropyTitleStyle = "border-radius: 2px; padding:5px; background-color:" + $("li.current").css("background-color") + ";"
         // tippy弹出框的样式
         GM_addStyle (`.tippy-tooltip.psnine-theme {background-color: ` + $(".box").css("background-color") + `}`)
@@ -790,6 +790,24 @@
         // 单击奖杯汇总标题后展开奖杯图标
         $(".tropyCount").click(function () {
             $(this).next().slideToggle();
+        })
+
+        // 功能3-3：追加奖杯筛选功能
+        function selectUnget() {
+            $(".lh180.alert-success.pd5.r").parent().parent().hide()
+        }
+        $(".dropmenu").append("<li><em>筛选</em></li>") // 追加“筛选”字样
+        // 追加“未获得”的按钮
+        $(".dropmenu").append("<a id='selectUnget' style='padding:0px 5px; margin-left:10px; border-radius:2px; display: inline-block; color: white;background-color: #3890ff; cursor:pointer'>未获得</a>")
+        // 鼠标悬浮于按钮上变更样式
+        $("#selectUnget").hover(function(){
+            $("#selectUnget").css("background-color","#9ec9ff");
+        },function(){
+            $("#selectUnget").css("background-color","#3890ff");
+        });
+        // 点击按钮隐藏或者显示
+        $('#selectUnget').click(function() {
+            $(".lh180.alert-success.pd5.r").parent().parent().toggle('slow')
         })
     }
 
