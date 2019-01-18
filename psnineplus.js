@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.70
+// @version      0.71
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计，楼主高亮，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404
@@ -115,6 +115,40 @@
     // 功能0-5：自动签到
     if( $("[class$=yuan]").length > 0 ) {
         $("[class$=yuan]").click()
+    }
+
+    // 功能0-6：自动翻页
+    if(/((gene$|\?)|(qa$|\?)|(trade$|\?))/.test(window.location.href)) {
+        var isbool = true; //触发开关，防止多次调用事件
+        $(window).scroll(function() {
+            //当内容滚动到底部时加载新的内容
+            if ($(this).scrollTop() + $(window).height() + 10 >= $(document).height() && $(this).scrollTop() > 10 && isbool == true) {
+                isbool = false;
+                // 获取下一页页码
+                var nextPage = Number($(".page > ul > .current:last").text()) + 1
+                console.log("当前位于第" + (nextPage - 1) + "页")
+                // 如果地址已经有地址信息
+                var nextPageLink = ''
+                if(/page/.test(window.location.href)) {
+                    nextPageLink = window.location.href.replace(/page=.+/, "page=" + nextPage)
+                } else {
+                    nextPageLink = window.location.href + "&page=" + nextPage
+                }
+                // 加载页面并且插入
+                $(".page").after("<div class='loadPage" + nextPage + "'></div>")
+                $.get(`${nextPageLink}`, {}, function(data) {
+                    var $response = $('<div />').html(data);
+                    $(`.loadPage${nextPage}`)
+                        .append($response.find('.list'))
+                        .append($response.find('.page'));
+                    isbool = true;
+                    if (/\/qa/.test(window.location.href) ) {
+                        addColorToQaTitle()
+                    }
+                },'html');
+                console.log("加载第" + nextPage + "页")
+            }
+        });
     }
 
     // 帖子优化
@@ -310,12 +344,15 @@
     }
 
     // 功能1-10：问答标题根据回答状况着色
-    if (/\/qa/.test(window.location.href) ) {
+    function addColorToQaTitle(){
         if(settings.qaHighlightTitle) {
             $("div.meta > .r > span:nth-child(2)").map( function(i, v) {
                 $(this).parent().parent().prev().children("a").css("color", $(this).css("color"))
             })
         }
+    }
+    if (/\/qa/.test(window.location.href) ) {
+        addColorToQaTitle()
     }
 
     // 功能1-11：悬浮于头像显示个人界面
