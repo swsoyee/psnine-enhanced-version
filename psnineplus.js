@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.72
-// @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计，楼主高亮，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
+// @version      0.73
+// @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404
 // @include      *psnine.com/*
@@ -28,6 +28,8 @@
 		hoverUnmark: true, // 设置为false则选中才显示
         // 功能0-5设置：是否开启自动签到
         autoCheckIn: true,
+        // 功能0-6: 自动翻页
+        autoPaging: true,
 		//功能1-4：回复内容回溯
 		replyTraceback: true,
         // 功能1-1设置：高亮发帖楼主功能
@@ -118,39 +120,45 @@
     }
 
     // 功能0-6：自动翻页
-    if(/((gene($|\?))|(qa($|\?))|(trade($|\?)))/.test(window.location.href)) {
-        var isbool = true; //触发开关，防止多次调用事件
-        $("body").append("<div id='loadingMessage' style='position: absolute;bottom: 0px;position: fixed;right: 1px !important;display:none; color:white;'></div>")
-        $(window).scroll(function() {
-            //当内容滚动到底部时加载新的内容
-            if ($(this).scrollTop() + $(window).height() + 700 >= $(document).height() && $(this).scrollTop() > 700 && isbool == true) {
-                isbool = false;
-                // 获取下一页页码
-                var nextPage = Number($(".page > ul > .current:last").text()) + 1
-                // 如果地址已经有地址信息
-                var nextPageLink = ''
-                if(/page/.test(window.location.href)) {
-                    nextPageLink = window.location.href.replace(/page=.+/, "page=" + nextPage)
-                } else {
-                    nextPageLink = window.location.href + "&page=" + nextPage
-                }
-                // 加载页面并且插入
-                $("#loadingMessage").text("加载第" + nextPage + "页...")
-                $("#loadingMessage").show()
-                $(".page:last").after("<div class='loadPage" + nextPage + "'></div>")
-                $.get(`${nextPageLink}`, {}, function(data) {
-                    var $response = $('<div />').html(data);
-                    $(`.loadPage${nextPage}`)
-                        .append($response.find('.list'))
-                        .append($response.find('.page'));
-                    isbool = true;
-                    if (/\/qa/.test(window.location.href) ) {
-                        addColorToQaTitle()
+    if(settings.autoPaging) {
+        if(/((gene($|\?))|(qa($|\?))|(topic($|\?))|(trade($|\?)))/.test(window.location.href)) {
+            var isbool = true; //触发开关，防止多次调用事件
+            $("body").append("<div id='loadingMessage' style='position: absolute;bottom: 0px;position: fixed;right: 1px !important;display:none; color:white;'></div>")
+            $(window).scroll(function() {
+                //当内容滚动到底部时加载新的内容
+                if ($(this).scrollTop() + $(window).height() + 700 >= $(document).height() && $(this).scrollTop() > 700 && isbool == true) {
+                    isbool = false;
+                    // 获取下一页页码
+                    var nextPage = Number($(".page > ul > .current:last").text()) + 1
+                    // 如果地址已经有地址信息
+                    var nextPageLink = ''
+                    if(/page/.test(window.location.href)) {
+                        nextPageLink = window.location.href.replace(/page=.+/, "page=" + nextPage)
+                    } else {
+                        nextPageLink = window.location.href + "&page=" + nextPage
                     }
-                },'html');
-                setTimeout(function(){$("#loadingMessage").fadeOut();},2000);
-            }
-        });
+                    // 加载页面并且插入
+                    $("#loadingMessage").text("加载第" + nextPage + "页...")
+                    $("#loadingMessage").show()
+                    $(".page:last").after("<div class='loadPage" + nextPage + "'></div>")
+                    $.get(`${nextPageLink}`, {}, function(data) {
+                        var $response = $('<div />').html(data);
+                        $(`.loadPage${nextPage}`)
+                            .append($response.find('.list'))
+                            .append($response.find('.page'));
+                        isbool = true;
+                        // 各个页面的功能追加
+                        addHighlightOnID()
+                        filterUserPost()
+                        addHoverProfile()
+                        if (/\/qa/.test(window.location.href) ) {
+                            addColorToQaTitle()
+                        }
+                    },'html');
+                    setTimeout(function(){$("#loadingMessage").fadeOut();},2000);
+                }
+            });
+        }
     }
 
     // 帖子优化
@@ -166,9 +174,13 @@
         })
     }
     // 功能1-2：高亮用户ID
-    settings.highlightSpecificID.map(function(i, n) {
-        $('.meta>[href="' + window.location.href.match("(.*)\.com")[0] + '/psnid/' + i + '"]').css({ "background-color": settings.highlightSpecificBack, "color": settings.highlightSpecificFront })
-    });
+    function addHighlightOnID() {
+        settings.highlightSpecificID.map(function(i, n) {
+            $('.meta>[href="' + window.location.href.match("(.*)\.com")[0] + '/psnid/' + i + '"]').css({ "background-color": settings.highlightSpecificBack, "color": settings.highlightSpecificFront })
+        });
+    }
+    addHighlightOnID()
+
     // 功能1-3：主题中存在 -插图- 一项时，提供预览悬浮窗
     $("a[target='_blank']").html(function(i, url){
         if(url == " -插图- ") {
@@ -271,25 +283,25 @@
         }
     })
     // 功能1-6：屏蔽黑名单中的用户发言内容
-    if (settings.blockList.length > 0) {
-        function Filter(psnnode, parent, userList) {
-            $(psnnode).map(function(i,v){
-                if($(v).html().toLowerCase() == userList.toLowerCase() ){
-                    $(v).parents(parent).hide()
+    function Filter(psnnode, parent, userList) {
+                $(psnnode).map(function(i,v){
+                    if($(v).html().toLowerCase() == userList.toLowerCase() ){
+                        $(v).parents(parent).hide()
+                    }
+                })
+            }
+    function filterUserPost() {
+        if (settings.blockList.length > 0) {
+            settings.blockList.map((user,i)=>{
+                if(window.location.href.indexOf("gene") > -1){
+                    Filter("div.post .psnnode", "div.post", user)
+                    Filter(".touchclick .psnnode", ".touchclick", user)
                 }
             })
         }
-		settings.blockList.map((user,i)=>{
-			if(window.location.href.indexOf("gene") > -1){
-                Filter("div.post .psnnode", "div.post", user)
-                Filter(".touchclick .psnnode", ".touchclick", user)
-			}
-            // 个人通知
-            // if(/my\/notice/.test(window.location.href)) {
-            //    Filter("li > .ml64 > .meta > .psnnode", "li", user)
-            //}
-		})
     }
+    filterUserPost()
+
     // 功能1-7：实时统计创建机因时候的文字数
     if( /set\/gene/.test(window.location.href)){
         $(".pr20 > textarea[name='content']").before("<div style='color:#c09853'><p>字数：<span class='wordCount'>0</span>/600</p></div>")
@@ -358,58 +370,61 @@
     }
 
     // 功能1-11：悬浮于头像显示个人界面
-    if(settings.hoverHomepage) {
-        const INITIAL_CONTENT = '加载中...'
-        $(".l[href*='psnid/']").map(function(i, v) {
-            var url = $(this).attr("href");
-            $(this).attr("id", "profile" + i)
-            tippy("#profile" + i, {
-                content: INITIAL_CONTENT,
-                maxWidth: "500px",
-                animateFill: false,
-                interactive: true,
-                placement: "left",
-                async onShow(tip) {
-                    if (!tip.state.ajax) {
-                        tip.state.ajax = {
-                            isFetching: false,
-                            canFetch: true,
-                        }
-                    }
-                    if (tip.state.ajax.isFetching || !tip.state.ajax.canFetch) {
-                        return
-                    }
-                    tip.state.ajax.isFetching = true
-                    tip.state.ajax.canFetch = false
-                    try {
-                        $.ajax({
-                            type : "GET",
-                            url : url,
-                            dataType : "html",
-                            success: function(data) {
-                                var reg = /[\s\S]*<\/body>/g;
-                                var html = reg.exec(data)[0];
-                                var inner = $(html).find(".psnzz").parent().get(0)
-                                $(inner).find(".inner").css("max-width", "400px")
-                                tip.setContent(inner)
-                            },
-                            error : function() {
-                                console.log("Sorry, The requested property could not be found.");
+    function addHoverProfile() {
+        if(settings.hoverHomepage) {
+            const INITIAL_CONTENT = '加载中...'
+            $(".l[href*='psnid/']").map(function(i, v) {
+                var url = $(this).attr("href");
+                $(this).attr("id", "profile" + i)
+                tippy("#profile" + i, {
+                    content: INITIAL_CONTENT,
+                    maxWidth: "500px",
+                    animateFill: false,
+                    interactive: true,
+                    placement: "left",
+                    async onShow(tip) {
+                        if (!tip.state.ajax) {
+                            tip.state.ajax = {
+                                isFetching: false,
+                                canFetch: true,
                             }
-                        });
-                    } catch (e) {
-                        tip.setContent(`Fetch failed. ${e}`)
-                    } finally {
-                        tip.state.ajax.isFetching = false
-                    }
-                },
-                onHidden(tip) {
-                    tip.state.ajax.canFetch = true
-                    tip.setContent(INITIAL_CONTENT)
-                },
+                        }
+                        if (tip.state.ajax.isFetching || !tip.state.ajax.canFetch) {
+                            return
+                        }
+                        tip.state.ajax.isFetching = true
+                        tip.state.ajax.canFetch = false
+                        try {
+                            $.ajax({
+                                type : "GET",
+                                url : url,
+                                dataType : "html",
+                                success: function(data) {
+                                    var reg = /[\s\S]*<\/body>/g;
+                                    var html = reg.exec(data)[0];
+                                    var inner = $(html).find(".psnzz").parent().get(0)
+                                    $(inner).find(".inner").css("max-width", "400px")
+                                    tip.setContent(inner)
+                                },
+                                error : function() {
+                                    console.log("Sorry, The requested property could not be found.");
+                                }
+                            });
+                        } catch (e) {
+                            tip.setContent(`Fetch failed. ${e}`)
+                        } finally {
+                            tip.state.ajax.isFetching = false
+                        }
+                    },
+                    onHidden(tip) {
+                        tip.state.ajax.canFetch = true
+                        tip.setContent(INITIAL_CONTENT)
+                    },
+                })
             })
-        })
+        }
     }
+    addHoverProfile()
 
     // 商城优化
     // 功能2-1：商城价格走势图
@@ -622,7 +637,7 @@
 
     // 奖杯系统优化
     // 功能3-1：游戏奖杯界面可视化
-    if( /psngame\//.test(window.location.href) ) {
+    if( /psngame\//.test(window.location.href) && /^(?!.*comment)/.test(window.location.href)) {
         // 游戏奖杯比例图
         var platinum = document.getElementsByClassName("text-platinum")[0].innerText.replace("白", "")
         var gold = document.getElementsByClassName("text-gold")[0].innerText.replace("金", "")
@@ -892,7 +907,7 @@
         `)
         $("body").append(`
 <style>.setting-panel-box{z-index:9999;background-color:#fff;transition:all .4s ease;position:fixed;left:50%;transform:translateX(-50%);top:-5000px;width:500px;box-shadow:0 0 20px rgba(0,0,0,0.3);padding:10px 0;box-sizing:border-box;border-radius:4px;max-height:700px;overflow-y:scroll;scrollbar-color:#dcdcdc #fff;scrollbar-width:thin}.setting-panel-box::-webkit-scrollbar{width:4px;background-color:#fff}.setting-panel-box::-webkit-scrollbar-button{display:none}.setting-panel-box::-webkit-scrollbar-thumb{background-color:#dcdcdc}.setting-panel-box.show{top:20px}.setting-panel-box h2{margin-bottom:10px;padding-left:20px}.setting-panel-box h4{margin-bottom:10px;padding-left:20px;font-weight:400;color:#1f2f3d;font-size:22px}.setting-panel-box .row{display:flex;align-items:center;justify-content:flex-start;width:100%;margin-bottom:5px;padding-left:20px;box-sizing:border-box}.setting-panel-box .row label{line-height:32px;text-align:left;font-size:14px;color:#606266;width:190px}.setting-panel-box .row .mini{line-height:26px;text-align:left;font-size:14px;color:#606266;margin:0 10px 0 0;width:50px}.setting-panel-box .row textarea{resize:vertical;min-height:30px;border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;line-height:26px;box-sizing:border-box;width:227px;padding:0 10px}.setting-panel-box .row input{border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;height:26px;line-height:26px;display:inline-block;width:227px;padding:0 10px}.setting-panel-box .row input#filterNonePlatinum{height:6px;background-color:#e4e7ed;margin:16px 0;border-radius:3px;position:relative;cursor:pointer;vertical-align:middle;outline:none;padding:0}.setting-panel-box .row input#filterNonePlatinum::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border:2px solid #409eff;background-color:#fff;border-radius:50%;transition:.2s;user-select:none}.setting-panel-box .row input#filterNonePlatinum::-moz-range-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border:2px solid #409eff;background-color:#fff;border-radius:50%;transition:.2s;user-select:none}.setting-panel-box .row #filterNonePlatinumValue{margin-left:5px}.setting-panel-box .row select{border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;height:26px;line-height:26px;display:inline-block;width:227px;padding:0 10px}.setting-panel-box .row span{line-height:32px;text-align:left;font-size:14px;color:#606266;margin-right:10px}.setting-panel-box .btnbox{display:flex;align-items:center;justify-content:center}.setting-panel-box button{-webkit-appearance:button;padding:9px 15px;font-size:12px;border-radius:3px;display:inline-block;line-height:1;white-space:nowrap;cursor:pointer;background:#fff;border:1px solid #dcdfe6;color:#606266;text-align:center;box-sizing:border-box;outline:0;margin:0;transition:.1s;font-weight:500;margin:0 10px}.setting-panel-box button:hover{color:#409eff;border-color:#c6e2ff;background-color:#ecf5ff}.setting-panel-box button.confirm{color:#fff;background-color:#3890ff}.setting-panel-box button.confirm:hover{background-color:#9ec9ff}</style>
-<div class=setting-panel-box><h2>PSN中文网功能增强插件设置</h2><div class=row><label>夜间模式</label><select id=nightMode><option value=true>启用<option value=false>关闭</select></div><div class=row><label>导航增加新闻入口</label><select id=addNews><option value=true>启用<option value=false>关闭</select></div><div class=row><label>高亮用户ID</label><textarea name="" id="highlightSpecificID" cols="30" rows="2"></textarea></div><div class=row><label>黑名单ID</label><textarea name="" id="blockList" cols="30" rows="2"></textarea></div><div class=row><label>机因中显示被@的内容</label><select id=replyTraceback><option value=true>启用<option value=false>关闭</select></div><div class=row><label>悬浮显示刮刮卡内容</label><select id=hoverUnmark><option value=true>启用<option value=false>关闭</select></div><div class=row><label>问答区标题着色</label><select id=qaHighlightTitle><option value=true>启用<option value=false>关闭</select></div><div class=row><label>悬浮头像显示个人信息</label><select id=hoverHomepage><option value=true>启用<option value=false>关闭</select></div><div class=row><label>奖杯默认折叠</label><select id=foldTropySummary><option value=true>启用<option value=false>关闭</select></div><div class=row><label>无白金游戏图标透明度</label><input id=filterNonePlatinum type=range min=0 max=1 step=0.1><span id=filterNonePlatinumValue></span></div><div class=row><label>汇率</label><span>港币</span><input type=number class=mini name="" id=dollarHKRatio><span>美元</span><input type=number class=mini name="" id=dollarRatio></div><div class=row><label></label><span>英镑</span><input type=number class=mini name="" id=poundRatio><span>日元</span><input type=number class=mini name="" id=yenRatio></div><div class=btnbox><button class=confirm>确定</button><button class=cancel>取消</button></div></div>
+<div class=setting-panel-box><h2>PSN中文网功能增强插件设置</h2><div class=row><a href=https://github.com/swsoyee/psnine-enhanced-version><img src=https://img.shields.io/github/stars/swsoyee/psnine-enhanced-version.svg?style=social></img></a></div><div class=row><label>夜间模式</label><select id=nightMode><option value=true>启用<option value=false>关闭</select></div><div class=row><label>导航增加新闻入口</label><select id=addNews><option value=true>启用<option value=false>关闭</select></div><div class=row><label>高亮用户ID</label><textarea name="" id="highlightSpecificID" cols="30" rows="2"></textarea></div><div class=row><label>黑名单ID</label><textarea name="" id="blockList" cols="30" rows="2"></textarea></div><div class=row><label>机因中显示被@的内容</label><select id=replyTraceback><option value=true>启用<option value=false>关闭</select></div><div class=row><label>悬浮显示刮刮卡内容</label><select id=hoverUnmark><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动翻页</label><select id=autoPaging><option value=true>启用<option value=false>关闭</select></div><div class=row><label>问答区标题着色</label><select id=qaHighlightTitle><option value=true>启用<option value=false>关闭</select></div><div class=row><label>悬浮头像显示个人信息</label><select id=hoverHomepage><option value=true>启用<option value=false>关闭</select></div><div class=row><label>奖杯默认折叠</label><select id=foldTropySummary><option value=true>启用<option value=false>关闭</select></div><div class=row><label>无白金游戏图标透明度</label><input id=filterNonePlatinum type=range min=0 max=1 step=0.1><span id=filterNonePlatinumValue></span></div><div class=row><label>汇率</label><span>港币</span><input type=number class=mini name="" id=dollarHKRatio><span>美元</span><input type=number class=mini name="" id=dollarRatio></div><div class=row><label></label><span>英镑</span><input type=number class=mini name="" id=poundRatio><span>日元</span><input type=number class=mini name="" id=yenRatio></div><div class=btnbox><button class=confirm>确定</button><button class=cancel>取消</button></div></div>
 `)
 
         // 点击打开设置面板
@@ -906,7 +921,7 @@
                 content: 'ID以英文逗号隔开，不区分大小写',
                 zIndex: 10000
             })
-			var switchSettings = ["hoverUnmark","replyTraceback","nightMode","foldTropySummary","addNews", "qaHighlightTitle", "hoverHomepage"] //只有true / false的设置项
+			var switchSettings = ["hoverUnmark","replyTraceback","nightMode","foldTropySummary","addNews", "qaHighlightTitle", "hoverHomepage", "autoPaging"] //只有true / false的设置项
 			var self = this
 			switchSettings.map((name,i)=>{
 				if(newSettings[name]){
