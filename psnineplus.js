@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.74
+// @version      0.75
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404
@@ -402,6 +402,7 @@
                 $(this).attr("id", "profile" + i)
                 tippy("#profile" + i, {
                     content: INITIAL_CONTENT,
+                    delay: 700,
                     maxWidth: "500px",
                     animateFill: false,
                     interactive: true,
@@ -431,11 +432,11 @@
                                     tip.setContent(inner)
                                 },
                                 error : function() {
-                                    console.log("Sorry, The requested property could not be found.");
+                                    console.log("无法获取页面信息");
                                 }
                             });
                         } catch (e) {
-                            tip.setContent(`Fetch failed. ${e}`)
+                            tip.setContent(`获取失败：${e}`)
                         } finally {
                             tip.state.ajax.isFetching = false
                         }
@@ -758,10 +759,19 @@
         var timeElements = document.getElementsByClassName("lh180 alert-success pd5 r")
         if( timeElements.length > 0 ) {
             for(var timeIndex = 0; timeIndex < timeElements.length; timeIndex ++ ){
-                var dayTime = document.getElementsByClassName("lh180 alert-success pd5 r")[timeIndex].innerText.split("\n")
+                var dayTime = document.getElementsByClassName("lh180 alert-success pd5 r")[timeIndex].innerText
+                var yearTips = ""
+                // 时间丢失奖杯bug修复
+                if(dayTime == "时间丢失") {
+                    dayTime = document.getElementsByClassName("lh180 alert-success pd5 r")[0].innerText.split("\n")
+                    yearTips = Number(timeElements[0].getAttribute("tips").replace("年", ""))
+                } else {
+                    dayTime = dayTime.split("\n")
+                    yearTips = Number(timeElements[timeIndex].getAttribute("tips").replace("年", ""))
+                }
                 var monthDay = dayTime[0].split("-")
                 var houtMinute = dayTime[1].split(":")
-                var xTime = Date.UTC(Number(timeElements[timeIndex].getAttribute("tips").replace("年", "")), Number(monthDay[0]) - 1, Number(monthDay[1]), Number(houtMinute[0]), Number(houtMinute[1]))
+                var xTime = Date.UTC(yearTips, Number(monthDay[0]) - 1, Number(monthDay[1]), Number(houtMinute[0]), Number(houtMinute[1]))
                 getTimeArray.push(xTime)
             }
             getTimeArray.sort()
@@ -876,16 +886,19 @@
         }
         $(".dropmenu").append("<li><em>筛选</em></li>") // 追加“筛选”字样
         // 追加“未获得”的按钮
-        $(".dropmenu").append("<a id='selectUnget' style='padding:0px 5px; margin-left:10px; border-radius:2px; display: inline-block; color: white;background-color: #3890ff; cursor:pointer; line-height:24px;'>未获得</a>")
-        // 鼠标悬浮于按钮上变更样式
-        $("#selectUnget").hover(function(){
-            $("#selectUnget").css("background-color","#9ec9ff");
-        },function(){
-            $("#selectUnget").css("background-color","#3890ff");
-        });
+        $(".dropmenu").append("<a id='selectUnget' style='padding:0px 5px; margin-left:10px; border-radius:2px; display: inline-block; color: white;background-color: #3890ff; cursor:pointer; line-height:24px;'>尚未获得</a>")
         // 点击按钮隐藏或者显示
+        var clickHideShowNum = 0;
         $('#selectUnget').click(function() {
-            $(".lh180.alert-success.pd5.r").parent().parent().toggle('slow')
+            $(".lh180.alert-success.pd5.r").parent().parent().toggle("slow", function(){
+                if(clickHideShowNum ++ %2 == 0){
+                    $("#selectUnget").text("显示全部")
+                    $("#selectUnget").css("background-color","#9ec9ff");
+                } else {
+                    $("#selectUnget").text("尚未获得")
+                    $("#selectUnget").css("background-color","#3890ff");
+                }
+            })
         })
     }
 
@@ -902,8 +915,62 @@
                 }
             })
         }
-        // 功能5-2：页面上方增加翻页
-        $(".dropmenu").after($(".page").clone())
+        // 功能5-2：悬浮图标显示自己的游戏的完成度
+        $(".imgbgnb").map(function(i,n){
+            $(this).attr("id", "game" + i)
+            var psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/)//从cookie中取出psnid
+            if(psnidCookie){
+                var psnid = psnidCookie[1]
+                var myGameUrl = $(this).parent().attr("href") + `?psnid=${psnid}`
+            }
+            tippy("#game" + i, {
+                content: "加载中",
+                animateFill: false,
+                placement: "left",
+                delay: 500,
+                async onShow(tip) {
+                        if (!tip.state.ajax) {
+                            tip.state.ajax = {
+                                isFetching: false,
+                                canFetch: true,
+                            }
+                        }
+                        if (tip.state.ajax.isFetching || !tip.state.ajax.canFetch) {
+                            return
+                        }
+                        tip.state.ajax.isFetching = true
+                        tip.state.ajax.canFetch = false
+                        try {
+                            $.ajax({
+                                type : "GET",
+                                url : myGameUrl,
+                                dataType : "html",
+                                success: function(data) {
+                                    var reg = /[\s\S]*<\/body>/g;
+                                    var html = reg.exec(data)[0];
+                                    var inner = $(html).find("td > em > .text-strong")
+                                    if(inner.length > 0){
+                                        tip.setContent("你的奖杯完成度：" + inner.text())
+                                    } else {
+                                        tip.setContent("你还没有获得该游戏的任何奖杯")
+                                    }
+                                },
+                                error : function() {
+                                    console.log("无法获取页面信息");
+                                }
+                            });
+                        } catch (e) {
+                            tip.setContent(`获取失败：${e}`)
+                        } finally {
+                            tip.state.ajax.isFetching = false
+                        }
+                    },
+                    onHidden(tip) {
+                        tip.state.ajax.canFetch = true
+                        tip.setContent("加载中")
+                    },
+            })
+        })
     }
 
     // 进入游戏页默认查看我自己的奖杯
