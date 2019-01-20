@@ -78,6 +78,14 @@
             margin: 0 10px 0 0;
             width: 50px;
         }
+        .setting-panel-box .row .normal{
+            line-height: 26px;
+            text-align: left;
+            font-size: 14px;
+            color: #606266;
+            margin: 0 10px 0 0;
+            width: 205px;
+        }
         .setting-panel-box .row textarea{
             resize: vertical;
             min-height: 30px;
@@ -243,11 +251,15 @@
             </select>
         </div>
         <div class="row">
-            <label>自动翻页</label>
-            <select id="autoPaging">
+            <label>个人主页下显示所有游戏</label>
+            <select id="autoPagingInHomepage">
                 <option value="true">启用</option>
                 <option value="false">关闭</option>
             </select>
+        </div>
+        <div class="row">
+            <label>自动向后翻页数</label>
+            <input type="number" class="normal" id="autoPaging">
         </div>
         <div class="row">
             <label>问答区标题着色</label>
