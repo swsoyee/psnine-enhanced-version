@@ -364,7 +364,7 @@
 		})
     }
     hoverShowReply(".post")
-    if(/^(?!.*trade|.*qa)/.test(window.location.href)) {
+    if(/^(?!.*trade|.*qa(\?ob=.*)?$)/.test(window.location.href)) {
         hoverShowReply(".ml64")
     }
 
