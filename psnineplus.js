@@ -349,23 +349,23 @@
 
     // 功能1-8：回复按钮hover触发显示
     function hoverShowReply(div) {
-        $(div + " .r").css({
+        $(div + " span[class^='r']").css({
 			opacity:0,
 			transition:"all 0.2s ease"
 		})
 		$(div).hover(function(){
-			$(this).find(".r").css({
+			$(this).find("span[class^='r']").css({
 				opacity:1
 			})
 		},function(){
-			$(this).find(".r").css({
+			$(this).find("span[class^='r']").css({
 				opacity:0
 			})
 		})
     }
     hoverShowReply(".post")
     if(/^(?!.*trade|.*qa(\?ob=.*)?$)/.test(window.location.href)) {
-        hoverShowReply(".ml64")
+        hoverShowReply("div[class$='ml64']")
     }
 
     // 功能1-9：发帖BBCode实时渲染
