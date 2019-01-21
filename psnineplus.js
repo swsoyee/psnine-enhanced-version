@@ -347,13 +347,13 @@
         });
     }
 
-    // 功能1-8：基因回复按钮hover触发显示
-	if(window.location.href.match(/gene\/\d+$/)){
-		$(".post .r").css({
+    // 功能1-8：回复按钮hover触发显示
+    function hoverShowReply(div) {
+        $(div + " .r").css({
 			opacity:0,
 			transition:"all 0.2s ease"
 		})
-		$(".post").hover(function(){
+		$(div).hover(function(){
 			$(this).find(".r").css({
 				opacity:1
 			})
@@ -362,7 +362,11 @@
 				opacity:0
 			})
 		})
-	}
+    }
+    hoverShowReply(".post")
+    if(/^(?!.*trade|.*qa)/.test(window.location.href)) {
+        hoverShowReply(".ml64")
+    }
 
     // 功能1-9：发帖BBCode实时渲染
     if( /node\/talk\/add/.test(window.location.href)){
@@ -644,10 +648,7 @@
             }
         })
 
-        // 功能2-3：页面上方增加翻页
-        $(".dropmenu").after($(".page").clone())
-
-        // 功能2-4：根据降价幅度变更标题颜色
+        // 功能2-3：根据降价幅度变更标题颜色
         $(".dd_box").map(function(i,n){
             var offPercent = Number($(this).children(".dd_pic").children("div").eq(0).text().replace("省", "").replace("%", ""))
             if( offPercent >= 80 ){
@@ -658,6 +659,27 @@
                 $(".dd_title.mb10>a").eq(i).css({"color":"rgb(255,193,7)"})
             } else {
                 $(".dd_title.mb10>a").eq(i).css({"color":"rgb(40,167,69)"})
+            }
+        })
+
+        // 功能2-4：只看史低
+        // 追加“只看史低”的按钮
+        $(".dropmenu").append("<li><a id='selectLowest' style='padding:0px 5px; margin-left:10px; border-radius:2px; display: inline-block; color: white;background-color: #d9534f; cursor:pointer; line-height:24px;'>只看史低</a></li>")
+        // 点击按钮隐藏或者显示
+        var clickHideShowNumLowest = 0;
+        $('#selectLowest').click(function() {
+            if(clickHideShowNumLowest ++ %2 == 0){
+                $("li.dd_box").map(function(i, v){
+                    if($(this).children(".dd_status.dd_status_best").length == 0) {
+                        $(this).hide()
+                    }
+                })
+                $("#selectLowest").text("显示全部")
+                $("#selectLowest").css("background-color","#f78784");
+            } else {
+                $("li.dd_box").show()
+                $("#selectLowest").text("只看史低")
+                $("#selectLowest").css("background-color","#d9534f");
             }
         })
     }
@@ -894,9 +916,6 @@
         })
 
         // 功能3-3：追加奖杯筛选功能
-        function selectUnget() {
-            $(".lh180.alert-success.pd5.r").parent().parent().hide()
-        }
         $(".dropmenu").append("<li><em>筛选</em></li>") // 追加“筛选”字样
         // 追加“未获得”的按钮
         $(".dropmenu").append("<a id='selectUnget' style='padding:0px 5px; margin-left:10px; border-radius:2px; display: inline-block; color: white;background-color: #3890ff; cursor:pointer; line-height:24px;'>尚未获得</a>")
