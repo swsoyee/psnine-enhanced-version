@@ -675,7 +675,7 @@
 
     // 奖杯系统优化
     // 功能3-1：游戏奖杯界面可视化
-    if( /psngame\//.test(window.location.href) && /^(?!.*comment)/.test(window.location.href)) {
+    if( /psngame\//.test(window.location.href) && /^(?!.*comment|.*rank|.*battle|.*gamelist|.*topic|.*qa)/.test(window.location.href)) {
         // 游戏奖杯比例图
         var platinum = document.getElementsByClassName("text-platinum")[0].innerText.replace("白", "")
         var gold = document.getElementsByClassName("text-gold")[0].innerText.replace("金", "")
