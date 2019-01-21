@@ -1,6 +1,6 @@
 # 🎮 PSN中文网功能增强插件
 
-![users](https://img.shields.io/badge/users-183-orange.svg)
+![users](https://img.shields.io/badge/users-186-orange.svg)
 ![Last commit](https://img.shields.io/github/last-commit/swsoyee/psnine-enhanced-version.svg)
 ![](https://img.shields.io/github/license/swsoyee/psnine-enhanced-version.svg)  
 
@@ -17,7 +17,7 @@
 - ⏬ 增加`回到底部`按钮，快速跳转**回复框**或者**翻页**处。  
 - 🈲 `刮刮条文字`鼠标悬浮显示。   
 - 📰 可选择在导航恢复已经被移除的**新闻**入口。  
-- ☑ 每日打开页面即可完成**自动签到**。  
+- ☑ 每日打开页面即可**自动签到**。  
 - 🤼‍♂️ [`约战`](https://psnine.com/battle)页面可以选择不显示发起用户头像。  
 - ⚙ 点击P9页面的右上角`我的` ➡ `插件设置` 可进行插件具体设置<sup>1</sup>。  
 
@@ -42,8 +42,8 @@
 
 - 📉 [`数折`](https://psnine.com/dd/HP9000-CUSA08392_00-ASIAPLACEHOLDER1)中增加`价格走势图`，快速了解**走势**和**史低**。  
 - 💱 [`数折`](https://psnine.com/dd)增加人民币价格换算，无需自己进行价格换算<sup>2</sup>。  
-- ❤ 根据**降价幅度**变更游戏标题颜色`💚<20%` `💛<50%` `🧡<80%` `💖>80%`，快速区分最大优惠。  
-- 📄 页面上方增加`翻页`按钮，提供更便利的浏览体验。  
+- 🈹 根据**降价幅度**变更游戏标题颜色`💚<20%` `💛<50%` `🧡<80%` `💖>80%`，快速区分最大优惠。  
+- 🈹 增加`只看史低`功能按键~~不花任何一分冤枉钱~~。  
 
 ---
 <img src="https://raw.githubusercontent.com/swsoyee/psnine-enhanced-version/master/screenshots/trophySummary.png" width="300" align="right" style="max-width: 50%">  
@@ -55,7 +55,7 @@
 - 🗃 `奖杯`界面增加`奖杯汇总列表`，无需滚屏迅速识别**未获得奖杯**和**Tips**有无。
 - ↪ 进入**游戏页**默认`跳转`到自己主页下的该游戏页面<sup>1</sup>。  
 - 📝 `奖杯心得`页面输入框可缩放大小<sup>1</sup>。  
-- 🈚 `奖杯`界面增加**未获得**奖杯筛选按钮。  
+- 🈚 `奖杯`界面增加`尚未获得`奖杯筛选按钮。  
 
 ---
 
@@ -74,12 +74,6 @@
 
 详情参照[`Greasy Fork`](https://greasyfork.org/zh-CN/scripts/375985-psn%E4%B8%AD%E6%96%87%E7%BD%91%E5%8A%9F%E8%83%BD%E5%A2%9E%E5%BC%BA)。 
 
-## 🦉 功能追加计划
-
-- 增加每个小功能的独立开关
-- 问答等页面中的评论楼中楼倒序排列
-- 主题帖支持Markdown语法渲染（黑科技，坑）
-- 发主题帖时追加即时预览功能（黑科技 + 1，坑）
 
 ## ❕ 附注
 1. 功能由[`mordom0404`](https://psnine.com/psnid/mordom0404)提供。
