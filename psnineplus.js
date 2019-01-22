@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.78
+// @version      0.79
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404
@@ -314,11 +314,24 @@
         }
     }
     // 功能1-5：增加帖子楼层信息
-    $("span[class^=r]").map(function(i,n){
-        if(i > 0) {
-            $(this).children("a:last").after("&nbsp&nbsp<span>#"+i+"</span>")
-        }
-    })
+    function addFloorIndex() {
+        var baseFloorIndex = 0;
+        var subFloorIndex = -1;
+        $("span[class^=r]").map(function(i,n){
+            if(i > 0) {
+                if($(this).attr("class") == "r") {
+                    baseFloorIndex++;
+                    $(this).children("a:last").after(`&nbsp&nbsp<span>#${baseFloorIndex}</span>`);
+                    subFloorIndex = -1;
+                } else {
+                    $(this).children("a:last").after(`&nbsp&nbsp<span>#${baseFloorIndex}${subFloorIndex}</span>`);
+                    subFloorIndex--;
+                }
+            }
+        })
+    }
+    addFloorIndex()
+
     // 功能1-6：屏蔽黑名单中的用户发言内容
     function Filter(psnnode, parent, userList) {
                 $(psnnode).map(function(i,v){
@@ -349,16 +362,17 @@
 
     // 功能1-8：回复按钮hover触发显示
     function hoverShowReply(div) {
-        $(div + " span[class^='r']").css({
+        var subClass = "span[class$='r']";
+        $(`div ${subClass}`).css({
 			opacity:0,
 			transition:"all 0.2s ease"
 		})
 		$(div).hover(function(){
-			$(this).find("span[class^='r']").css({
+			$(this).find(subClass).css({
 				opacity:1
 			})
 		},function(){
-			$(this).find("span[class^='r']").css({
+			$(this).find(subClass).css({
 				opacity:0
 			})
 		})
