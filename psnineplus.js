@@ -363,7 +363,7 @@
     // 功能1-8：回复按钮hover触发显示
     function hoverShowReply(div) {
         var subClass = "span[class$='r']";
-        $(`div ${subClass}`).css({
+        $(`${div} ${subClass}`).css({
 			opacity:0,
 			transition:"all 0.2s ease"
 		})
