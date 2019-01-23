@@ -1,6 +1,6 @@
 # 🎮 PSN中文网功能增强插件
 
-![users](https://img.shields.io/badge/users-186-orange.svg)
+![users](https://img.shields.io/badge/users-193-orange.svg)
 ![Last commit](https://img.shields.io/github/last-commit/swsoyee/psnine-enhanced-version.svg)
 ![](https://img.shields.io/github/license/swsoyee/psnine-enhanced-version.svg)  
 
@@ -17,9 +17,9 @@
 - ⏬ 增加`回到底部`按钮，快速跳转**回复框**或者**翻页**处。  
 - 🈲 `刮刮条文字`鼠标悬浮显示。   
 - 📰 可选择在导航恢复已经被移除的**新闻**入口。  
-- ☑ 每日打开页面即可**自动签到**。  
+- ✅ 每日打开页面即可**自动签到**。  
 - 🤼‍♂️ [`约战`](https://psnine.com/battle)页面可以选择不显示发起用户头像。  
-- ⚙ 点击P9页面的右上角`我的` ➡ `插件设置` 可进行插件具体设置<sup>1</sup>。  
+- 🔧 点击P9页面的右上角`我的` ➡ `插件设置` 可进行插件具体设置<sup>1</sup>。  
 
 ---
 <img src="https://raw.githubusercontent.com/swsoyee/psnine-enhanced-version/master/screenshots/replyContent.png" width="300" align="right" style="max-width: 50%">
