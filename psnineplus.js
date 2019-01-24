@@ -173,7 +173,7 @@
     if(settings.autoPagingInHomepage) {
         var isbool2 = true; //触发开关，防止多次调用事件
         $("body").append("<div id='loadingMessage' style='position: absolute;bottom: 0px;position: fixed;right: 1px !important;display:none; color:white;'></div>")
-        if(/psnid\/[A-Za-z0-9_]+$/.test(window.location.href)) {
+        if(/psnid\/[A-Za-z0-9_]+$/.test(window.location.href) && $("tbody").length > 2) {
             var gamePageIndex = 2
             $(window).scroll(function() {
                 if ($(this).scrollTop() + $(window).height() + 700 >= $(document).height() && $(this).scrollTop() > 700 && isbool2 == true) {
