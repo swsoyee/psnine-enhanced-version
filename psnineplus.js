@@ -242,7 +242,7 @@
         }
     })
     // 功能1-4：回复内容回溯，仅支持机因、主题（目前仅限主贴，common下不会显示）
-    if( /(gene|topic|trade)\//.test(window.location.href) && settings.replyTraceback) {
+    if( /(gene|topic|trade|battle)\//.test(window.location.href) && settings.replyTraceback) {
         GM_addStyle (`.replyTraceback {background-color: rgb(0, 0, 0, 0.05) !important; padding: 10px !important; color: rgb(160, 160, 160, 1) !important; border-bottom: 1px solid !important;}`)
         // 每一层楼的回复外框 (0 ~ N - 1)
         var allSourceOutside = document.querySelectorAll(".post > .ml64") // 30楼的话是29
