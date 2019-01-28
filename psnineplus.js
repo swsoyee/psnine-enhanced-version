@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.8.1
+// @version      0.8.2
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404
@@ -25,15 +25,15 @@
         // 功能0-1.1：恢复导航部的新闻链接
         addNews: false, // 设置为false默认关闭
         // 功能0-3设置：鼠标滑过黑条即可显示内容
-		hoverUnmark: true, // 设置为false则选中才显示
+        hoverUnmark: true, // 设置为false则选中才显示
         // 功能0-5设置：是否开启自动签到
         autoCheckIn: true,
         // 功能0-6: 自动翻页
         autoPaging: 0, // 自动往后翻的页数
         // 功能0-7：个人主页下显示所有游戏
         autoPagingInHomepage: true,
-		// 功能1-4：回复内容回溯
-		replyTraceback: true,
+        // 功能1-4：回复内容回溯
+        replyTraceback: true,
         // 功能1-1设置：高亮发帖楼主功能
         highlightBack : "#3890ff", // 高亮背景色
         highlightFront : "#ffffff", // 高亮字体颜色
@@ -55,9 +55,9 @@
         // 功能4-3设置：汇总以获得和未获得奖杯是否默认折叠
         foldTropySummary: false, // true则默认折叠，false则默认展开
         // 功能5-1设置：是否在`游戏`页面启用降低无白金游戏的图标透明度
-		filterNonePlatinumAlpha : 0.2, // 透密 [0, 1] 不透明，如果设置为1则关闭该功能
-		//夜间模式
-		nightMode: false,
+        filterNonePlatinumAlpha : 0.2, // 透密 [0, 1] 不透明，如果设置为1则关闭该功能
+        //夜间模式
+        nightMode: false,
         // 约战页面去掉发起人头像
         removeHeaderInBattle: false
     }
@@ -104,12 +104,12 @@
         $("#pcmenu > li:nth-child(1)").before("<li><a href='https://psnine.com/news'>新闻</a></li>")
     }
 
-	// 功能0-2：夜间模式
-	if(settings.nightMode){
-		$("body").append(`
-            <style>li[style="background:#f5faec"]{background:#344836 !important}li[style="background:#fdf7f7"]{background:#4f3945 !important}li[style="background:#faf8f0"]{background:#4e4c39 !important}li[style="background:#f4f8fa"]{background:#505050 !important}span[style="color:blue;"]{color:#64a5ff !important}span[style="color:red;"]{color:#ff6464 !important}span[style="color:brown;"]{color:#ff8864 !important}.tit3{color:white !important}.mark{background:#bbb !important;color:#bbb}body.bg{background:#2b2b2b !important}.list li,.box .post,td,th{border-bottom:1px solid #333}.content{color:#bbb !important}.psnnode{background:#656565}.box{background:#3d3d3d !important}.title a{color:#bbb}.text-strong,strong{color:#bbb !important}.twoge{color:white !important}.storeinfo{color:#bbb !important}.alert-warning{background:#4d4d4d !important}.alert-info{background:#5e5e5e !important}.alert-success{background:#4b4b4b !important}h1,.title2{color:#fff !important}.inav{background:#3d3d3d !important}.inav li.current{background:#4b4b4b !important}.ml100 p{color:#fff !important}.t1{background:#657caf !important}.t2{background:#845e2f !important}.t3{background:#707070 !important}.t4{background:#8b4d2d !important}blockquote{background:#bababa !important}.text-gray{color:#bbb !important}.tradelist li{color:white !important}.tbl{background:#3c3c3c !important}.genelist li:hover,.touchclick:hover{background:#333 !important}.cloud{background-color:#3c3c3c!important}.showbar{background:radial-gradient(at center top,#7B8492,#3c3c3c)}.side .darklist{background-color:#3c3c3c}.side .hd3{background-color:#222}.header,.dropdown ul{background-color:#222}.list li .sonlist li{background-color:#333}.node{background-color:#3b4861}.rep{background-color:#3b4861}.btn-gray{background-color:#666}</style>
-		`)
-	}
+    // 功能0-2：夜间模式
+    if(settings.nightMode){
+        $("body").append(`
+<style>li[style="background:#f5faec"]{background:#344836 !important}li[style="background:#fdf7f7"]{background:#4f3945 !important}li[style="background:#faf8f0"]{background:#4e4c39 !important}li[style="background:#f4f8fa"]{background:#505050 !important}span[style="color:blue;"]{color:#64a5ff !important}span[style="color:red;"]{color:#ff6464 !important}span[style="color:brown;"]{color:#ff8864 !important}.tit3{color:white !important}.mark{background:#bbb !important;color:#bbb}body.bg{background:#2b2b2b !important}.list li,.box .post,td,th{border-bottom:1px solid #333}.content{color:#bbb !important}.psnnode{background:#656565}.box{background:#3d3d3d !important}.title a{color:#bbb}.text-strong,strong{color:#bbb !important}.twoge{color:white !important}.storeinfo{color:#bbb !important}.alert-warning{background:#4d4d4d !important}.alert-info{background:#5e5e5e !important}.alert-success{background:#4b4b4b !important}h1,.title2{color:#fff !important}.inav{background:#3d3d3d !important}.inav li.current{background:#4b4b4b !important}.ml100 p{color:#fff !important}.t1{background:#657caf !important}.t2{background:#845e2f !important}.t3{background:#707070 !important}.t4{background:#8b4d2d !important}blockquote{background:#bababa !important}.text-gray{color:#bbb !important}.tradelist li{color:white !important}.tbl{background:#3c3c3c !important}.genelist li:hover,.touchclick:hover{background:#333 !important}.cloud{background-color:#3c3c3c!important}.showbar{background:radial-gradient(at center top,#7B8492,#3c3c3c)}.side .darklist{background-color:#3c3c3c}.side .hd3{background-color:#222}.header,.dropdown ul{background-color:#222}.list li .sonlist li{background-color:#333}.node{background-color:#3b4861}.rep{background-color:#3b4861}.btn-gray{background-color:#666}</style>
+`)
+    }
 
     // 功能0-3：黑条文字鼠标悬浮显示
     if(settings.hoverUnmark){
@@ -336,12 +336,12 @@
 
     // 功能1-6：屏蔽黑名单中的用户发言内容
     function Filter(psnnode, parent, userList) {
-                $(psnnode).map(function(i,v){
-                    if($(v).html().toLowerCase() == userList.toLowerCase() ){
-                        $(v).parents(parent).hide()
-                    }
-                })
+        $(psnnode).map(function(i,v){
+            if($(v).html().toLowerCase() == userList.toLowerCase() ){
+                $(v).parents(parent).hide()
             }
+        })
+    }
     function filterUserPost() {
         if (settings.blockList.length > 0) {
             settings.blockList.map((user,i)=>{
@@ -366,18 +366,18 @@
     function hoverShowReply(div) {
         var subClass = "span[class$='r']";
         $(`${div} ${subClass}`).css({
-			opacity:0,
-			transition:"all 0.2s ease"
-		})
-		$(div).hover(function(){
-			$(this).find(subClass).css({
-				opacity:1
-			})
-		},function(){
-			$(this).find(subClass).css({
-				opacity:0
-			})
-		})
+            opacity:0,
+            transition:"all 0.2s ease"
+        })
+        $(div).hover(function(){
+            $(this).find(subClass).css({
+                opacity:1
+            })
+        },function(){
+            $(this).find(subClass).css({
+                opacity:0
+            })
+        })
     }
     hoverShowReply(".post")
     if(/^(?!.*trade|.*qa(\?ob=.*)?$)/.test(window.location.href)) {
@@ -407,9 +407,9 @@
                       //'\\[trophy=(.+)\\]\\[/trophy\\]': '<a href="$1">$2</a>',
                       //'\\[trophy=(.+)\\](.+)\\[/trophy\\]': '<a href="$1">$2</a>',
                       '\\n': '<br/>'}
-         $("textarea[name='content']").keyup(function(){
-             var bbcodeSource = document.getElementsByName("content")[0].value
-             var outputContent = replaceAll(bbcodeSource, bbcode)
+        $("textarea[name='content']").keyup(function(){
+            var bbcodeSource = document.getElementsByName("content")[0].value
+            var outputContent = replaceAll(bbcodeSource, bbcode)
             $("#output").html(outputContent)
         });
     }
@@ -430,7 +430,7 @@
     function addHoverProfile() {
         if(settings.hoverHomepage) {
             const INITIAL_CONTENT = '加载中...'
-            $(".l[href*='psnid/']").map(function(i, v) {
+            $("a[href*='psnid/'] > img").parent().map(function(i, v) {
                 var url = $(this).attr("href");
                 $(this).attr("id", "profile" + i)
                 tippy("#profile" + i, {
@@ -708,8 +708,8 @@
         //for(var unitIndex = 0; unitIndex < unitContainer.length; unitIndex++ ){
         //    var pricePer = Number(unitContainer.item(unitIndex).children[0].children[1].textContent.replace("省", "").replace("%", ""))
         //    console.log(pricePer)
-       // }
-    }
+        // }
+        }
 
 
     // 奖杯系统优化
@@ -970,55 +970,59 @@
             var psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/)//从cookie中取出psnid
             if(psnidCookie){
                 var psnid = psnidCookie[1]
-                var myGameUrl = $(this).parent().attr("href") + `?psnid=${psnid}`
-            }
-            tippy("#game" + i, {
-                content: "加载中",
-                animateFill: false,
-                placement: "left",
-                delay: 500,
-                async onShow(tip) {
-                        if (!tip.state.ajax) {
-                            tip.state.ajax = {
-                                isFetching: false,
-                                canFetch: true,
-                            }
-                        }
-                        if (tip.state.ajax.isFetching || !tip.state.ajax.canFetch) {
-                            return
-                        }
-                        tip.state.ajax.isFetching = true
-                        tip.state.ajax.canFetch = false
-                        try {
-                            $.ajax({
-                                type : "GET",
-                                url : myGameUrl,
-                                dataType : "html",
-                                success: function(data) {
-                                    var reg = /[\s\S]*<\/body>/g;
-                                    var html = reg.exec(data)[0];
-                                    var inner = $(html).find("td > em > .text-strong")
-                                    if(inner.length > 0){
-                                        tip.setContent("你的奖杯完成度：" + inner.text())
-                                    } else {
-                                        tip.setContent("你还没有获得该游戏的任何奖杯")
-                                    }
-                                },
-                                error : function() {
-                                    console.log("无法获取页面信息");
+                var myGameUrl = $(this).parent().attr("href")
+                if (myGameUrl != undefined ) {
+                    myGameUrl = $(this).parent().attr("href") + `?psnid=${psnid}`
+                    tippy("#game" + i, {
+                        content: "加载中",
+                        animateFill: false,
+                        placement: "left",
+                        delay: 500,
+                        async onShow(tip) {
+                            if (!tip.state.ajax) {
+                                tip.state.ajax = {
+                                    isFetching: false,
+                                    canFetch: true,
                                 }
-                            });
-                        } catch (e) {
-                            tip.setContent(`获取失败：${e}`)
-                        } finally {
-                            tip.state.ajax.isFetching = false
-                        }
-                    },
-                    onHidden(tip) {
-                        tip.state.ajax.canFetch = true
-                        tip.setContent("加载中")
-                    },
-            })
+                            }
+                            if (tip.state.ajax.isFetching || !tip.state.ajax.canFetch) {
+                                return
+                            }
+                            tip.state.ajax.isFetching = true
+                            tip.state.ajax.canFetch = false
+                            try {
+                                $.ajax({
+                                    type : "GET",
+                                    url : myGameUrl,
+                                    dataType : "html",
+                                    success: function(data) {
+                                        var reg = /[\s\S]*<\/body>/g;
+                                        var html = reg.exec(data)[0];
+                                        var inner = $(html).find("td > em > .text-strong")
+                                        if(inner.length > 0){
+                                            tip.setContent("你的奖杯完成度：" + inner.text())
+                                        } else {
+                                            tip.setContent("你还没有获得该游戏的任何奖杯")
+                                        }
+                                    },
+                                    error : function() {
+                                        console.log("无法获取页面信息");
+                                    }
+                                });
+                            } catch (e) {
+                                tip.setContent(`获取失败：${e}`)
+                            } finally {
+                                tip.state.ajax.isFetching = false
+                            }
+                        },
+                        onHidden(tip) {
+                            tip.state.ajax.canFetch = true
+                            tip.setContent("加载中")
+                        },
+                    })
+                }
+            }
+
         })
     }
 
@@ -1050,8 +1054,8 @@
     if(window.localStorage){ // 如果支持localstorage
         var newSettings = JSON.parse(JSON.stringify(settings))
         $(".header .dropdown ul").append(`
-            <li><a href="javascript:void(0);" id="psnine-enhanced-version-opensetting">插件设置</a></li>
-        `)
+<li><a href="javascript:void(0);" id="psnine-enhanced-version-opensetting">插件设置</a></li>
+`)
         $("body").append(`
 <style>.setting-panel-box{z-index:9999;background-color:#fff;transition:all .4s ease;position:fixed;left:50%;transform:translateX(-50%);top:-5000px;width:500px;box-shadow:0 0 20px rgba(0,0,0,0.3);padding:10px 0;box-sizing:border-box;border-radius:4px;max-height:700px;overflow-y:scroll;scrollbar-color:#dcdcdc #fff;scrollbar-width:thin}.setting-panel-box::-webkit-scrollbar{width:4px;background-color:#fff}.setting-panel-box::-webkit-scrollbar-button{display:none}.setting-panel-box::-webkit-scrollbar-thumb{background-color:#dcdcdc}.setting-panel-box.show{top:20px}.setting-panel-box h2{margin-bottom:10px;padding-left:20px}.setting-panel-box h4{margin-bottom:10px;padding-left:20px;font-weight:400;color:#1f2f3d;font-size:22px}.setting-panel-box .row{display:flex;align-items:center;justify-content:flex-start;width:100%;margin-bottom:5px;padding-left:20px;box-sizing:border-box}.setting-panel-box .row label{line-height:32px;text-align:left;font-size:14px;color:#606266;width:190px}.setting-panel-box .row .mini{line-height:26px;text-align:left;font-size:14px;color:#606266;margin:0 10px 0 0;width:50px}.setting-panel-box .row .normal{line-height:26px;text-align:left;font-size:14px;color:#606266;margin:0 10px 0 0;width:205px}.setting-panel-box .row textarea{resize:vertical;min-height:30px;border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;line-height:26px;box-sizing:border-box;width:227px;padding:0 10px}.setting-panel-box .row input{border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;height:26px;line-height:26px;display:inline-block;width:227px;padding:0 10px}.setting-panel-box .row input#filterNonePlatinum{height:6px;background-color:#e4e7ed;margin:16px 0;border-radius:3px;position:relative;cursor:pointer;vertical-align:middle;outline:none;padding:0}.setting-panel-box .row input#filterNonePlatinum::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border:2px solid #409eff;background-color:#fff;border-radius:50%;transition:.2s;user-select:none}.setting-panel-box .row input#filterNonePlatinum::-moz-range-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border:2px solid #409eff;background-color:#fff;border-radius:50%;transition:.2s;user-select:none}.setting-panel-box .row #filterNonePlatinumValue{margin-left:5px}.setting-panel-box .row select{border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;height:26px;line-height:26px;display:inline-block;width:227px;padding:0 10px}.setting-panel-box .row span{line-height:32px;text-align:left;font-size:14px;color:#606266;margin-right:10px}.setting-panel-box .btnbox{display:flex;align-items:center;justify-content:center}.setting-panel-box button{-webkit-appearance:button;padding:9px 15px;font-size:12px;border-radius:3px;display:inline-block;line-height:1;white-space:nowrap;cursor:pointer;background:#fff;border:1px solid #dcdfe6;color:#606266;text-align:center;box-sizing:border-box;outline:0;margin:0;transition:.1s;font-weight:500;margin:0 10px}.setting-panel-box button:hover{color:#409eff;border-color:#c6e2ff;background-color:#ecf5ff}.setting-panel-box button.confirm{color:#fff;background-color:#3890ff}.setting-panel-box button.confirm:hover{background-color:#9ec9ff}</style>
 <div class=setting-panel-box><h2>PSN中文网功能增强插件设置</h2><div class=row><a href=https://github.com/swsoyee/psnine-enhanced-version><img src=https://img.shields.io/github/stars/swsoyee/psnine-enhanced-version.svg?style=social></img></a></div><div class=row><label>夜间模式</label><select id=nightMode><option value=true>启用<option value=false>关闭</select></div><div class=row><label>导航增加新闻入口</label><select id=addNews><option value=true>启用<option value=false>关闭</select></div><div class=row><label>高亮用户ID</label><textarea name="" id="highlightSpecificID" cols="30" rows="2"></textarea></div><div class=row><label>黑名单ID</label><textarea name="" id="blockList" cols="30" rows="2"></textarea></div><div class=row><label>机因中显示被@的内容</label><select id=replyTraceback><option value=true>启用<option value=false>关闭</select></div><div class=row><label>悬浮显示刮刮卡内容</label><select id=hoverUnmark><option value=true>启用<option value=false>关闭</select></div><div class=row><label>个人主页下显示所有游戏</label><select id=autoPagingInHomepage><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动签到</label><select id=autoCheckIn><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动向后翻页数</label><input type=number class=normal id=autoPaging></div><div class=row><label>问答区标题着色</label><select id=qaHighlightTitle><option value=true>启用<option value=false>关闭</select></div><div class=row><label>悬浮头像显示个人信息</label><select id=hoverHomepage><option value=true>启用<option value=false>关闭</select></div><div class=row><label>奖杯默认折叠</label><select id=foldTropySummary><option value=true>启用<option value=false>关闭</select></div><div class=row><label>约战页面去掉发起人头像</label><select id=removeHeaderInBattle><option value=true>启用<option value=false>关闭</select></div><div class=row><label>无白金游戏图标透明度</label><input id=filterNonePlatinum type=range min=0 max=1 step=0.1><span id=filterNonePlatinumValue></span></div><div class=row><label>汇率</label><span>港币</span><input type=number class=mini name="" id=dollarHKRatio><span>美元</span><input type=number class=mini name="" id=dollarRatio></div><div class=row><label></label><span>英镑</span><input type=number class=mini name="" id=poundRatio><span>日元</span><input type=number class=mini name="" id=yenRatio></div><div class=btnbox><button class=confirm>确定</button><button class=cancel>取消</button></div></div>
@@ -1059,7 +1063,7 @@
 
         // 点击打开设置面板
         $("#psnine-enhanced-version-opensetting").on("click",function(){
-			$(".setting-panel-box").addClass("show")
+            $(".setting-panel-box").addClass("show")
             tippy("#highlightSpecificID", {
                 content: 'ID以英文逗号隔开，不区分大小写',
                 zIndex: 10000
@@ -1068,7 +1072,7 @@
                 content: 'ID以英文逗号隔开，不区分大小写',
                 zIndex: 10000
             })
-			var switchSettings = ["hoverUnmark",
+            var switchSettings = ["hoverUnmark",
                                   "replyTraceback",
                                   "nightMode",
                                   "foldTropySummary",
@@ -1078,26 +1082,26 @@
                                   "autoPagingInHomepage",
                                   "removeHeaderInBattle",
                                   "autoCheckIn"] //只有true / false的设置项
-			var self = this
-			switchSettings.map((name,i)=>{
-				if(newSettings[name]){
-					$(`#${name} option:nth-child(1)`).attr("selected","true")
-				}else{
-					$(`#${name} option:nth-child(2)`).attr("selected","true")
-				}
-				$(`#${name}`).change(function(){
-					newSettings[name] = JSON.parse($(this).children('option:selected').val())
-				})
-			})
+            var self = this
+            switchSettings.map((name,i)=>{
+                if(newSettings[name]){
+                    $(`#${name} option:nth-child(1)`).attr("selected","true")
+                }else{
+                    $(`#${name} option:nth-child(2)`).attr("selected","true")
+                }
+                $(`#${name}`).change(function(){
+                    newSettings[name] = JSON.parse($(this).children('option:selected').val())
+                })
+            })
 
             // 降低无白金透明度设置
-			$("#filterNonePlatinum").val(newSettings.filterNonePlatinumAlpha)
-			$("#filterNonePlatinumValue").html(newSettings.filterNonePlatinumAlpha * 100 + "%")
+            $("#filterNonePlatinum").val(newSettings.filterNonePlatinumAlpha)
+            $("#filterNonePlatinumValue").html(newSettings.filterNonePlatinumAlpha * 100 + "%")
             $("#filterNonePlatinum").on("input", function() {
-				var value = $("#filterNonePlatinum").val()
-				$("#filterNonePlatinumValue").html(value * 100 + "%")
-				newSettings.filterNonePlatinumAlpha = value
-			})
+                var value = $("#filterNonePlatinum").val()
+                $("#filterNonePlatinumValue").html(value * 100 + "%")
+                newSettings.filterNonePlatinumAlpha = value
+            })
 
             // 高亮用户
             var highlightSpecificIDText = newSettings.highlightSpecificID.length?newSettings.highlightSpecificID.join(","):""
