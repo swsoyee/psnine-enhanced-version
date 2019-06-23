@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.8.4
+// @version      0.8.5
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404
@@ -216,7 +216,7 @@
     // 功能1-2：高亮用户ID
     function addHighlightOnID() {
         settings.highlightSpecificID.map(function(i, n) {
-            $('.meta>[href="' + window.location.href.match("(.*)\.com")[0] + '/psnid/' + i + '"]').css({ "background-color": settings.highlightSpecificBack, "color": settings.highlightSpecificFront })
+            $('.meta>[href="' + window.location.href.match("(.*)\\.com")[0] + '/psnid/' + i + '"]').css({ "background-color": settings.highlightSpecificBack, "color": settings.highlightSpecificFront })
         });
     }
     addHighlightOnID()
@@ -249,8 +249,6 @@
         GM_addStyle(`.replyTraceback {background-color: rgb(0, 0, 0, 0.05) !important; padding: 10px !important; color: rgb(160, 160, 160, 1) !important; border-bottom: 1px solid !important;}`)
             // 悬浮框内容左对齐样式
         GM_addStyle(`.tippy-content {text-align: left;}`)
-            // 追加的@回复样式
-        GM_addStyle(`.responserHeader {display: inline-block; color: #666"}`)
             // 每一层楼的回复外框 (0 ~ N - 1)
         var allSourceOutside = document.querySelectorAll(".post > .ml64") // 30楼的话是29
             // 每一层楼的回复框(0 ~ N - 1) floor
@@ -302,11 +300,11 @@
                                 replyContents = allSource[outputID].innerText
                             }
                             var avatorImg = avator[outputID].getElementsByTagName("img")[0].getAttribute("src")
-                            replayBox.innerHTML = `<div class="responserHeader"><img src="${avatorImg}" height="25" width="25">&nbsp${linkContent[1]}：</img></div><div class="responserContent_${floor}_${outputID}" style="display: inline-block;">${replyContents}</div>`
+                            replayBox.innerHTML = `<div><span class="badge"><img src="${avatorImg}" height="15" width="15" style="margin-right: 5px; border-radius: 8px;"></img>${linkContent[1]}</span><span class="responserContent_${floor}_${outputID}" style="display: inline-block; padding-left: 10px;">${replyContents}</span></div>`
                             allSourceOutside[floor].insertBefore(replayBox, allSource[floor])
                                 // 如果内容超过45个字符，则增加悬浮显示全文内容功能
                             if (allSource[outputID].innerText.length > 45) {
-                                tippy('.responserContent_' + floor + '_' + outputID, {
+                                tippy(`.responserContent_${floor}_${outputID}`, {
                                     content: allSource[outputID].innerText,
                                     animateFill: false
                                 })
@@ -383,7 +381,7 @@
         })
     }
     hoverShowReply(".post")
-    if (/^(?!.*trade|.*qa(\?ob=.*)?$)/.test(window.location.href)) {
+    if (/^(?!.*trade|.*qa(\?(ob|title)=.*)?$)/.test(window.location.href)) {
         hoverShowReply("div[class$='ml64']")
     }
 
@@ -662,9 +660,9 @@
             } else {
                 CNY = foreignCurrency(price, "¥", 1)
             }
-            $(".dd_price span:last-child").eq(i).after("&nbsp&nbsp<s class='dd_price_old'>¥" + CNY[0].toFixed(2) + "</s><span class='dd_price_off'>¥" + CNY[1].toFixed(2) + "</span>")
+            $(".dd_price span:last-child").eq(i).after(`${"&nbsp".repeat(25)}<span class='dd_price_off' style="font-size:12px;">对应人民币价格：</span><s class='dd_price_old'>¥${CNY[0].toFixed(2)}</s><span class='dd_price_off'>¥${CNY[1].toFixed(2)}</span>`)
             if (CNY[2] > 0) {
-                $(".dd_price span:last-child").eq(i).after("</span><span class='dd_price_plus'>¥" + CNY[2].toFixed(2) + "</span>")
+                $(".dd_price span:last-child").eq(i).after(`</span><span class='dd_price_plus'>¥${CNY[2].toFixed(2)}</span>`)
             }
         })
 
