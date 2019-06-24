@@ -1163,20 +1163,18 @@
                 });
             });
             // 给奖杯汇总标题填充文字
+            var summaryTropyDict = {
+                '.t1': ['text-platinum', '白'],
+                '.t2': ['text-gold', '金'],
+                '.t3': ['text-silver', '银'],
+                '.t4': ['text-bronze', '铜'],
+            };
+            var tropySubText = ""
+            for (var i in summaryTropyDict) {
+                tropySubText += `<span class=${summaryTropyDict[i][0]}> ${summaryTropyDict[i][1]}${object.parent().parent(i).length}</span>`
+            }
             $(`.${className}> .tropyCount`).append(
-                "<span style='color:#808080;'>" +
-                title +
-                "：<span class='text-platinum'>白" +
-                object.parent().parent('.t1').length +
-                "</span><span class='text-gold'> 金" +
-                object.parent().parent('.t2').length +
-                "</span><span class='text-silver'> 银" +
-                object.parent().parent('.t3').length +
-                "</span><span class='text-bronze'> 铜" +
-                object.parent().parent('.t4').length +
-                "<span class='text-strong'> 总" +
-                object.length +
-                '</span></span>'
+                `<span style='color:#808080;'>${title}：${tropySubText}<span class='text-strong'> 总${object.length}</span></span>`
             );
         }
         // 创建已获得奖杯汇总框
