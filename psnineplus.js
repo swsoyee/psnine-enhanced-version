@@ -299,13 +299,7 @@
     // 功能1-2：高亮用户ID
     function addHighlightOnID() {
         settings.highlightSpecificID.map(function (i, n) {
-            $(
-                '.meta>[href="' +
-                window.location.href.match('(.*)\\.com')[0] +
-                '/psnid/' +
-                i +
-                '"]'
-            ).css({
+            $(`.meta>[href="${window.location.href.match('(.*)\\.com')[0]}/psnid/${i}"]`).css({
                 'background-color': settings.highlightSpecificBack,
                 color: settings.highlightSpecificFront,
             });
@@ -766,7 +760,7 @@
         };
         var tooltip = {
             headerFormat: '<b>{series.name}</b><br>',
-            pointFormat: '{point.x:%y年%b%e日}: ' + replaceString + '{point.y:.2f}',
+            pointFormat: `{point.x:%y年%b%e日}: ${replaceString}{point.y:.2f}`,
         };
         var plotOptions = {
             areaspline: {
@@ -855,13 +849,7 @@
         // 功能2-3：根据降价幅度变更标题颜色
         $('.dd_box').map(function (i, n) {
             var offPercent = Number(
-                $(this)
-                    .children('.dd_pic')
-                    .children('div')
-                    .eq(0)
-                    .text()
-                    .replace('省', '')
-                    .replace('%', '')
+                $(this).find('.dd_pic > div[class^="dd_tag"] ').text().match('省(.+)%')[1]
             );
             if (offPercent >= 80) {
                 $('.dd_title.mb10>a').eq(i).css({ color: 'rgb(220,53,69)' });
