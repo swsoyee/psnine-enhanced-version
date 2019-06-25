@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.8.6
+// @version      0.8.7
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404
@@ -299,13 +299,7 @@
     // 功能1-2：高亮用户ID
     function addHighlightOnID() {
         settings.highlightSpecificID.map(function (i, n) {
-            $(
-                '.meta>[href="' +
-                window.location.href.match('(.*)\\.com')[0] +
-                '/psnid/' +
-                i +
-                '"]'
-            ).css({
+            $(`.meta>[href="${window.location.href.match('(.*)\\.com')[0]}/psnid/${i}"]`).css({
                 'background-color': settings.highlightSpecificBack,
                 color: settings.highlightSpecificFront,
             });
@@ -580,7 +574,7 @@
             $("a[href*='psnid/'] > img").parent().map(function (i, v) {
                 var url = $(this).attr('href');
                 $(this).attr('id', 'profile' + i);
-                tippy('#profile' + i, {
+                tippy(`#profile${i}`, {
                     content: INITIAL_CONTENT,
                     delay: 700,
                     maxWidth: '500px',
@@ -640,16 +634,12 @@
         // 日期转换函数
         function converntTime(value) {
             var timeArray = value
-                .replace('年', '-')
-                .replace('月', '-')
-                .replace('日', '')
+                .replace(/年|月|日/g, '-')
                 .split('-');
-            timeArray[0] = '20' + timeArray[0];
-            timeArray[1] = Number(timeArray[1]) - 1;
-            return Date.UTC(timeArray[0], timeArray[1], timeArray[2]);
+            return Date.UTC('20' + timeArray[0], Number(timeArray[1]) - 1, timeArray[2]);
         }
         // 获取X轴的日期
-        var xContents = document.querySelectorAll('p.dd_text');
+        var xContents = $('p.dd_text');
         var xValue = [];
         var today = new Date();
         var todayArray = Date.UTC(
@@ -665,23 +655,25 @@
         }
 
         //获取价格
-        var y = document.querySelectorAll('.dd_price');
+        var y = $('.dd_price');
 
         var yValueNormal = [];
         var yValuePlus = [];
         for (var yindex = 0; yindex < y.length; yindex++) {
-            var yPriceOld = y[yindex].querySelector('.dd_price_old').innerText;
-            var yPriceNormal = y[yindex].querySelector('.dd_price_off').innerText;
-            var yPricePlus = y[yindex].querySelector('.dd_price_plus');
+            var yPriceOld = $(y[yindex]).children('.dd_price_old').text();
+            var yPriceNormal = $(y[yindex]).children('.dd_price_off').text();
 
+            // 普通会员价格曲线值
             yValueNormal = [yPriceOld, yPriceNormal, yPriceNormal, yPriceOld].concat(
                 yValueNormal
             );
+            // PS+会员价格曲线值
+            var yPricePlus = $(y[yindex]).children('.dd_price_plus');
             var pricePlusTamp = '';
-            if (yPricePlus == null) {
+            if (yPricePlus.length == 0) {
                 pricePlusTamp = yPriceNormal;
             } else {
-                pricePlusTamp = yPricePlus.innerText;
+                pricePlusTamp = yPricePlus.text();
             }
             yValuePlus = [yPriceOld, pricePlusTamp, pricePlusTamp, yPriceOld].concat(
                 yValuePlus
@@ -692,24 +684,27 @@
         var xForPlotPlus = new Array();
         // 判断地区
         var replaceString = '';
-        if (yValueNormal[0].search('HK\\$') > -1) {
-            replaceString = 'HK$';
-        } else if (yValueNormal[0].search('\\$') > -1) {
-            replaceString = '$';
-        } else if (yValueNormal[0].search('\\£') > -1) {
-            replaceString = '£';
-        } else {
-            replaceString = '¥';
+        switch (yValueNormal[0].substring(0, 1)) {
+            case 'H':
+                replaceString = 'HK$';
+                break;
+            case '$':
+                replaceString = '$';
+                break;
+            case '£':
+                replaceString = '£';
+                break;
+            case '¥':
+                replaceString = '¥';
+        }
+
+        // 构造绘图用数组函数
+        function createPlotArray(i, xArray, yArray, replaceString) {
+            return [xArray[i], Number(yArray[i].replace(replaceString, ''))]
         }
         for (var i = 0; i < xValue.length; i++) {
-            xForPlotNormal[i] = [
-                xValue[i],
-                Number(yValueNormal[i].replace(replaceString, '')),
-            ];
-            xForPlotPlus[i] = [
-                xValue[i],
-                Number(yValuePlus[i].replace(replaceString, '')),
-            ];
+            xForPlotNormal[i] = createPlotArray(i, xValue, yValueNormal, replaceString)
+            xForPlotPlus[i] = createPlotArray(i, xValue, yValuePlus, replaceString)
         }
         // 修正最后一组数据
         if (xForPlotNormal[xForPlotNormal.length - 1][0] > todayArray) {
@@ -766,7 +761,7 @@
         };
         var tooltip = {
             headerFormat: '<b>{series.name}</b><br>',
-            pointFormat: '{point.x:%y年%b%e日}: ' + replaceString + '{point.y:.2f}',
+            pointFormat: `{point.x:%y年%b%e日}: ${replaceString}{point.y:.2f}`,
         };
         var plotOptions = {
             areaspline: {
@@ -855,13 +850,7 @@
         // 功能2-3：根据降价幅度变更标题颜色
         $('.dd_box').map(function (i, n) {
             var offPercent = Number(
-                $(this)
-                    .children('.dd_pic')
-                    .children('div')
-                    .eq(0)
-                    .text()
-                    .replace('省', '')
-                    .replace('%', '')
+                $(this).find('.dd_pic > div[class^="dd_tag"] ').text().match('省(.+)%')[1]
             );
             if (offPercent >= 80) {
                 $('.dd_title.mb10>a').eq(i).css({ color: 'rgb(220,53,69)' });
@@ -1019,20 +1008,15 @@
 
         // 奖杯获得时间年月统计
         var getTimeArray = [];
-        var timeElements = document.getElementsByClassName(
-            'lh180 alert-success pd5 r'
-        );
+        var timeElements = $('em.lh180.alert-success.pd5.r');
         if (timeElements.length > 0) {
             for (var timeIndex = 0; timeIndex < timeElements.length; timeIndex++) {
-                var dayTime = document.getElementsByClassName(
-                    'lh180 alert-success pd5 r'
-                )[timeIndex].innerText;
+                var dayTime = timeElements[timeIndex].innerText;
                 var yearTips = '';
                 // 时间丢失奖杯bug修复
                 if (dayTime == '时间丢失') {
-                    dayTime = document
-                        .getElementsByClassName('lh180 alert-success pd5 r')[0]
-                        .innerText.split('\n');
+                    // 选取第一行的时间作为缺失时间补充
+                    dayTime = timeElements[0].innerText.split('\n');
                     yearTips = Number(
                         timeElements[0].getAttribute('tips').replace('年', '')
                     );
@@ -1153,30 +1137,28 @@
                 );
                 // 添加鼠标悬浮弹出消息
                 tippy(`#${className}Small${i}`, {
-                    content: '<div><span>' +
+                    content: '<td>' +
                         $(this).parent().parent().html() +
-                        '</span><p></p><span>' +
+                        '</td><p></p><td>' +
                         $(this).parent().parent().next().html() +
-                        '</span></div>',
+                        '</td>',
                     theme: 'psnine',
                     animateFill: false,
                 });
             });
             // 给奖杯汇总标题填充文字
+            var summaryTropyDict = {
+                '.t1': ['text-platinum', '白'],
+                '.t2': ['text-gold', '金'],
+                '.t3': ['text-silver', '银'],
+                '.t4': ['text-bronze', '铜'],
+            };
+            var tropySubText = ""
+            for (var i in summaryTropyDict) {
+                tropySubText += `<span class=${summaryTropyDict[i][0]}> ${summaryTropyDict[i][1]}${object.parent().parent(i).length}</span>`
+            }
             $(`.${className}> .tropyCount`).append(
-                "<span style='color:#808080;'>" +
-                title +
-                "：<span class='text-platinum'>白" +
-                object.parent().parent('.t1').length +
-                "</span><span class='text-gold'> 金" +
-                object.parent().parent('.t2').length +
-                "</span><span class='text-silver'> 银" +
-                object.parent().parent('.t3').length +
-                "</span><span class='text-bronze'> 铜" +
-                object.parent().parent('.t4').length +
-                "<span class='text-strong'> 总" +
-                object.length +
-                '</span></span>'
+                `<span style='color:#808080;'>${title}：${tropySubText}<span class='text-strong'> 总${object.length}</span></span>`
             );
         }
         // 创建已获得奖杯汇总框
@@ -1200,7 +1182,7 @@
         $('.dropmenu').append('<li><em>筛选</em></li>'); // 追加“筛选”字样
         // 追加“未获得”的按钮
         $('.dropmenu').append(
-            "<a id='selectUnget' style='padding:0px 5px; margin-left:10px; border-radius:2px; display: inline-block; color: white;background-color: #3890ff; cursor:pointer; line-height:24px;'>尚未获得</a>"
+            "<a id='selectUnget' style='padding:0px 5px; margin-left:10px; border-radius:2px; display: inline-block; color: white;background-color: #3498db; cursor:pointer; line-height:24px;'>尚未获得</a>"
         );
         // 点击按钮隐藏或者显示
         var clickHideShowNum = 0;
@@ -1211,10 +1193,10 @@
                 .toggle('slow', function () {
                     if (clickHideShowNum++ % 2 == 0) {
                         $('#selectUnget').text('显示全部');
-                        $('#selectUnget').css('background-color', '#9ec9ff');
+                        $('#selectUnget').css({ 'background-color': '#E7EBEE', 'color': '#99A1A7' });
                     } else {
                         $('#selectUnget').text('尚未获得');
-                        $('#selectUnget').css('background-color', '#3890ff');
+                        $('#selectUnget').css({ 'background-color': '#3498db', 'color': '#FFFFFF' });
                     }
                 });
         });
