@@ -1,21 +1,23 @@
 # 🎮 PSN中文网功能增强插件
 
-![users](https://img.shields.io/badge/users-335-orange.svg)
+![users](https://img.shields.io/badge/users-341-orange.svg)
 ![Last commit](https://img.shields.io/github/last-commit/swsoyee/psnine-enhanced-version.svg)
-![](https://img.shields.io/github/license/swsoyee/psnine-enhanced-version.svg)  
+![license](https://img.shields.io/github/license/swsoyee/psnine-enhanced-version.svg)  
 
 作者：[`@InfinityLoop`](https://github.com/swsoyee), [`@mordom0404`](https://github.com/mordom0404)
 
 ---
 <img src="https://raw.githubusercontent.com/swsoyee/psnine-enhanced-version/master/screenshots/homepage.png" width="300" align="right" style="max-width: 50%">
 
+## 🔧 功能介绍
+
 ### ⏫ 全局优化
 
-- 🌙 增加`黑夜模式`主题选择<sup>3</sup>。   
-- 👮 红色高亮特定`用户ID`（默认高亮管理员）<sup>1</sup>。   
+- 🌙 增加`黑夜模式`主题选择<sup>3</sup>。  
+- 👮 红色高亮特定`用户ID`（默认高亮管理员）<sup>1</sup>。  
 - 🚫 增加`黑名单`功能，屏蔽不想看到的用户的一切发言。  
 - ⏬ 增加`回到底部`按钮，快速跳转**回复框**或者**翻页**处。  
-- 🈲 `刮刮条文字`鼠标悬浮显示。   
+- 🈲 `刮刮条文字`鼠标悬浮显示。  
 - 📰 可选择在导航恢复已经被移除的**新闻**入口。  
 - ✅ 每日打开页面即可**自动签到**。  
 - 🤼‍♂️ [`约战`](https://psnine.com/battle)页面可以选择不显示发起用户头像。  
@@ -43,7 +45,7 @@
 - 📉 [`数折`](https://psnine.com/dd/HP9000-CUSA08392_00-ASIAPLACEHOLDER1)中增加`价格走势图`，快速了解**走势**和**史低**。  
 - 💱 [`数折`](https://psnine.com/dd)增加人民币价格换算，无需自己进行价格换算<sup>2</sup>。  
 - 🈹 根据**降价幅度**变更游戏标题颜色`💚<20%` `💛<50%` `🧡<80%` `💖>80%`，快速区分最大优惠。  
-- 🈹 增加`只看史低`功能按键~~不花任何一分冤枉钱~~。  
+- 🈹 [`数折`](https://psnine.com/dd)和[`活动`]页面增加`只看史低`功能按键~~不花任何一分冤枉钱~~。  
 
 ---
 <img src="https://raw.githubusercontent.com/swsoyee/psnine-enhanced-version/master/screenshots/trophySummary.png" width="300" align="right" style="max-width: 50%">  
@@ -59,8 +61,6 @@
 
 ---
 
-
-
 ## 💻 可用平台
 ||Chrome|FireFox|Edge|Maxthon|QQ浏览器|360浏览器|
 | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
@@ -72,10 +72,10 @@
 
 ## 📥 安装地址
 
-详情参照[`Greasy Fork`](https://greasyfork.org/zh-CN/scripts/375985-psn%E4%B8%AD%E6%96%87%E7%BD%91%E5%8A%9F%E8%83%BD%E5%A2%9E%E5%BC%BA)。 
-
+详情参照[`Greasy Fork`](https://greasyfork.org/zh-CN/scripts/375985-psn%E4%B8%AD%E6%96%87%E7%BD%91%E5%8A%9F%E8%83%BD%E5%A2%9E%E5%BC%BA)。
 
 ## ❕ 附注
+
 1. 功能由[`mordom0404`](https://psnine.com/psnid/mordom0404)提供。
 2. 由于没有合适的外汇API，汇率为定值，可以自行在脚本中更改。
 3. 如果使用插件内的**黑夜模式**时存在瞬时白转黑的情况，建议关闭插件中的**黑夜模式**，使用`Stylus`或者`Stylish`扩展安装[`CSS`](https://userstyles.org/styles/167244/p9)版`黑夜模式`，或者在[`Greasy Fork`](https://greasyfork.org/zh-CN/scripts/376181-p9%E5%A4%9C%E9%97%B4%E6%A8%A1%E5%BC%8F)上安装独立插件版**黑夜模式**。
@@ -90,7 +90,6 @@
 ---
 <img src="https://raw.githubusercontent.com/swsoyee/psnine-enhanced-version/master/screenshots/homepage.png" width="420" align="right" style="max-width: 50%">
 
-
 本CSS样式为[`P9`](https://psnine.com/)的夜间模式，为了方便夜间使用而编写的。
 由于自己日常使用界面有限，可能并不是所有元素都进行了合适的更改，如有发现希望得到各位的反馈以便后期更新。
 
@@ -98,6 +97,7 @@
 ⭐支持帖子的隐藏文字[musk]鼠标划过显示(可选)
 
 ### 更新记录
+
 - v1.8 🐞修复已知问题
 - v1.7 ➕新增多项配色
 - v1.6 🐞修复奖杯tips页面文字颜色过淡的问题
@@ -107,4 +107,5 @@
 - v1.2 🐞修复d7vg.com下的使用问题
 - v1.1 🐞修改奖杯底色，部分页面的高亮颜色
 - v1.0 👑发布
+
 </details>
