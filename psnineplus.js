@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.8.7
+// @version      0.8.8
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404
@@ -890,12 +890,38 @@
 
     // 功能2-5：活动页面根据降价幅度变更背景色
     if (/huodong/.test(window.location.href)) {
-        var unitContainer = $('.store_ul').children;
-        // console.log(unitContainer)
-        //for(var unitIndex = 0; unitIndex < unitContainer.length; unitIndex++ ){
-        //    var pricePer = Number(unitContainer.item(unitIndex).children[0].children[1].textContent.replace("省", "").replace("%", ""))
-        //    console.log(pricePer)
-        // }
+        // $(document.querySelectorAll('li.store_box > .store_pic')).map(function (i, n) {
+        //     var percentValue = (this).querySelector('.store_tag_plus')
+        //     if (percentValue == null) {
+        //         percentValue = (this).querySelector('.store_tag_nor')
+        //     }
+        //     var priceDownLevel = Number(percentValue.innerText.match('省(.+)%')[1]);
+        // })
+
+        // 追加显示史低按键
+        var newButton = document.createElement("li");
+        newButton.innerHTML = '<a id="showLowest">显示史低</a>'
+        document.querySelector('.disabled.h-p').after(newButton)
+
+        // 隐藏游戏box函数
+        function hideShowGameBox(status, text, background, color) {
+            $(document.querySelectorAll('li.store_box')).map(function (i, n) {
+                if ((this).querySelector('.store_tag_best') == null) {
+                    (this).style.display = status;
+                }
+            })
+            $('#showLowest').text(text);
+            $('#showLowest').css({ 'background-color': background, 'color': '#99A1A7' });
+        }
+        // 点击按钮隐藏或者显示
+        var clickHideShowNumLowest2 = 0;
+        $('#showLowest').click(function () {
+            if (clickHideShowNumLowest2++ % 2 == 0) {
+                hideShowGameBox('none', '显示全部', '#E7EBEE');
+            } else {
+                hideShowGameBox('block', '显示史低', '#333F51');
+            }
+        })
     }
 
     // 奖杯系统优化
