@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.8.8
+// @version      0.8.9
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404
@@ -848,18 +848,16 @@
         });
 
         // 功能2-3：根据降价幅度变更标题颜色
+        var priceTitleColorDict = { 100: 'rgb(220,53,69)', 80: 'rgb(253,126,20)', 50: 'rgb(255,193,7)', 20: 'rgb(40,167,69)' };
         $('.dd_box').map(function (i, n) {
             var offPercent = Number(
                 $(this).find('.dd_pic > div[class^="dd_tag"] ').text().match('省(.+)%')[1]
             );
-            if (offPercent >= 80) {
-                $('.dd_title.mb10>a').eq(i).css({ color: 'rgb(220,53,69)' });
-            } else if ((offPercent >= 50) & (offPercent < 80)) {
-                $('.dd_title.mb10>a').eq(i).css({ color: 'rgb(253,126,20)' });
-            } else if ((offPercent >= 20) & (offPercent < 50)) {
-                $('.dd_title.mb10>a').eq(i).css({ color: 'rgb(255,193,7)' });
-            } else {
-                $('.dd_title.mb10>a').eq(i).css({ color: 'rgb(40,167,69)' });
+            for (var key in priceTitleColorDict) {
+                if (offPercent < key) {
+                    $('.dd_title.mb10>a').eq(i).css({ color: priceTitleColorDict[key] });
+                    break;
+                }
             }
         });
 
