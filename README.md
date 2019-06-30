@@ -1,6 +1,6 @@
 # 🎮 PSN中文网功能增强插件
 
-![users](https://img.shields.io/badge/users-341-orange.svg)
+![users](https://img.shields.io/badge/users-342-orange.svg)
 ![Last commit](https://img.shields.io/github/last-commit/swsoyee/psnine-enhanced-version.svg)
 ![license](https://img.shields.io/github/license/swsoyee/psnine-enhanced-version.svg)  
 
@@ -45,7 +45,7 @@
 - 📉 [`数折`](https://psnine.com/dd/HP9000-CUSA08392_00-ASIAPLACEHOLDER1)中增加`价格走势图`，快速了解**走势**和**史低**。  
 - 💱 [`数折`](https://psnine.com/dd)增加人民币价格换算，无需自己进行价格换算<sup>2</sup>。  
 - 🈹 根据**降价幅度**变更游戏标题颜色`💚<20%` `💛<50%` `🧡<80%` `💖>80%`，快速区分最大优惠。  
-- 🈹 [`数折`](https://psnine.com/dd)和[`活动`]页面增加`只看史低`功能按键~~不花任何一分冤枉钱~~。  
+- 🈹 [`数折`](https://psnine.com/dd)和`活动`页面增加`只看史低`功能按键~~不花任何一分冤枉钱~~。  
 
 ---
 <img src="https://raw.githubusercontent.com/swsoyee/psnine-enhanced-version/master/screenshots/trophySummary.png" width="300" align="right" style="max-width: 50%">  
