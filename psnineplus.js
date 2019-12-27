@@ -174,23 +174,23 @@
     *  @return  nextPage      后一页页码
     *  @return  nextPageLink  后一页的链接
     */
-   const getNextPageInfo = () => {
-    // 获取下一页页码
-    const nextPage = Number($('.page > ul > .current:last').text()) + 1;
-    // 如果地址已经有地址信息
-    let nextPageLink = '';
-    if (/page/.test(window.location.href)) {
-        nextPageLink = window.location.href.replace(
-            /page=.+/,
-            'page=' + nextPage
-        );
-    } else {
-        nextPageLink = window.location.href + '&page=' + nextPage;
+    const getNextPageInfo = () => {
+        // 获取下一页页码
+        const nextPage = Number($('.page > ul > .current:last').text()) + 1;
+        // 如果地址已经有地址信息
+        let nextPageLink = '';
+        if (/page/.test(window.location.href)) {
+            nextPageLink = window.location.href.replace(
+                /page=.+/,
+                'page=' + nextPage
+            );
+        } else {
+            nextPageLink = window.location.href + '&page=' + nextPage;
+        }
+        return { nextPage, nextPageLink }
     }
-    return { nextPage, nextPageLink }
-}
     if (settings.autoPaging > 0) {
-        var isbool = true; //触发开关，防止多次调用事件
+        let isbool = true; //触发开关，防止多次调用事件
         $('body').append(
             "<div id='loadingMessage' style='position: absolute;bottom: 0px;position: fixed;right: 1px !important;display:none; color:white;'></div>"
         );
@@ -199,7 +199,7 @@
                 window.location.href
             )
         ) {
-            var autoPagingLimitCount = 0;
+            let autoPagingLimitCount = 0;
             $(window).scroll(function () {
                 //当内容滚动到底部时加载新的内容
                 if (
@@ -213,11 +213,10 @@
                     // 获取下一页页码和链接
                     const { nextPage, nextPageLink } = getNextPageInfo();
                     // 加载页面并且插入
-                    $('#loadingMessage').text(`加载第${nextPage}页...`);
-                    $('#loadingMessage').show();
+                    $('#loadingMessage').text(`加载第${nextPage}页...`).show();
                     $('.page:last').after(`<div class='loadPage${nextPage}'></div>`);
                     $.get(
-                        `${nextPageLink}`,
+                        nextPageLink,
                         {},
                         function (data) {
                             var $response = $('<div />').html(data);
@@ -266,8 +265,7 @@
                     var gamePage =
                         window.location.href + '/psngame?page=' + gamePageIndex;
                     // 加载页面并且插入
-                    $('#loadingMessage').text(`加载第${gamePageIndex}页...`);
-                    $('#loadingMessage').show();
+                    $('#loadingMessage').text(`加载第${gamePageIndex}页...`).show();
                     $.get(
                         gamePage,
                         {},
