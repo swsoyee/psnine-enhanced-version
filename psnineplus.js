@@ -169,6 +169,26 @@
     }
 
     // 功能0-6：自动翻页
+
+    /* 获取当前页面的后一页页码和链接
+    *  @return  nextPage      后一页页码
+    *  @return  nextPageLink  后一页的链接
+    */
+   const getNextPageInfo = () => {
+    // 获取下一页页码
+    const nextPage = Number($('.page > ul > .current:last').text()) + 1;
+    // 如果地址已经有地址信息
+    let nextPageLink = '';
+    if (/page/.test(window.location.href)) {
+        nextPageLink = window.location.href.replace(
+            /page=.+/,
+            'page=' + nextPage
+        );
+    } else {
+        nextPageLink = window.location.href + '&page=' + nextPage;
+    }
+    return { nextPage, nextPageLink }
+}
     if (settings.autoPaging > 0) {
         var isbool = true; //触发开关，防止多次调用事件
         $('body').append(
@@ -190,18 +210,8 @@
                     autoPagingLimitCount < settings.autoPaging
                 ) {
                     isbool = false;
-                    // 获取下一页页码
-                    var nextPage = Number($('.page > ul > .current:last').text()) + 1;
-                    // 如果地址已经有地址信息
-                    var nextPageLink = '';
-                    if (/page/.test(window.location.href)) {
-                        nextPageLink = window.location.href.replace(
-                            /page=.+/,
-                            'page=' + nextPage
-                        );
-                    } else {
-                        nextPageLink = window.location.href + '&page=' + nextPage;
-                    }
+                    // 获取下一页页码和链接
+                    const { nextPage, nextPageLink } = getNextPageInfo();
                     // 加载页面并且插入
                     $('#loadingMessage').text(`加载第${nextPage}页...`);
                     $('#loadingMessage').show();
