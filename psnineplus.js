@@ -291,22 +291,32 @@
     }
     // 帖子优化
     // 功能1-1：高亮发帖楼主
+    /* 
+    * 对发帖楼主增加“楼主”标志函数
+    * @param  userId  用户（楼主）ID
+    */
+    const addOPBadge = (userId) => {
+        $('.psnnode').map((i, n) => {
+            // 匹配楼主ID，变更CSS
+            if ($(n).text() == userId) {
+                $(n).after('<span class="badge badge-1">楼主</span>');
+            }
+        });
+    }
     if (
         /(gene|trade|topic)\//.test(window.location.href) &
         !/comment/.test(window.location.href)
     ) {
         // 获取楼主ID
-        var author = $('.title2').text();
-        $('.psnnode').map(function (i, n) {
-            // 匹配楼主ID，变更CSS
-            if ($(n).text() == author) {
-                $(n).after('<span class="badge badge-1">楼主</span>');
-            }
-        });
+        const authorId = $('.title2').text();
+        addOPBadge(authorId);
     }
-    // 功能1-2：高亮用户ID
-    function addHighlightOnID() {
-        settings.highlightSpecificID.map(function (i, n) {
+
+    /* 
+    * 对关注用户进行ID高亮功能函数
+    */
+    const addHighlightOnID = () => {
+        settings.highlightSpecificID.map((i, n) => {
             $(`.meta>[href="${window.location.href.match('(.*)\\.com')[0]}/psnid/${i}"]`).css({
                 'background-color': settings.highlightSpecificBack,
                 color: settings.highlightSpecificFront,
@@ -316,13 +326,13 @@
     addHighlightOnID();
 
     // 功能1-3：主题中存在 -插图- 一项时，提供预览悬浮窗
-    $("a[target='_blank']").html(function (i, url) {
+    $("a[target='_blank']").html((i, url) => {
         if (url == ' -插图- ') {
             var xOffset = 5;
             var yOffset = 5;
             var imgUrl = $(this).attr('href');
             $(this).hover(
-                function (e) {
+                (e) => {
                     $('body').append(
                         $(
                             `<span id="hoverImage"><img src="${imgUrl}" onload="if (this.width > 500) this.width=500;"</img></span>`
@@ -340,11 +350,11 @@
                         .css('left', e.pageX + yOffset + 'px')
                         .fadeIn(500);
                 },
-                function () {
+                () => {
                     $('#hoverImage').remove();
                 }
             );
-            $(this).mousemove(function (e) {
+            $(this).mousemove((e) => {
                 $('#hoverImage')
                     .css('top', e.pageY - xOffset + 'px')
                     .css('left', e.pageX + yOffset + 'px');
