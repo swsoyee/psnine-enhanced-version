@@ -218,7 +218,7 @@
                     $.get(
                         nextPageLink,
                         {},
-                        function (data) {
+                        (data) => {
                             var $response = $('<div />').html(data);
                             $(`.loadPage${nextPage}`)
                                 .append($response.find('.list'))
@@ -235,7 +235,7 @@
                         },
                         'html'
                     );
-                    setTimeout(function () {
+                    setTimeout(() => {
                         $('#loadingMessage').fadeOut();
                     }, 2000);
                 }
@@ -269,20 +269,20 @@
                     $.get(
                         gamePage,
                         {},
-                        function (data) {
+                        (data) => {
                             var $response = $('<div />').html(data);
                             var nextGameContent = $response.find('tbody > tr');
                             if (nextGameContent.length > 0) {
                                 $('tbody > tr:last').after(nextGameContent);
                                 isbool2 = true;
-                                gamePageIndex += 1;
+                                gamePageIndex++;
                             } else {
                                 $('#loadingMessage').text('没有更多游戏了...');
                             }
                         },
                         'html'
                     );
-                    setTimeout(function () {
+                    setTimeout(() => {
                         $('#loadingMessage').fadeOut();
                     }, 2000);
                 }
