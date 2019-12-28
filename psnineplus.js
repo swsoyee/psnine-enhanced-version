@@ -121,23 +121,33 @@
     }
 
     // 全局优化
-    // 功能0-1：点击跳转到页面底部
-    $('.bottombar').append("<a id='scrollbottom' class='yuan mt10'>B</a>");
-    $('#scrollbottom').click(function () {
-        $('body,html').animate(
-            {
-                scrollTop: document.body.clientHeight,
-            },
-            500
-        );
-    });
-
-    // 功能0-1.1：恢复Header部的新闻链接
-    if (settings.addNews) {
-        $('#pcmenu > li:nth-child(1)').before(
-            "<li><a href='https://psnine.com/news'>新闻</a></li>"
-        );
+    /* 
+     * 页面右下角追加点击跳转到页面底部按钮
+     */
+    const toPageButton = () => {
+        $('.bottombar').append("<a id='scrollbottom' class='yuan mt10'>B</a>");
+        $('#scrollbottom').click(() => {
+            $('body,html').animate(
+                {
+                    scrollTop: document.body.clientHeight,
+                },
+                500
+            );
+        });
     }
+    toPageButton();
+
+    /* 
+     * 恢复Header部的新闻链接
+     */
+    const addNews = (isOn) => {
+        if (isOn) {
+            $('#pcmenu > li:nth-child(1)').before(
+                "<li><a href='https://psnine.com/news'>新闻</a></li>"
+            );
+        }
+    }
+    addNews(settings.addNews);
 
     // 功能0-2：夜间模式
     if (settings.nightMode) {
