@@ -451,9 +451,9 @@
         }
     }
     // 功能1-5：增加帖子楼层信息
-    function addFloorIndex() {
-        var baseFloorIndex = 0;
-        var subFloorIndex = -1;
+    const addFloorIndex = () => {
+        let baseFloorIndex = 0;
+        let subFloorIndex = -1;
         $('span[class^=r]').map(function (i, n) {
             if (i > 0) {
                 if ($(this).attr('class') == 'r') {
@@ -509,8 +509,12 @@
     }
 
     // 功能1-8：回复按钮hover触发显示
-    function hoverShowReply(div) {
-        var subClass = "span[class='r']";
+    /* 
+    * 回复按钮hover触发显示功能函数
+    * @param  div  标签
+    */
+    const hoverShowReply = (div) => {
+        const subClass = "span[class='r']";
         $(`${div} ${subClass}`).css({
             opacity: 0,
             transition: 'all 0.2s ease',
@@ -569,7 +573,7 @@
     }
 
     // 功能1-10：问答标题根据回答状况着色
-    function addColorToQaTitle() {
+    const addColorToQaTitle = () => {
         if (settings.qaHighlightTitle) {
             $('div.meta > .r > span:nth-child(2)').map(function (i, v) {
                 $(this)
@@ -586,7 +590,7 @@
     }
 
     // 功能1-11：悬浮于头像显示个人界面
-    function addHoverProfile() {
+    const addHoverProfile = () => {
         if (settings.hoverHomepage) {
             const INITIAL_CONTENT = '加载中...';
             $("a[href*='psnid/'] > img").parent().map(function (i, v) {
@@ -866,7 +870,7 @@
         });
 
         // 功能2-3：根据降价幅度变更标题颜色
-        var priceTitleColorDict = { 100: 'rgb(220,53,69)', 80: 'rgb(253,126,20)', 50: 'rgb(255,193,7)', 20: 'rgb(40,167,69)' };
+        const priceTitleColorDict = { 100: 'rgb(220,53,69)', 80: 'rgb(253,126,20)', 50: 'rgb(255,193,7)', 20: 'rgb(40,167,69)' };
         $('.dd_box').map(function (i, n) {
             var offPercent = Number(
                 $(this).find('.dd_pic > div[class^="dd_tag"] ').text().match('省(.+)%')[1]
