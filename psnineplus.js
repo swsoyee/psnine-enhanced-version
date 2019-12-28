@@ -865,7 +865,7 @@
         return `<span class=${className} style="float:right;${styleString}">${text}</span>`;
     }
     /*
-    * 在当前页面上添加外币转人民币的价格展示
+    * 功能：在当前页面上添加外币转人民币的价格展示
     */
     const foreignCurrencyConversion = () => {
         $('.dd_price').map((i, el) => {
@@ -904,15 +904,20 @@
             $('.dd_price span:last-child').eq(i).after(addCNYPriceBlock);
         });
     }
-
-    if (/\/dd/.test(window.location.href)) {
-        // 外币转人民币
-        foreignCurrencyConversion();
-
-        // 功能2-3：根据降价幅度变更标题颜色
-        const priceTitleColorDict = { 100: 'rgb(220,53,69)', 80: 'rgb(253,126,20)', 50: 'rgb(255,193,7)', 20: 'rgb(40,167,69)' };
+    /*
+    * 功能：根据降价幅度变更标题颜色
+    */
+    const changeGameTitleColor = () => {
+        // 设定不同降价范围的标题颜色
+        const priceTitleColorDict = {
+            100: 'rgb(220,53,69)',
+            80: 'rgb(253,126,20)',
+            50: 'rgb(255,193,7)',
+            20: 'rgb(40,167,69)'
+        };
+        // 着色
         $('.dd_box').map((i, el) => {
-            var offPercent = Number(
+            const offPercent = Number(
                 $(el).find('.dd_pic > div[class^="dd_tag"] ').text().match('省(.+)%')[1]
             );
             for (var key in priceTitleColorDict) {
@@ -922,12 +927,26 @@
                 }
             }
         });
+    }
 
-        // 功能2-4：只看史低
-        // 追加“只看史低”的按钮
-        GM_addStyle(
-            `#selectLowest {padding:0px 5px; margin-left:10px; border-radius:2px; display: inline-block; color: white;background-color: #d9534f; cursor:pointer; line-height:24px;}`
-        );
+    // 追加“只看史低”的按钮样式
+    GM_addStyle(
+        `#selectLowest {
+            padding          : 0px 5px;
+            margin-left      : 10px;
+            border-radius    : 2px;
+            display          : inline-block;
+            color            : white;
+            background-color : #d9534f;
+            cursor           : pointer;
+            line-height      : 24px;
+        }`
+    );
+    /*
+    * 功能：页面上追加“只看史低”功能按键，点击显示史低，再次点击恢复显示所有游戏（数折页面）
+    */
+    const onlyLowest = () => {
+        // 追加只看史低按键
         $('.dropmenu').append("<li><a id='selectLowest'>只看史低</a></li>");
         // 点击按钮隐藏或者显示
         let clickHideShowNumLowest = 0;
@@ -945,22 +964,12 @@
             }
         });
     }
-
-    // 功能2-5：活动页面根据降价幅度变更背景色
-    if (/huodong/.test(window.location.href)) {
-        // $(document.querySelectorAll('li.store_box > .store_pic')).map(function (i, n) {
-        //     var percentValue = (this).querySelector('.store_tag_plus')
-        //     if (percentValue == null) {
-        //         percentValue = (this).querySelector('.store_tag_nor')
-        //     }
-        //     var priceDownLevel = Number(percentValue.innerText.match('省(.+)%')[1]);
-        // })
-
-        // 追加显示史低按键
-        const newButton = document.createElement("li");
-        newButton.innerHTML = '<a id="showLowest">显示史低</a>'
-        document.querySelector('.disabled.h-p').after(newButton)
-
+    /*
+    * 功能：页面上追加“只看史低”功能按键，点击显示史低，再次点击恢复显示所有游戏（活动页面）
+    */
+    const onlyLowestSell = () => {
+        // 追加只看史低按键
+        $('.disabled.h-p').after("<li><a id='selectLowest'>只看史低</a></li>")
         // 隐藏游戏box函数
         const hideOrShowGameBox = ({ status, text, background }) => {
             $(document.querySelectorAll('li.store_box')).map((i, el) => {
@@ -968,15 +977,42 @@
                     (el).style.display = status;
                 }
             })
-            $('#showLowest').text(text).css({ 'background-color': background, 'color': '#99A1A7' });
+            $('#selectLowest').text(text).css({
+                'background-color': background,
+            });
         }
         // 点击按钮隐藏或者显示
         let clickHideShowNumLowest2 = 0;
-        $('#showLowest').click(() => {
+        $('#selectLowest').click(() => {
             hideOrShowGameBox(clickHideShowNumLowest2++ % 2 === 0
-                ? { status: 'none', text: '显示全部', background: '#E7EBEE' }
-                : { status: 'block', text: '显示史低', background: '#333F51' });
+                ? { status: 'none', text: '显示全部', background: '#f78784' }
+                : { status: 'block', text: '只看史低', background: '#d9534f' });
         })
+    }
+    
+    // 页面：数折
+    if (/\/dd/.test(window.location.href)) {
+        // 外币转人民币
+        foreignCurrencyConversion();
+        // 根据降价幅度变更标题颜色
+        changeGameTitleColor();
+        // 只看史低
+        onlyLowest();
+    }
+
+    // 页面：活动
+    if (/huodong/.test(window.location.href)) {
+        // 只看史低
+        onlyLowestSell();
+
+        // 活动页面根据降价幅度变更背景色
+        // $(document.querySelectorAll('li.store_box > .store_pic')).map(function (i, n) {
+        //     var percentValue = (this).querySelector('.store_tag_plus')
+        //     if (percentValue == null) {
+        //         percentValue = (this).querySelector('.store_tag_nor')
+        //     }
+        //     var priceDownLevel = Number(percentValue.innerText.match('省(.+)%')[1]);
+        // })
     }
 
     // 奖杯系统优化
