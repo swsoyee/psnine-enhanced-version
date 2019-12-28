@@ -890,9 +890,9 @@
 
         // 功能2-3：根据降价幅度变更标题颜色
         const priceTitleColorDict = { 100: 'rgb(220,53,69)', 80: 'rgb(253,126,20)', 50: 'rgb(255,193,7)', 20: 'rgb(40,167,69)' };
-        $('.dd_box').map(function (i, n) {
+        $('.dd_box').map((i, el) => {
             var offPercent = Number(
-                $(this).find('.dd_pic > div[class^="dd_tag"] ').text().match('省(.+)%')[1]
+                $(el).find('.dd_pic > div[class^="dd_tag"] ').text().match('省(.+)%')[1]
             );
             for (var key in priceTitleColorDict) {
                 if (offPercent < key) {
@@ -909,20 +909,18 @@
         );
         $('.dropmenu').append("<li><a id='selectLowest'>只看史低</a></li>");
         // 点击按钮隐藏或者显示
-        var clickHideShowNumLowest = 0;
-        $('#selectLowest').click(function () {
-            if (clickHideShowNumLowest++ % 2 == 0) {
-                $('li.dd_box').map(function (i, v) {
-                    if ($(this).children('.dd_status.dd_status_best').length == 0) {
-                        $(this).hide();
+        let clickHideShowNumLowest = 0;
+        $('#selectLowest').click(() => {
+            if (clickHideShowNumLowest++ % 2 === 0) {
+                $('li.dd_box').map((i, el) => {
+                    if ($(el).children('.dd_status.dd_status_best').length === 0) {
+                        $(el).hide();
                     }
                 });
-                $('#selectLowest').text('显示全部');
-                $('#selectLowest').css('background-color', '#f78784');
+                $('#selectLowest').text('显示全部').css('background-color', '#f78784');
             } else {
                 $('li.dd_box').show();
-                $('#selectLowest').text('只看史低');
-                $('#selectLowest').css('background-color', '#d9534f');
+                $('#selectLowest').text('只看史低').css('background-color', '#d9534f');
             }
         });
     }
@@ -938,28 +936,25 @@
         // })
 
         // 追加显示史低按键
-        var newButton = document.createElement("li");
+        const newButton = document.createElement("li");
         newButton.innerHTML = '<a id="showLowest">显示史低</a>'
         document.querySelector('.disabled.h-p').after(newButton)
 
         // 隐藏游戏box函数
-        function hideShowGameBox(status, text, background, color) {
-            $(document.querySelectorAll('li.store_box')).map(function (i, n) {
-                if ((this).querySelector('.store_tag_best') == null) {
-                    (this).style.display = status;
+        const hideOrShowGameBox = ({ status, text, background }) => {
+            $(document.querySelectorAll('li.store_box')).map((i, el) => {
+                if ((el).querySelector('.store_tag_best') === null) {
+                    (el).style.display = status;
                 }
             })
-            $('#showLowest').text(text);
-            $('#showLowest').css({ 'background-color': background, 'color': '#99A1A7' });
+            $('#showLowest').text(text).css({ 'background-color': background, 'color': '#99A1A7' });
         }
         // 点击按钮隐藏或者显示
-        var clickHideShowNumLowest2 = 0;
-        $('#showLowest').click(function () {
-            if (clickHideShowNumLowest2++ % 2 == 0) {
-                hideShowGameBox('none', '显示全部', '#E7EBEE');
-            } else {
-                hideShowGameBox('block', '显示史低', '#333F51');
-            }
+        let clickHideShowNumLowest2 = 0;
+        $('#showLowest').click(() => {
+            hideOrShowGameBox(clickHideShowNumLowest2++ % 2 === 0
+                ? { status: 'none', text: '显示全部', background: '#E7EBEE' }
+                : { status: 'block', text: '显示史低', background: '#333F51' });
         })
     }
 
