@@ -306,9 +306,8 @@
         }
     }
     // 帖子优化
-    // 功能1-1：高亮发帖楼主
     /*
-    * 对发帖楼主增加“楼主”标志函数
+    * 功能：对发帖楼主增加“楼主”标志
     * @param  userId  用户（楼主）ID
     */
     const addOPBadge = (userId) => {
@@ -329,7 +328,7 @@
     }
 
     /*
-    * 对关注用户进行ID高亮功能函数
+    * 功能：对关注用户进行ID高亮功能函数
     */
     const addHighlightOnID = () => {
         settings.highlightSpecificID.map((i, n) => {
@@ -1319,39 +1318,41 @@
         });
     }
 
-    // 游戏页面优化
-
-    if (
-        /psngame/.test(window.location.href) & !/psnid/.test(window.location.href)
-    ) {
-        // 功能5-1：降低没有白金的游戏的图标亮度
-        if (settings.filterNonePlatinumAlpha < 1) {
-            $('tr').map(function (i, n) {
+    /*
+    * 功能：降低没有白金的游戏的图标亮度
+    * @param  alpha  无白金游戏图标透明度
+    */
+    const filterNonePlatinum = (alpha) => {
+        if (alpha < 1) {
+            $('tr').map((i, el) => {
                 // 读取白金数量
-                var platinumNum = $(this)
-                    .children('.pd1015.title.lh180')
-                    .children('em')
-                    .children('.text-platinum')
-                    .text()
-                    .replace('白', '');
-                if (platinumNum == 0) {
-                    $(this)
-                        .children('.pdd15')
-                        .children('a')
-                        .children('img')
-                        .css({ opacity: settings.filterNonePlatinumAlpha });
+                const platinumNum = $(el)
+                    .find('.pd1015.title.lh180 > em > .text-platinum').eq(0)
+                    .text().replace('白', '');
+                if (platinumNum === '0') {
+                    $(el).find('.pdd15 > a > img').eq(0)
+                    .css({ opacity : alpha });
                 }
             });
         }
+    };
+
+    // 游戏页面优化
+    if (
+        /psngame/.test(window.location.href) & !/psnid/.test(window.location.href)
+    ) {
+        // 降低没有白金的游戏的图标亮度
+        filterNonePlatinum(settings.filterNonePlatinumAlpha);
+
         // 功能5-2：悬浮图标显示自己的游戏的完成度
-        $('.imgbgnb').map(function (i, n) {
-            $(this).attr('id', 'game' + i);
+        $('.imgbgnb').map((i, el) => {
+            $(el).attr('id', 'game' + i);
             var psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/); //从cookie中取出psnid
             if (psnidCookie) {
                 var psnid = psnidCookie[1];
-                var myGameUrl = $(this).parent().attr('href');
+                var myGameUrl = $(el).parent().attr('href');
                 if (myGameUrl != undefined) {
-                    myGameUrl = $(this).parent().attr('href') + `?psnid=${psnid}`;
+                    myGameUrl = $(el).parent().attr('href') + `?psnid=${psnid}`;
                     tippy('#game' + i, {
                         content: '加载中',
                         animateFill: false,
