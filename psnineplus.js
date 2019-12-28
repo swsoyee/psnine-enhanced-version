@@ -878,11 +878,11 @@
             // 根据地区转换原始价格
             const district = $(`.dd_info p:nth-child(${offset})`).eq(i).text();
             const districtCurrency = {
-                港服 : ['HK$', settings.dollarHKRatio],
-                美服 : ['$', settings.dollarRatio],
-                日服 : ['¥', settings.yenRatio],
-                英服 : ['£', settings.poundRatio],
-                国服 : ['¥', 1],
+                港服: ['HK$', settings.dollarHKRatio],
+                美服: ['$', settings.dollarRatio],
+                日服: ['¥', settings.yenRatio],
+                英服: ['£', settings.poundRatio],
+                国服: ['¥', 1],
             };
             const CNY = price.map(item => {
                 return (
@@ -907,21 +907,21 @@
     const changeGameTitleColor = () => {
         // 设定不同降价范围的标题颜色
         const priceTitleColorDict = {
-            100 : 'rgb(220,53,69)',
-            80  : 'rgb(253,126,20)',
-            50  : 'rgb(255,193,7)',
-            20  : 'rgb(40,167,69)',
+            100: 'rgb(220,53,69)',
+            80: 'rgb(253,126,20)',
+            50: 'rgb(255,193,7)',
+            20: 'rgb(40,167,69)',
         };
         // 着色
         $('.dd_box').map((i, el) => {
             const offPercent = Number(
                 $(el).find('.dd_pic > div[class^="dd_tag"] ').text()
-                .match('省(.+)%')[1]
+                    .match('省(.+)%')[1]
             );
             for (var key in priceTitleColorDict) {
                 if (offPercent < key) {
-                    $('.dd_title.mb10>a').eq(i).css({ 
-                        color : priceTitleColorDict[key]
+                    $('.dd_title.mb10>a').eq(i).css({
+                        color: priceTitleColorDict[key]
                     });
                     break;
                 }
@@ -966,12 +966,12 @@
                     }
                 });
                 $('#selectLowest').text('显示全部').css({
-                    'background-color' : '#f78784'
+                    'background-color': '#f78784'
                 });
             } else {
                 $('li.dd_box').show();
                 $('#selectLowest').text('只看史低').css({
-                    'background-color' : '#d9534f'
+                    'background-color': '#d9534f'
                 });
             }
         });
@@ -1001,7 +1001,7 @@
                 : { status: 'block', text: '只看史低', background: '#d9534f' });
         })
     }
-    
+
     // 页面：数折
     if (/\/dd/.test(window.location.href)) {
         // 外币转人民币
@@ -1036,34 +1036,32 @@
         )
     ) {
         // 游戏奖杯比例图
-        var platinum = $($('.text-platinum').get(0)).text().replace('白', '');
-        var gold = $($('.text-gold').get(0)).text().replace('金', '');
-        var silver = $($('.text-silver').get(0)).text().replace('银', '');
-        var bronze = $($('.text-bronze').get(0)).text().replace('铜', '');
+        const platinum = $('.text-platinum').eq(0).text().replace('白', '');
+        const gold = $('.text-gold').eq(0).text().replace('金', '');
+        const silver = $('.text-silver').eq(0).text().replace('银', '');
+        const bronze = $('.text-bronze').eq(0).text().replace('铜', '');
 
         // 奖杯稀有度统计
-        var rareArray = [0, 0, 0, 0, 0];
-        for (var rareIndex = 1; rareIndex <= 4; rareIndex++) {
-            var rareValue = document.getElementsByClassName(
-                `twoge t${rareIndex} h-p`
-            );
-            for (var j = 0; j < rareValue.length; j++) {
-                var rarity = Number(
-                    rareValue[j].innerText.split('\n')[0].replace('%', '')
-                );
-                if (rarity <= 5) {
-                    rareArray[0]++; // 极度珍贵
-                } else if ((rarity > 5) & (rarity <= 10)) {
-                    rareArray[1]++; // 非常珍贵
-                } else if ((rarity > 10) & (rarity <= 20)) {
-                    rareArray[2]++; // 珍贵
-                } else if ((rarity > 20) & (rarity <= 50)) {
-                    rareArray[3]++; // 罕见
-                } else {
-                    rareArray[4]++; // 普通
-                }
-            }
+        let rareArray = [0, 0, 0, 0, 0];         // 个数统计
+        const rareStandard = [0, 5, 10, 20, 50]; // 区间定义
+        for (var rareIndex of [1, 2, 3, 4]) {
+            $(`.twoge.t${rareIndex}.h-p`).map((i, ev) => {
+                // 获取稀有度
+                const rarity = Number($(ev).eq(0).text().split('%')[0].replace('%', ''));
+                // 计算该稀有度的奖杯数量
+                rareArray[[...rareStandard, rarity]
+                    .sort((a, b) => a - b)
+                    .indexOf(rarity) - 1]++;
+            });
         }
+
+        const trophyRatioSeriesRarityData = [
+            { name: '极度珍贵', y: rareArray[0], color: 'rgb(160, 217, 255)' },
+            { name: '非常珍贵', y: rareArray[1], color: 'rgb(124, 181, 236)' },
+            { name: '珍贵', y: rareArray[2], color: 'rgb(88, 145, 200)' },
+            { name: '罕见', y: rareArray[3], color: 'rgb(52, 109, 164)' },
+            { name: '一般', y: rareArray[4], color: 'rgb(40, 97, 152)' },
+        ];
 
         var trophyRatioChart = {
             backgroundColor: 'rgba(0,0,0,0)',
@@ -1105,13 +1103,7 @@
             {
                 type: 'pie',
                 name: '比例',
-                data: [
-                    { name: '极度珍贵', y: rareArray[0], color: 'rgb(160, 217, 255)' },
-                    { name: '非常珍贵', y: rareArray[1], color: 'rgb(124, 181, 236)' },
-                    { name: '珍贵', y: rareArray[2], color: 'rgb(88, 145, 200)' },
-                    { name: '罕见', y: rareArray[3], color: 'rgb(52, 109, 164)' },
-                    { name: '一般', y: rareArray[4], color: 'rgb(40, 97, 152)' },
-                ],
+                data: trophyRatioSeriesRarityData,
                 center: [200, 30],
                 size: 130,
             },
@@ -1342,7 +1334,7 @@
                     .text().replace('白', '');
                 if (platinumNum === '0') {
                     $(el).find('.pdd15 > a > img').eq(0)
-                    .css({ opacity : alpha });
+                        .css({ opacity: alpha });
                 }
             });
         }
