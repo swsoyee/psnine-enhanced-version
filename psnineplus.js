@@ -588,9 +588,12 @@
         });
     }
 
-    // 功能1-10：问答标题根据回答状况着色
-    const addColorToQaTitle = () => {
-        if (settings.qaHighlightTitle) {
+    /* 
+     * 问答标题根据回答状况着色
+     * @param  isOn  是否开启功能
+     */
+    const addColorToQaTitle = (isOn) => {
+        if (isOn) {
             $('div.meta > .r > span:nth-child(2)').map(function (i, v) {
                 $(this)
                     .parent()
@@ -599,10 +602,12 @@
                     .children('a')
                     .css('color', $(this).css('color'));
             });
+        } else {
+            return;
         }
     }
     if (/\/qa/.test(window.location.href)) {
-        addColorToQaTitle();
+        addColorToQaTitle(settings.qaHighlightTitle);
     }
 
     // 功能1-11：悬浮于头像显示个人界面
