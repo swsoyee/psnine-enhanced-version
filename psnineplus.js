@@ -139,6 +139,7 @@
 
     /* 
      * 恢复Header部的新闻链接
+     * @param  isOn  是否开启功能
      */
     const addNews = (isOn) => {
         if (isOn) {
@@ -171,12 +172,17 @@
     }
     // 功能0-4：markdown语法支持测试
 
-    // 功能0-5：自动签到
-    if (settings.autoCheckIn) {
-        if ($('[class$=yuan]').length > 0) {
+    /* 
+     * 自动签到功能
+     * @param  isOn  是否开启功能
+     */
+    const automaticSignIn = (isOn) => {
+        // 如果签到按钮存在页面上
+        if (isOn && $('[class$=yuan]').length > 0) {
             $('[class$=yuan]').click();
         }
     }
+    automaticSignIn(settings.autoCheckIn);
 
     // 功能0-6：自动翻页
 
