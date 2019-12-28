@@ -876,19 +876,18 @@
             // 一览页面和单商品页面不同位置偏移
             const offset = /dd\//.test(window.location.href) ? 2 : 3;
             // 根据地区转换原始价格
-            const region = $(`.dd_info p:nth-child(${offset})`).eq(i).text();
-            const nameToMarkDict = { 港服: 'HK$', 美服: '$', 日服: '¥', 英服: '£', 国服: '¥' };
-            const ratioToMark = {
-                港服: settings.dollarHKRatio,
-                美服: settings.dollarRatio,
-                日服: settings.yenRatio,
-                英服: settings.poundRatio,
-                国服: 1,
+            const district = $(`.dd_info p:nth-child(${offset})`).eq(i).text();
+            const districtCurrency = {
+                港服 : ['HK$', settings.dollarHKRatio],
+                美服 : ['$', settings.dollarRatio],
+                日服 : ['¥', settings.yenRatio],
+                英服 : ['£', settings.poundRatio],
+                国服 : ['¥', 1],
             };
             const CNY = price.map(item => {
                 return (
-                    Number(item.replace(nameToMarkDict[region], '')) *
-                    ratioToMark[region]
+                    Number(item.replace(districtCurrency[district][0], '')) *
+                    districtCurrency[district][1]
                 );
             });
             // 整块增加的价格表示
@@ -898,7 +897,6 @@
                 priceSpan(CNY[0], 'dd_price_old', 'text-decoration:line-through'),
                 priceSpan('CNY：', 'dd_price_off', 'font-size:12px;'),
             ].filter(Boolean).join('');
-
             // 添加到页面中
             $('.dd_price span:last-child').eq(i).after(addCNYPriceBlock);
         });
@@ -909,38 +907,49 @@
     const changeGameTitleColor = () => {
         // 设定不同降价范围的标题颜色
         const priceTitleColorDict = {
-            100: 'rgb(220,53,69)',
-            80: 'rgb(253,126,20)',
-            50: 'rgb(255,193,7)',
-            20: 'rgb(40,167,69)'
+            100 : 'rgb(220,53,69)',
+            80  : 'rgb(253,126,20)',
+            50  : 'rgb(255,193,7)',
+            20  : 'rgb(40,167,69)',
         };
         // 着色
         $('.dd_box').map((i, el) => {
             const offPercent = Number(
-                $(el).find('.dd_pic > div[class^="dd_tag"] ').text().match('省(.+)%')[1]
+                $(el).find('.dd_pic > div[class^="dd_tag"] ').text()
+                .match('省(.+)%')[1]
             );
             for (var key in priceTitleColorDict) {
                 if (offPercent < key) {
-                    $('.dd_title.mb10>a').eq(i).css({ color: priceTitleColorDict[key] });
+                    $('.dd_title.mb10>a').eq(i).css({ 
+                        color : priceTitleColorDict[key]
+                    });
                     break;
                 }
             }
         });
     }
 
-    // 追加“只看史低”的按钮样式
-    GM_addStyle(
-        `#selectLowest {
-            padding          : 0px 5px;
-            margin-left      : 10px;
-            border-radius    : 2px;
-            display          : inline-block;
-            color            : white;
-            background-color : #d9534f;
-            cursor           : pointer;
-            line-height      : 24px;
-        }`
-    );
+    /*
+    * 增加按键样式
+    * @param  id               标签ID
+    * @param  backgroundColor  按键背景色
+    */
+    const addButtonStyle = (id, backgroundColor) => {
+        GM_addStyle(
+            `#${id} {
+                padding          : 0px 5px;
+                margin-left      : 10px;
+                border-radius    : 2px;
+                display          : inline-block;
+                color            : white;
+                background-color : ${backgroundColor};
+                cursor           : pointer;
+                line-height      : 24px;
+            }`
+        );
+    }
+    addButtonStyle('selectLowest', '#d9534f'); // 只看史低
+    addButtonStyle('selectUnget', '#3498db');  // 未获得
     /*
     * 功能：页面上追加“只看史低”功能按键，点击显示史低，再次点击恢复显示所有游戏（数折页面）
     */
@@ -956,10 +965,14 @@
                         $(el).hide();
                     }
                 });
-                $('#selectLowest').text('显示全部').css('background-color', '#f78784');
+                $('#selectLowest').text('显示全部').css({
+                    'background-color' : '#f78784'
+                });
             } else {
                 $('li.dd_box').show();
-                $('#selectLowest').text('只看史低').css('background-color', '#d9534f');
+                $('#selectLowest').text('只看史低').css({
+                    'background-color' : '#d9534f'
+                });
             }
         });
     }
@@ -1297,9 +1310,7 @@
         // 功能3-3：追加奖杯筛选功能
         $('.dropmenu').append('<li><em>筛选</em></li>'); // 追加“筛选”字样
         // 追加“未获得”的按钮
-        $('.dropmenu').append(
-            "<a id='selectUnget' style='padding:0px 5px; margin-left:10px; border-radius:2px; display: inline-block; color: white;background-color: #3498db; cursor:pointer; line-height:24px;'>尚未获得</a>"
-        );
+        $('.dropmenu').append("<a id='selectUnget'>尚未获得</a>");
         // 点击按钮隐藏或者显示
         var clickHideShowNum = 0;
         $('#selectUnget').click(function () {
