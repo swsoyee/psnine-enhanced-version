@@ -1027,34 +1027,45 @@
         // })
     }
 
-    // 奖杯系统优化
-    // 功能3-1：游戏奖杯界面可视化
-    if (
-        /psngame\//.test(window.location.href) &&
-        /^(?!.*comment|.*rank|.*battle|.*gamelist|.*topic|.*qa)/.test(
-            window.location.href
-        )
-    ) {
-        // 游戏奖杯比例图
-        const platinum = $('.text-platinum').eq(0).text().replace('白', '');
-        const gold = $('.text-gold').eq(0).text().replace('金', '');
-        const silver = $('.text-silver').eq(0).text().replace('银', '');
-        const bronze = $('.text-bronze').eq(0).text().replace('铜', '');
+    /*
+    * 获取奖杯各种类个数
+    * @param  className  用于识别的类名
+    * @param  name       奖杯种类名
+    * @param  color      色块所用颜色码
+    * 
+    * @return {object}   用于绘扇形图的单个数据块
+    */
+    const getTrophyCategory = (className, name, color) => {
+        const tropyCount = $(className).eq(0).text().replace(name, '');
+        return { name: name, y: Number(tropyCount), color: color };
+    }
 
-        // 奖杯稀有度统计
+    /*
+    * 获取奖杯各稀有度个数
+    * @return {object}   用于绘扇形图的数据块
+    */
+    const getTrophyRarity = () => {
         let rareArray = [0, 0, 0, 0, 0];         // 个数统计
         const rareStandard = [0, 5, 10, 20, 50]; // 区间定义
         for (var rareIndex of [1, 2, 3, 4]) {
             $(`.twoge.t${rareIndex}.h-p`).map((i, ev) => {
                 // 获取稀有度
-                const rarity = Number($(ev).eq(0).text().split('%')[0].replace('%', ''));
+                const rarity = Number($(ev).eq(0).text().split('%')[0]
+                    .replace('%', ''));
                 // 计算该稀有度的奖杯数量
                 rareArray[[...rareStandard, rarity]
                     .sort((a, b) => a - b)
                     .indexOf(rarity) - 1]++;
             });
         }
-
+        return rareArray;
+    }
+    /*
+    * 功能：在单独游戏页面上方追加奖杯统计扇形图
+    */
+    const addTrophyPieChart = () => {
+        // 奖杯稀有度统计数据
+        const rareArray = getTrophyRarity();
         const trophyRatioSeriesRarityData = [
             { name: '极度珍贵', y: rareArray[0], color: 'rgb(160, 217, 255)' },
             { name: '非常珍贵', y: rareArray[1], color: 'rgb(124, 181, 236)' },
@@ -1062,14 +1073,23 @@
             { name: '罕见', y: rareArray[3], color: 'rgb(52, 109, 164)' },
             { name: '一般', y: rareArray[4], color: 'rgb(40, 97, 152)' },
         ];
-
-        var trophyRatioChart = {
+        // 奖杯个数统计数据
+        const trophyRatioSeriesCategoryData = [
+            getTrophyCategory('.text-platinum', '白', '#7a96d1'),
+            getTrophyCategory('.text-gold', '金', '#cd9a46'),
+            getTrophyCategory('.text-silver', '银', '#a6a6a6'),
+            getTrophyCategory('.text-bronze', '铜', '#bf6a3a'),
+        ];
+        // 背景设置
+        const trophyRatioChart = {
             backgroundColor: 'rgba(0,0,0,0)',
         };
-        var trophyRatioTooltip = {
+        // 悬浮内容设置
+        const trophyRatioTooltip = {
             pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>',
         };
-        var trophyRatioPlotOptions = {
+        // 绘图设置
+        const trophyRatioPlotOptions = {
             pie: {
                 allowPointSelect: true,
                 cursor: 'pointer',
@@ -1087,16 +1107,12 @@
                 },
             },
         };
-        var trophyRatioSeries = [
+        // 绘图数据
+        const trophyRatioSeries = [
             {
                 type: 'pie',
                 name: '比例',
-                data: [
-                    { name: '白金', y: Number(platinum), color: '#7a96d1' },
-                    { name: '金', y: Number(gold), color: '#cd9a46' },
-                    { name: '银', y: Number(silver), color: '#a6a6a6' },
-                    { name: '铜', y: Number(bronze), color: '#bf6a3a' },
-                ],
+                data: trophyRatioSeriesCategoryData,
                 center: [50, 30],
                 size: 130,
             },
@@ -1108,24 +1124,55 @@
                 size: 130,
             },
         ];
-        var trophyRatioTitle = {
+        // 标题设置
+        const trophyRatioTitle = {
             text: '奖杯统计',
             style: {
                 color: '#808080',
             },
         };
-        var trophyRatio = {};
-        trophyRatio.chart = trophyRatioChart;
-        trophyRatio.tooltip = trophyRatioTooltip;
-        trophyRatio.title = trophyRatioTitle;
-        trophyRatio.series = trophyRatioSeries;
-        trophyRatio.plotOptions = trophyRatioPlotOptions;
-        trophyRatio.credits = credits;
+        // 构建绘图对象
+        const trophyRatio = {
+            chart: trophyRatioChart,
+            tooltip: trophyRatioTooltip,
+            title: trophyRatioTitle,
+            series: trophyRatioSeries,
+            plotOptions: trophyRatioPlotOptions,
+            credits: credits,
+        };
         // 插入页面
         $('.box.pd10').append(
-            `<p></p><div id="trophyRatioChart" align="left" style="width: 320px; height: 200px; margin: 0 0; display: inline-block;"></div>`
+            `<p></p><div id="trophyRatioChart" align="left"></div>`
         );
         $('#trophyRatioChart').highcharts(trophyRatio);
+    }
+    /*
+    * 增加绘图框架样式
+    * @param  id     标签ID
+    * @param  width  宽度
+    */
+    const addPlotFrame = (id, width) => {
+        GM_addStyle(
+            `#${id} {
+            width   : ${width}px;
+            height  : 200px;
+            margin  : 0 0;
+            display : inline-block;
+        }`
+        );
+    }
+    addPlotFrame('trophyRatioChart', 320);
+
+    // 奖杯系统优化
+    // 功能3-1：游戏奖杯界面可视化
+    if (
+        /psngame\//.test(window.location.href) &&
+        /^(?!.*comment|.*rank|.*battle|.*gamelist|.*topic|.*qa)/.test(
+            window.location.href
+        )
+    ) {
+        // 追加奖杯统计扇形图
+        addTrophyPieChart();
 
         // 奖杯获得时间年月统计
         var getTimeArray = [];
@@ -1203,6 +1250,10 @@
                     text: '奖杯获得个数',
                 },
                 min: 0,
+            };
+            // 背景设置
+            const trophyRatioChart = {
+                backgroundColor: 'rgba(0,0,0,0)',
             };
             var trophyGetTime = {};
             trophyGetTime.chart = trophyRatioChart;
