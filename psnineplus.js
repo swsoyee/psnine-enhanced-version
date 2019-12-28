@@ -121,7 +121,7 @@
     }
 
     // 全局优化
-    /* 
+    /*
      * 页面右下角追加点击跳转到页面底部按钮
      */
     const toPageButton = () => {
@@ -137,7 +137,7 @@
     }
     toPageButton();
 
-    /* 
+    /*
      * 恢复Header部的新闻链接
      * @param  isOn  是否开启功能
      */
@@ -172,7 +172,7 @@
     }
     // 功能0-4：markdown语法支持测试
 
-    /* 
+    /*
      * 自动签到功能
      * @param  isOn  是否开启功能
      */
@@ -307,7 +307,7 @@
     }
     // 帖子优化
     // 功能1-1：高亮发帖楼主
-    /* 
+    /*
     * 对发帖楼主增加“楼主”标志函数
     * @param  userId  用户（楼主）ID
     */
@@ -328,7 +328,7 @@
         addOPBadge(authorId);
     }
 
-    /* 
+    /*
     * 对关注用户进行ID高亮功能函数
     */
     const addHighlightOnID = () => {
@@ -470,21 +470,19 @@
     const addFloorIndex = () => {
         let baseFloorIndex = 0;
         let subFloorIndex = -1;
-        $('span[class^=r]').map(function (i, n) {
+        $('span[class^=r]').map((i, el) => {
             if (i > 0) {
-                if ($(this).attr('class') == 'r') {
-                    baseFloorIndex++;
-                    $(this)
+                if ($(el).attr('class') == 'r') {
+                    $(el)
                         .children('a:last')
-                        .after(`&nbsp&nbsp<span>#${baseFloorIndex}</span>`);
+                        .after(`&nbsp&nbsp<span>#${++baseFloorIndex}</span>`);
                     subFloorIndex = -1;
                 } else {
-                    $(this)
+                    $(el)
                         .children('a:last')
                         .after(
-                            `&nbsp&nbsp<span>#${baseFloorIndex}${subFloorIndex}</span>`
+                            `&nbsp&nbsp<span>#${baseFloorIndex}${subFloorIndex--}</span>`
                         );
-                    subFloorIndex--;
                 }
             }
         });
@@ -492,15 +490,15 @@
     addFloorIndex();
 
     // 功能1-6：屏蔽黑名单中的用户发言内容
-    function Filter(psnnode, parent, userList) {
-        $(psnnode).map(function (i, v) {
-            if ($(v).html().toLowerCase() == userList.toLowerCase()) {
-                $(v).parents(parent).hide();
+    const Filter = (psnnode, parent, userList) => {
+        $(psnnode).map((i, el) => {
+            if ($(el).html().toLowerCase() == userList.toLowerCase()) {
+                $(el).parents(parent).hide();
             }
         });
     }
 
-    function filterUserPost() {
+    const filterUserPost = () => {
         if (settings.blockList.length > 0) {
             settings.blockList.map((user, i) => {
                 if (window.location.href.indexOf('gene') > -1) {
@@ -525,7 +523,7 @@
     }
 
     // 功能1-8：回复按钮hover触发显示
-    /* 
+    /*
     * 回复按钮hover触发显示功能函数
     * @param  div  标签
     */
@@ -588,19 +586,19 @@
         });
     }
 
-    /* 
+    /*
      * 问答标题根据回答状况着色
      * @param  isOn  是否开启功能
      */
     const addColorToQaTitle = (isOn) => {
         if (isOn) {
-            $('div.meta > .r > span:nth-child(2)').map(function (i, v) {
-                $(this)
+            $('div.meta > .r > span:nth-child(2)').map((i, el) => {
+                $(el)
                     .parent()
                     .parent()
                     .prev()
                     .children('a')
-                    .css('color', $(this).css('color'));
+                    .css('color', $(el).css('color'));
             });
         } else {
             return;
