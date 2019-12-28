@@ -845,48 +845,69 @@
 
         $('#container').highcharts(json);
     }
-    if (/\/dd/.test(window.location.href)) {
-        // 功能2-2：外币转人民币
-        $('.dd_price').map(function (i, n) {
-            var price = [
-                $(this).children().eq(0).text(),
-                $(this).children().eq(1).text(),
-                $(this).children().eq(2).text(),
-            ];
-            var CNY = [0, 0, 0];
-            var offset = 3;
-            if (/dd\//.test(window.location.href)) {
-                offset = 2;
+
+    /*
+    * 增加单个价格或文字展示标签
+    * @param  value        展示数值或字符串
+    * @param  className    样式名
+    * @param  styleString  额外追加的样式
+    * @return {string}     展示内容标签
+    */
+    const priceSpan = (value, className, styleString = null) => {
+        let text = value;
+        if (typeof value === 'number') {
+            if (value > 0) {
+                text = '¥' + value.toFixed(2);
+            } else {
+                return;
             }
+        }
+        return `<span class=${className} style="float:right;${styleString}">${text}</span>`;
+    }
+    /*
+    * 在当前页面上添加外币转人民币的价格展示
+    */
+    const foreignCurrencyConversion = () => {
+        $('.dd_price').map((i, el) => {
+            const price = [
+                $(el).children().eq(0).text(), // 原始价格
+                $(el).children().eq(1).text(), // 优惠价格
+                $(el).children().eq(2).text(), // 会员优惠价格
+            ];
+            // 一览页面和单商品页面不同位置偏移
+            const offset = /dd\//.test(window.location.href) ? 2 : 3;
             // 根据地区转换原始价格
-            var region = $(`.dd_info p:nth-child(${offset})`).eq(i).text();
-            var nameToMarkDict = { 港服: 'HK$', 美服: '$', 日服: '¥', 英服: '£', 国服: '¥' };
-            var ratioToMark = {
+            const region = $(`.dd_info p:nth-child(${offset})`).eq(i).text();
+            const nameToMarkDict = { 港服: 'HK$', 美服: '$', 日服: '¥', 英服: '£', 国服: '¥' };
+            const ratioToMark = {
                 港服: settings.dollarHKRatio,
                 美服: settings.dollarRatio,
                 日服: settings.yenRatio,
                 英服: settings.poundRatio,
                 国服: 1,
             };
-            CNY = price.map(item => {
+            const CNY = price.map(item => {
                 return (
                     Number(item.replace(nameToMarkDict[region], '')) *
                     ratioToMark[region]
                 );
             });
-            $('.dd_price span:last-child')
-                .eq(i)
-                .after(
-                    `${'&nbsp'.repeat(25)}<span class='dd_price_off' style="font-size:12px;">对应人民币价格：</span><s class='dd_price_old'>¥${CNY[0].toFixed(2)}</s><span class='dd_price_off'>¥${CNY[1].toFixed(2)}</span>`
-                );
-            if (CNY[2] > 0) {
-                $('.dd_price span:last-child')
-                    .eq(i)
-                    .after(
-                        `</span><span class='dd_price_plus'>¥${CNY[2].toFixed(2)}</span>`
-                    );
-            }
+            // 整块增加的价格表示
+            const addCNYPriceBlock = [
+                priceSpan(CNY[2], 'dd_price_plus'),
+                priceSpan(CNY[1], 'dd_price_off'),
+                priceSpan(CNY[0], 'dd_price_old', 'text-decoration:line-through'),
+                priceSpan('CNY：', 'dd_price_off', 'font-size:12px;'),
+            ].filter(Boolean).join('');
+
+            // 添加到页面中
+            $('.dd_price span:last-child').eq(i).after(addCNYPriceBlock);
         });
+    }
+
+    if (/\/dd/.test(window.location.href)) {
+        // 外币转人民币
+        foreignCurrencyConversion();
 
         // 功能2-3：根据降价幅度变更标题颜色
         const priceTitleColorDict = { 100: 'rgb(220,53,69)', 80: 'rgb(253,126,20)', 50: 'rgb(255,193,7)', 20: 'rgb(40,167,69)' };
