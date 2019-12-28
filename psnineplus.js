@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.8.9
+// @version      0.9.0
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404
@@ -121,23 +121,34 @@
     }
 
     // 全局优化
-    // 功能0-1：点击跳转到页面底部
-    $('.bottombar').append("<a id='scrollbottom' class='yuan mt10'>B</a>");
-    $('#scrollbottom').click(function () {
-        $('body,html').animate(
-            {
-                scrollTop: document.body.clientHeight,
-            },
-            500
-        );
-    });
-
-    // 功能0-1.1：恢复Header部的新闻链接
-    if (settings.addNews) {
-        $('#pcmenu > li:nth-child(1)').before(
-            "<li><a href='https://psnine.com/news'>新闻</a></li>"
-        );
+    /*
+     * 页面右下角追加点击跳转到页面底部按钮
+     */
+    const toPageButton = () => {
+        $('.bottombar').append("<a id='scrollbottom' class='yuan mt10'>B</a>");
+        $('#scrollbottom').click(() => {
+            $('body,html').animate(
+                {
+                    scrollTop: document.body.clientHeight,
+                },
+                500
+            );
+        });
     }
+    toPageButton();
+
+    /*
+     * 恢复Header部的新闻链接
+     * @param  isOn  是否开启功能
+     */
+    const addNews = (isOn) => {
+        if (isOn) {
+            $('#pcmenu > li:nth-child(1)').before(
+                "<li><a href='https://psnine.com/news'>新闻</a></li>"
+            );
+        }
+    }
+    addNews(settings.addNews);
 
     // 功能0-2：夜间模式
     if (settings.nightMode) {
@@ -161,16 +172,41 @@
     }
     // 功能0-4：markdown语法支持测试
 
-    // 功能0-5：自动签到
-    if (settings.autoCheckIn) {
-        if ($('[class$=yuan]').length > 0) {
+    /*
+     * 自动签到功能
+     * @param  isOn  是否开启功能
+     */
+    const automaticSignIn = (isOn) => {
+        // 如果签到按钮存在页面上
+        if (isOn && $('[class$=yuan]').length > 0) {
             $('[class$=yuan]').click();
         }
     }
+    automaticSignIn(settings.autoCheckIn);
 
     // 功能0-6：自动翻页
+
+    /* 获取当前页面的后一页页码和链接
+    *  @return  nextPage      后一页页码
+    *  @return  nextPageLink  后一页的链接
+    */
+    const getNextPageInfo = () => {
+        // 获取下一页页码
+        const nextPage = Number($('.page > ul > .current:last').text()) + 1;
+        // 如果地址已经有地址信息
+        let nextPageLink = '';
+        if (/page/.test(window.location.href)) {
+            nextPageLink = window.location.href.replace(
+                /page=.+/,
+                'page=' + nextPage
+            );
+        } else {
+            nextPageLink = window.location.href + '&page=' + nextPage;
+        }
+        return { nextPage, nextPageLink }
+    }
     if (settings.autoPaging > 0) {
-        var isbool = true; //触发开关，防止多次调用事件
+        let isbool = true; //触发开关，防止多次调用事件
         $('body').append(
             "<div id='loadingMessage' style='position: absolute;bottom: 0px;position: fixed;right: 1px !important;display:none; color:white;'></div>"
         );
@@ -179,7 +215,7 @@
                 window.location.href
             )
         ) {
-            var autoPagingLimitCount = 0;
+            let autoPagingLimitCount = 0;
             $(window).scroll(function () {
                 //当内容滚动到底部时加载新的内容
                 if (
@@ -190,26 +226,15 @@
                     autoPagingLimitCount < settings.autoPaging
                 ) {
                     isbool = false;
-                    // 获取下一页页码
-                    var nextPage = Number($('.page > ul > .current:last').text()) + 1;
-                    // 如果地址已经有地址信息
-                    var nextPageLink = '';
-                    if (/page/.test(window.location.href)) {
-                        nextPageLink = window.location.href.replace(
-                            /page=.+/,
-                            'page=' + nextPage
-                        );
-                    } else {
-                        nextPageLink = window.location.href + '&page=' + nextPage;
-                    }
+                    // 获取下一页页码和链接
+                    const { nextPage, nextPageLink } = getNextPageInfo();
                     // 加载页面并且插入
-                    $('#loadingMessage').text(`加载第${nextPage}页...`);
-                    $('#loadingMessage').show();
+                    $('#loadingMessage').text(`加载第${nextPage}页...`).show();
                     $('.page:last').after(`<div class='loadPage${nextPage}'></div>`);
                     $.get(
-                        `${nextPageLink}`,
+                        nextPageLink,
                         {},
-                        function (data) {
+                        (data) => {
                             var $response = $('<div />').html(data);
                             $(`.loadPage${nextPage}`)
                                 .append($response.find('.list'))
@@ -226,7 +251,7 @@
                         },
                         'html'
                     );
-                    setTimeout(function () {
+                    setTimeout(() => {
                         $('#loadingMessage').fadeOut();
                     }, 2000);
                 }
@@ -256,25 +281,24 @@
                     var gamePage =
                         window.location.href + '/psngame?page=' + gamePageIndex;
                     // 加载页面并且插入
-                    $('#loadingMessage').text(`加载第${gamePageIndex}页...`);
-                    $('#loadingMessage').show();
+                    $('#loadingMessage').text(`加载第${gamePageIndex}页...`).show();
                     $.get(
                         gamePage,
                         {},
-                        function (data) {
+                        (data) => {
                             var $response = $('<div />').html(data);
                             var nextGameContent = $response.find('tbody > tr');
                             if (nextGameContent.length > 0) {
                                 $('tbody > tr:last').after(nextGameContent);
                                 isbool2 = true;
-                                gamePageIndex += 1;
+                                gamePageIndex++;
                             } else {
                                 $('#loadingMessage').text('没有更多游戏了...');
                             }
                         },
                         'html'
                     );
-                    setTimeout(function () {
+                    setTimeout(() => {
                         $('#loadingMessage').fadeOut();
                     }, 2000);
                 }
@@ -282,23 +306,32 @@
         }
     }
     // 帖子优化
-    // 功能1-1：高亮发帖楼主
+    /*
+    * 功能：对发帖楼主增加“楼主”标志
+    * @param  userId  用户（楼主）ID
+    */
+    const addOPBadge = (userId) => {
+        $('.psnnode').map((i, n) => {
+            // 匹配楼主ID，变更CSS
+            if ($(n).text() == userId) {
+                $(n).after('<span class="badge badge-1">楼主</span>');
+            }
+        });
+    }
     if (
         /(gene|trade|topic)\//.test(window.location.href) &
         !/comment/.test(window.location.href)
     ) {
         // 获取楼主ID
-        var author = $('.title2').text();
-        $('.psnnode').map(function (i, n) {
-            // 匹配楼主ID，变更CSS
-            if ($(n).text() == author) {
-                $(n).after('<span class="badge badge-1">楼主</span>');
-            }
-        });
+        const authorId = $('.title2').text();
+        addOPBadge(authorId);
     }
-    // 功能1-2：高亮用户ID
-    function addHighlightOnID() {
-        settings.highlightSpecificID.map(function (i, n) {
+
+    /*
+    * 功能：对关注用户进行ID高亮功能函数
+    */
+    const addHighlightOnID = () => {
+        settings.highlightSpecificID.map((i, n) => {
             $(`.meta>[href="${window.location.href.match('(.*)\\.com')[0]}/psnid/${i}"]`).css({
                 'background-color': settings.highlightSpecificBack,
                 color: settings.highlightSpecificFront,
@@ -308,13 +341,13 @@
     addHighlightOnID();
 
     // 功能1-3：主题中存在 -插图- 一项时，提供预览悬浮窗
-    $("a[target='_blank']").html(function (i, url) {
+    $("a[target='_blank']").html((i, url) => {
         if (url == ' -插图- ') {
             var xOffset = 5;
             var yOffset = 5;
             var imgUrl = $(this).attr('href');
             $(this).hover(
-                function (e) {
+                (e) => {
                     $('body').append(
                         $(
                             `<span id="hoverImage"><img src="${imgUrl}" onload="if (this.width > 500) this.width=500;"</img></span>`
@@ -332,11 +365,11 @@
                         .css('left', e.pageX + yOffset + 'px')
                         .fadeIn(500);
                 },
-                function () {
+                () => {
                     $('#hoverImage').remove();
                 }
             );
-            $(this).mousemove(function (e) {
+            $(this).mousemove((e) => {
                 $('#hoverImage')
                     .css('top', e.pageY - xOffset + 'px')
                     .css('left', e.pageX + yOffset + 'px');
@@ -433,24 +466,22 @@
         }
     }
     // 功能1-5：增加帖子楼层信息
-    function addFloorIndex() {
-        var baseFloorIndex = 0;
-        var subFloorIndex = -1;
-        $('span[class^=r]').map(function (i, n) {
+    const addFloorIndex = () => {
+        let baseFloorIndex = 0;
+        let subFloorIndex = -1;
+        $('span[class^=r]').map((i, el) => {
             if (i > 0) {
-                if ($(this).attr('class') == 'r') {
-                    baseFloorIndex++;
-                    $(this)
+                if ($(el).attr('class') == 'r') {
+                    $(el)
                         .children('a:last')
-                        .after(`&nbsp&nbsp<span>#${baseFloorIndex}</span>`);
+                        .after(`&nbsp&nbsp<span>#${++baseFloorIndex}</span>`);
                     subFloorIndex = -1;
                 } else {
-                    $(this)
+                    $(el)
                         .children('a:last')
                         .after(
-                            `&nbsp&nbsp<span>#${baseFloorIndex}${subFloorIndex}</span>`
+                            `&nbsp&nbsp<span>#${baseFloorIndex}${subFloorIndex--}</span>`
                         );
-                    subFloorIndex--;
                 }
             }
         });
@@ -458,15 +489,15 @@
     addFloorIndex();
 
     // 功能1-6：屏蔽黑名单中的用户发言内容
-    function Filter(psnnode, parent, userList) {
-        $(psnnode).map(function (i, v) {
-            if ($(v).html().toLowerCase() == userList.toLowerCase()) {
-                $(v).parents(parent).hide();
+    const Filter = (psnnode, parent, userList) => {
+        $(psnnode).map((i, el) => {
+            if ($(el).html().toLowerCase() == userList.toLowerCase()) {
+                $(el).parents(parent).hide();
             }
         });
     }
 
-    function filterUserPost() {
+    const filterUserPost = () => {
         if (settings.blockList.length > 0) {
             settings.blockList.map((user, i) => {
                 if (window.location.href.indexOf('gene') > -1) {
@@ -491,8 +522,12 @@
     }
 
     // 功能1-8：回复按钮hover触发显示
-    function hoverShowReply(div) {
-        var subClass = "span[class='r']";
+    /*
+    * 回复按钮hover触发显示功能函数
+    * @param  div  标签
+    */
+    const hoverShowReply = (div) => {
+        const subClass = "span[class='r']";
         $(`${div} ${subClass}`).css({
             opacity: 0,
             transition: 'all 0.2s ease',
@@ -550,25 +585,30 @@
         });
     }
 
-    // 功能1-10：问答标题根据回答状况着色
-    function addColorToQaTitle() {
-        if (settings.qaHighlightTitle) {
-            $('div.meta > .r > span:nth-child(2)').map(function (i, v) {
-                $(this)
+    /*
+     * 问答标题根据回答状况着色
+     * @param  isOn  是否开启功能
+     */
+    const addColorToQaTitle = (isOn) => {
+        if (isOn) {
+            $('div.meta > .r > span:nth-child(2)').map((i, el) => {
+                $(el)
                     .parent()
                     .parent()
                     .prev()
                     .children('a')
-                    .css('color', $(this).css('color'));
+                    .css('color', $(el).css('color'));
             });
+        } else {
+            return;
         }
     }
     if (/\/qa/.test(window.location.href)) {
-        addColorToQaTitle();
+        addColorToQaTitle(settings.qaHighlightTitle);
     }
 
     // 功能1-11：悬浮于头像显示个人界面
-    function addHoverProfile() {
+    const addHoverProfile = () => {
         if (settings.hoverHomepage) {
             const INITIAL_CONTENT = '加载中...';
             $("a[href*='psnid/'] > img").parent().map(function (i, v) {
@@ -804,90 +844,180 @@
 
         $('#container').highcharts(json);
     }
-    if (/\/dd/.test(window.location.href)) {
-        // 功能2-2：外币转人民币
-        $('.dd_price').map(function (i, n) {
-            var price = [
-                $(this).children().eq(0).text(),
-                $(this).children().eq(1).text(),
-                $(this).children().eq(2).text(),
-            ];
-            var CNY = [0, 0, 0];
-            var offset = 3;
-            if (/dd\//.test(window.location.href)) {
-                offset = 2;
+
+    /*
+    * 增加单个价格或文字展示标签
+    * @param  value        展示数值或字符串
+    * @param  className    样式名
+    * @param  styleString  额外追加的样式
+    * @return {string}     展示内容标签
+    */
+    const priceSpan = (value, className, styleString = null) => {
+        let text = value;
+        if (typeof value === 'number') {
+            if (value > 0) {
+                text = '¥' + value.toFixed(2);
+            } else {
+                return;
             }
+        }
+        return `<span class=${className} style="float:right;${styleString}">${text}</span>`;
+    }
+    /*
+    * 功能：在当前页面上添加外币转人民币的价格展示
+    */
+    const foreignCurrencyConversion = () => {
+        $('.dd_price').map((i, el) => {
+            const price = [
+                $(el).children().eq(0).text(), // 原始价格
+                $(el).children().eq(1).text(), // 优惠价格
+                $(el).children().eq(2).text(), // 会员优惠价格
+            ];
+            // 一览页面和单商品页面不同位置偏移
+            const offset = /dd\//.test(window.location.href) ? 2 : 3;
             // 根据地区转换原始价格
-            var region = $(`.dd_info p:nth-child(${offset})`).eq(i).text();
-            var nameToMarkDict = { 港服: 'HK$', 美服: '$', 日服: '¥', 英服: '£', 国服: '¥' };
-            var ratioToMark = {
-                港服: settings.dollarHKRatio,
-                美服: settings.dollarRatio,
-                日服: settings.yenRatio,
-                英服: settings.poundRatio,
-                国服: 1,
+            const district = $(`.dd_info p:nth-child(${offset})`).eq(i).text();
+            const districtCurrency = {
+                港服: ['HK$', settings.dollarHKRatio],
+                美服: ['$', settings.dollarRatio],
+                日服: ['¥', settings.yenRatio],
+                英服: ['£', settings.poundRatio],
+                国服: ['¥', 1],
             };
-            CNY = price.map(item => {
+            const CNY = price.map(item => {
                 return (
-                    Number(item.replace(nameToMarkDict[region], '')) *
-                    ratioToMark[region]
+                    Number(item.replace(districtCurrency[district][0], '')) *
+                    districtCurrency[district][1]
                 );
             });
-            $('.dd_price span:last-child')
-                .eq(i)
-                .after(
-                    `${'&nbsp'.repeat(25)}<span class='dd_price_off' style="font-size:12px;">对应人民币价格：</span><s class='dd_price_old'>¥${CNY[0].toFixed(2)}</s><span class='dd_price_off'>¥${CNY[1].toFixed(2)}</span>`
-                );
-            if (CNY[2] > 0) {
-                $('.dd_price span:last-child')
-                    .eq(i)
-                    .after(
-                        `</span><span class='dd_price_plus'>¥${CNY[2].toFixed(2)}</span>`
-                    );
-            }
+            // 整块增加的价格表示
+            const addCNYPriceBlock = [
+                priceSpan(CNY[2], 'dd_price_plus'),
+                priceSpan(CNY[1], 'dd_price_off'),
+                priceSpan(CNY[0], 'dd_price_old', 'text-decoration:line-through'),
+                priceSpan('CNY：', 'dd_price_off', 'font-size:12px;'),
+            ].filter(Boolean).join('');
+            // 添加到页面中
+            $('.dd_price span:last-child').eq(i).after(addCNYPriceBlock);
         });
-
-        // 功能2-3：根据降价幅度变更标题颜色
-        var priceTitleColorDict = { 100: 'rgb(220,53,69)', 80: 'rgb(253,126,20)', 50: 'rgb(255,193,7)', 20: 'rgb(40,167,69)' };
-        $('.dd_box').map(function (i, n) {
-            var offPercent = Number(
-                $(this).find('.dd_pic > div[class^="dd_tag"] ').text().match('省(.+)%')[1]
+    }
+    /*
+    * 功能：根据降价幅度变更标题颜色
+    */
+    const changeGameTitleColor = () => {
+        // 设定不同降价范围的标题颜色
+        const priceTitleColorDict = {
+            100: 'rgb(220,53,69)',
+            80: 'rgb(253,126,20)',
+            50: 'rgb(255,193,7)',
+            20: 'rgb(40,167,69)',
+        };
+        // 着色
+        $('.dd_box').map((i, el) => {
+            const offPercent = Number(
+                $(el).find('.dd_pic > div[class^="dd_tag"] ').text()
+                    .match('省(.+)%')[1]
             );
             for (var key in priceTitleColorDict) {
                 if (offPercent < key) {
-                    $('.dd_title.mb10>a').eq(i).css({ color: priceTitleColorDict[key] });
+                    $('.dd_title.mb10>a').eq(i).css({
+                        color: priceTitleColorDict[key]
+                    });
                     break;
                 }
             }
         });
+    }
 
-        // 功能2-4：只看史低
-        // 追加“只看史低”的按钮
+    /*
+    * 增加按键样式
+    * @param  id               标签ID
+    * @param  backgroundColor  按键背景色
+    */
+    const addButtonStyle = (id, backgroundColor) => {
         GM_addStyle(
-            `#selectLowest {padding:0px 5px; margin-left:10px; border-radius:2px; display: inline-block; color: white;background-color: #d9534f; cursor:pointer; line-height:24px;}`
+            `#${id} {
+                padding          : 0px 5px;
+                margin-left      : 10px;
+                border-radius    : 2px;
+                display          : inline-block;
+                color            : white;
+                background-color : ${backgroundColor};
+                cursor           : pointer;
+                line-height      : 24px;
+            }`
         );
+    }
+    addButtonStyle('selectLowest', '#d9534f'); // 只看史低
+    addButtonStyle('selectUnget', '#3498db');  // 未获得
+    /*
+    * 功能：页面上追加“只看史低”功能按键，点击显示史低，再次点击恢复显示所有游戏（数折页面）
+    */
+    const onlyLowest = () => {
+        // 追加只看史低按键
         $('.dropmenu').append("<li><a id='selectLowest'>只看史低</a></li>");
         // 点击按钮隐藏或者显示
-        var clickHideShowNumLowest = 0;
-        $('#selectLowest').click(function () {
-            if (clickHideShowNumLowest++ % 2 == 0) {
-                $('li.dd_box').map(function (i, v) {
-                    if ($(this).children('.dd_status.dd_status_best').length == 0) {
-                        $(this).hide();
+        let clickHideShowNumLowest = 0;
+        $('#selectLowest').click(() => {
+            if (clickHideShowNumLowest++ % 2 === 0) {
+                $('li.dd_box').map((i, el) => {
+                    if ($(el).children('.dd_status.dd_status_best').length === 0) {
+                        $(el).hide();
                     }
                 });
-                $('#selectLowest').text('显示全部');
-                $('#selectLowest').css('background-color', '#f78784');
+                $('#selectLowest').text('显示全部').css({
+                    'background-color': '#f78784'
+                });
             } else {
                 $('li.dd_box').show();
-                $('#selectLowest').text('只看史低');
-                $('#selectLowest').css('background-color', '#d9534f');
+                $('#selectLowest').text('只看史低').css({
+                    'background-color': '#d9534f'
+                });
             }
         });
     }
+    /*
+    * 功能：页面上追加“只看史低”功能按键，点击显示史低，再次点击恢复显示所有游戏（活动页面）
+    */
+    const onlyLowestSell = () => {
+        // 追加只看史低按键
+        $('.disabled.h-p').after("<li><a id='selectLowest'>只看史低</a></li>")
+        // 隐藏游戏box函数
+        const hideOrShowGameBox = ({ status, text, background }) => {
+            $(document.querySelectorAll('li.store_box')).map((i, el) => {
+                if ((el).querySelector('.store_tag_best') === null) {
+                    (el).style.display = status;
+                }
+            })
+            $('#selectLowest').text(text).css({
+                'background-color': background,
+            });
+        }
+        // 点击按钮隐藏或者显示
+        let clickHideShowNumLowest2 = 0;
+        $('#selectLowest').click(() => {
+            hideOrShowGameBox(clickHideShowNumLowest2++ % 2 === 0
+                ? { status: 'none', text: '显示全部', background: '#f78784' }
+                : { status: 'block', text: '只看史低', background: '#d9534f' });
+        })
+    }
 
-    // 功能2-5：活动页面根据降价幅度变更背景色
+    // 页面：数折
+    if (/\/dd/.test(window.location.href)) {
+        // 外币转人民币
+        foreignCurrencyConversion();
+        // 根据降价幅度变更标题颜色
+        changeGameTitleColor();
+        // 只看史低
+        onlyLowest();
+    }
+
+    // 页面：活动
     if (/huodong/.test(window.location.href)) {
+        // 只看史低
+        onlyLowestSell();
+
+        // 活动页面根据降价幅度变更背景色
         // $(document.querySelectorAll('li.store_box > .store_pic')).map(function (i, n) {
         //     var percentValue = (this).querySelector('.store_tag_plus')
         //     if (percentValue == null) {
@@ -895,78 +1025,71 @@
         //     }
         //     var priceDownLevel = Number(percentValue.innerText.match('省(.+)%')[1]);
         // })
-
-        // 追加显示史低按键
-        var newButton = document.createElement("li");
-        newButton.innerHTML = '<a id="showLowest">显示史低</a>'
-        document.querySelector('.disabled.h-p').after(newButton)
-
-        // 隐藏游戏box函数
-        function hideShowGameBox(status, text, background, color) {
-            $(document.querySelectorAll('li.store_box')).map(function (i, n) {
-                if ((this).querySelector('.store_tag_best') == null) {
-                    (this).style.display = status;
-                }
-            })
-            $('#showLowest').text(text);
-            $('#showLowest').css({ 'background-color': background, 'color': '#99A1A7' });
-        }
-        // 点击按钮隐藏或者显示
-        var clickHideShowNumLowest2 = 0;
-        $('#showLowest').click(function () {
-            if (clickHideShowNumLowest2++ % 2 == 0) {
-                hideShowGameBox('none', '显示全部', '#E7EBEE');
-            } else {
-                hideShowGameBox('block', '显示史低', '#333F51');
-            }
-        })
     }
 
-    // 奖杯系统优化
-    // 功能3-1：游戏奖杯界面可视化
-    if (
-        /psngame\//.test(window.location.href) &&
-        /^(?!.*comment|.*rank|.*battle|.*gamelist|.*topic|.*qa)/.test(
-            window.location.href
-        )
-    ) {
-        // 游戏奖杯比例图
-        var platinum = $($('.text-platinum').get(0)).text().replace('白', '');
-        var gold = $($('.text-gold').get(0)).text().replace('金', '');
-        var silver = $($('.text-silver').get(0)).text().replace('银', '');
-        var bronze = $($('.text-bronze').get(0)).text().replace('铜', '');
+    /*
+    * 获取奖杯各种类个数
+    * @param  className  用于识别的类名
+    * @param  name       奖杯种类名
+    * @param  color      色块所用颜色码
+    * 
+    * @return {object}   用于绘扇形图的单个数据块
+    */
+    const getTrophyCategory = (className, name, color) => {
+        const tropyCount = $(className).eq(0).text().replace(name, '');
+        return { name: name, y: Number(tropyCount), color: color };
+    }
 
-        // 奖杯稀有度统计
-        var rareArray = [0, 0, 0, 0, 0];
-        for (var rareIndex = 1; rareIndex <= 4; rareIndex++) {
-            var rareValue = document.getElementsByClassName(
-                `twoge t${rareIndex} h-p`
-            );
-            for (var j = 0; j < rareValue.length; j++) {
-                var rarity = Number(
-                    rareValue[j].innerText.split('\n')[0].replace('%', '')
-                );
-                if (rarity <= 5) {
-                    rareArray[0]++; // 极度珍贵
-                } else if ((rarity > 5) & (rarity <= 10)) {
-                    rareArray[1]++; // 非常珍贵
-                } else if ((rarity > 10) & (rarity <= 20)) {
-                    rareArray[2]++; // 珍贵
-                } else if ((rarity > 20) & (rarity <= 50)) {
-                    rareArray[3]++; // 罕见
-                } else {
-                    rareArray[4]++; // 普通
-                }
-            }
+    /*
+    * 获取奖杯各稀有度个数
+    * @return {object}   用于绘扇形图的数据块
+    */
+    const getTrophyRarity = () => {
+        let rareArray = [0, 0, 0, 0, 0];         // 个数统计
+        const rareStandard = [0, 5, 10, 20, 50]; // 区间定义
+        for (var rareIndex of [1, 2, 3, 4]) {
+            $(`.twoge.t${rareIndex}.h-p`).map((i, ev) => {
+                // 获取稀有度
+                const rarity = Number($(ev).eq(0).text().split('%')[0]
+                    .replace('%', ''));
+                // 计算该稀有度的奖杯数量
+                rareArray[[...rareStandard, rarity]
+                    .sort((a, b) => a - b)
+                    .indexOf(rarity) - 1]++;
+            });
         }
-
-        var trophyRatioChart = {
+        return rareArray;
+    }
+    /*
+    * 功能：在单独游戏页面上方追加奖杯统计扇形图
+    */
+    const addTrophyPieChart = () => {
+        // 奖杯稀有度统计数据
+        const rareArray = getTrophyRarity();
+        const trophyRatioSeriesRarityData = [
+            { name: '极度珍贵', y: rareArray[0], color: 'rgb(160, 217, 255)' },
+            { name: '非常珍贵', y: rareArray[1], color: 'rgb(124, 181, 236)' },
+            { name: '珍贵', y: rareArray[2], color: 'rgb(88, 145, 200)' },
+            { name: '罕见', y: rareArray[3], color: 'rgb(52, 109, 164)' },
+            { name: '一般', y: rareArray[4], color: 'rgb(40, 97, 152)' },
+        ];
+        // 奖杯个数统计数据
+        const trophyRatioSeriesCategoryData = [
+            getTrophyCategory('.text-platinum', '白', '#7a96d1'),
+            getTrophyCategory('.text-gold', '金', '#cd9a46'),
+            getTrophyCategory('.text-silver', '银', '#a6a6a6'),
+            getTrophyCategory('.text-bronze', '铜', '#bf6a3a'),
+        ];
+        // 背景设置
+        const trophyRatioChart = {
             backgroundColor: 'rgba(0,0,0,0)',
         };
-        var trophyRatioTooltip = {
+        // 悬浮内容设置
+        const trophyRatioTooltip = {
             pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>',
         };
-        var trophyRatioPlotOptions = {
+        // 绘图设置
+        const trophyRatioPlotOptions = {
             pie: {
                 allowPointSelect: true,
                 cursor: 'pointer',
@@ -984,51 +1107,72 @@
                 },
             },
         };
-        var trophyRatioSeries = [
+        // 绘图数据
+        const trophyRatioSeries = [
             {
                 type: 'pie',
                 name: '比例',
-                data: [
-                    { name: '白金', y: Number(platinum), color: '#7a96d1' },
-                    { name: '金', y: Number(gold), color: '#cd9a46' },
-                    { name: '银', y: Number(silver), color: '#a6a6a6' },
-                    { name: '铜', y: Number(bronze), color: '#bf6a3a' },
-                ],
+                data: trophyRatioSeriesCategoryData,
                 center: [50, 30],
                 size: 130,
             },
             {
                 type: 'pie',
                 name: '比例',
-                data: [
-                    { name: '极度珍贵', y: rareArray[0], color: 'rgb(160, 217, 255)' },
-                    { name: '非常珍贵', y: rareArray[1], color: 'rgb(124, 181, 236)' },
-                    { name: '珍贵', y: rareArray[2], color: 'rgb(88, 145, 200)' },
-                    { name: '罕见', y: rareArray[3], color: 'rgb(52, 109, 164)' },
-                    { name: '一般', y: rareArray[4], color: 'rgb(40, 97, 152)' },
-                ],
+                data: trophyRatioSeriesRarityData,
                 center: [200, 30],
                 size: 130,
             },
         ];
-        var trophyRatioTitle = {
+        // 标题设置
+        const trophyRatioTitle = {
             text: '奖杯统计',
             style: {
                 color: '#808080',
             },
         };
-        var trophyRatio = {};
-        trophyRatio.chart = trophyRatioChart;
-        trophyRatio.tooltip = trophyRatioTooltip;
-        trophyRatio.title = trophyRatioTitle;
-        trophyRatio.series = trophyRatioSeries;
-        trophyRatio.plotOptions = trophyRatioPlotOptions;
-        trophyRatio.credits = credits;
+        // 构建绘图对象
+        const trophyRatio = {
+            chart: trophyRatioChart,
+            tooltip: trophyRatioTooltip,
+            title: trophyRatioTitle,
+            series: trophyRatioSeries,
+            plotOptions: trophyRatioPlotOptions,
+            credits: credits,
+        };
         // 插入页面
         $('.box.pd10').append(
-            `<p></p><div id="trophyRatioChart" align="left" style="width: 320px; height: 200px; margin: 0 0; display: inline-block;"></div>`
+            `<p></p><div id="trophyRatioChart" align="left"></div>`
         );
         $('#trophyRatioChart').highcharts(trophyRatio);
+    }
+    /*
+    * 增加绘图框架样式
+    * @param  id     标签ID
+    * @param  width  宽度
+    */
+    const addPlotFrame = (id, width) => {
+        GM_addStyle(
+            `#${id} {
+            width   : ${width}px;
+            height  : 200px;
+            margin  : 0 0;
+            display : inline-block;
+        }`
+        );
+    }
+    addPlotFrame('trophyRatioChart', 320);
+
+    // 奖杯系统优化
+    // 功能3-1：游戏奖杯界面可视化
+    if (
+        /psngame\//.test(window.location.href) &&
+        /^(?!.*comment|.*rank|.*battle|.*gamelist|.*topic|.*qa)/.test(
+            window.location.href
+        )
+    ) {
+        // 追加奖杯统计扇形图
+        addTrophyPieChart();
 
         // 奖杯获得时间年月统计
         var getTimeArray = [];
@@ -1106,6 +1250,10 @@
                     text: '奖杯获得个数',
                 },
                 min: 0,
+            };
+            // 背景设置
+            const trophyRatioChart = {
+                backgroundColor: 'rgba(0,0,0,0)',
             };
             var trophyGetTime = {};
             trophyGetTime.chart = trophyRatioChart;
@@ -1205,9 +1353,7 @@
         // 功能3-3：追加奖杯筛选功能
         $('.dropmenu').append('<li><em>筛选</em></li>'); // 追加“筛选”字样
         // 追加“未获得”的按钮
-        $('.dropmenu').append(
-            "<a id='selectUnget' style='padding:0px 5px; margin-left:10px; border-radius:2px; display: inline-block; color: white;background-color: #3498db; cursor:pointer; line-height:24px;'>尚未获得</a>"
-        );
+        $('.dropmenu').append("<a id='selectUnget'>尚未获得</a>");
         // 点击按钮隐藏或者显示
         var clickHideShowNum = 0;
         $('#selectUnget').click(function () {
@@ -1226,39 +1372,41 @@
         });
     }
 
-    // 游戏页面优化
-
-    if (
-        /psngame/.test(window.location.href) & !/psnid/.test(window.location.href)
-    ) {
-        // 功能5-1：降低没有白金的游戏的图标亮度
-        if (settings.filterNonePlatinumAlpha < 1) {
-            $('tr').map(function (i, n) {
+    /*
+    * 功能：降低没有白金的游戏的图标亮度
+    * @param  alpha  无白金游戏图标透明度
+    */
+    const filterNonePlatinum = (alpha) => {
+        if (alpha < 1) {
+            $('tr').map((i, el) => {
                 // 读取白金数量
-                var platinumNum = $(this)
-                    .children('.pd1015.title.lh180')
-                    .children('em')
-                    .children('.text-platinum')
-                    .text()
-                    .replace('白', '');
-                if (platinumNum == 0) {
-                    $(this)
-                        .children('.pdd15')
-                        .children('a')
-                        .children('img')
-                        .css({ opacity: settings.filterNonePlatinumAlpha });
+                const platinumNum = $(el)
+                    .find('.pd1015.title.lh180 > em > .text-platinum').eq(0)
+                    .text().replace('白', '');
+                if (platinumNum === '0') {
+                    $(el).find('.pdd15 > a > img').eq(0)
+                        .css({ opacity: alpha });
                 }
             });
         }
+    };
+
+    // 游戏页面优化
+    if (
+        /psngame/.test(window.location.href) & !/psnid/.test(window.location.href)
+    ) {
+        // 降低没有白金的游戏的图标亮度
+        filterNonePlatinum(settings.filterNonePlatinumAlpha);
+
         // 功能5-2：悬浮图标显示自己的游戏的完成度
-        $('.imgbgnb').map(function (i, n) {
-            $(this).attr('id', 'game' + i);
+        $('.imgbgnb').map((i, el) => {
+            $(el).attr('id', 'game' + i);
             var psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/); //从cookie中取出psnid
             if (psnidCookie) {
                 var psnid = psnidCookie[1];
-                var myGameUrl = $(this).parent().attr('href');
+                var myGameUrl = $(el).parent().attr('href');
                 if (myGameUrl != undefined) {
-                    myGameUrl = $(this).parent().attr('href') + `?psnid=${psnid}`;
+                    myGameUrl = $(el).parent().attr('href') + `?psnid=${psnid}`;
                     tippy('#game' + i, {
                         content: '加载中',
                         animateFill: false,
