@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.9.1
+// @version      0.9.2
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404
@@ -665,117 +665,121 @@
     }
     addHoverProfile();
 
-    // 商城优化
-    // 功能2-1：商城价格走势图
-    if (
-        /\/dd\//.test(window.location.href) ||
-        /game\/[0-9]+\/dd$/.test(window.location.href)
-    ) {
-        // 日期转换函数
-        function converntTime(value) {
-            var timeArray = value
-                .replace(/年|月|日/g, '-')
-                .split('-');
-            return Date.UTC('20' + timeArray[0], Number(timeArray[1]) - 1, timeArray[2]);
-        }
+    /* 日期转换函数，将（XX年XX月XX日）形式切割成UTC时间
+    *  @param   value     XX年XX月XX日 形式的字符串
+    *  @return  {object}  UTC时间对象
+    */
+    const converntTime = (value) => {
+        const time = value.replace(/年|月|日/g, '-').split('-');
+        return Date.UTC('20' + time[0], Number(time[1]) - 1, time[2]);
+    }
+
+    /* 获取当前页面的价格变动时间，构建绘图曲线X轴数据集
+    *  @return  xValue  价格变动时间X数据
+    */
+    const priceLineDataX = () => {
         // 获取X轴的日期
-        var xContents = $('p.dd_text');
-        var xValue = [];
-        var today = new Date();
-        var todayArray = Date.UTC(
+        const xContents = $('p.dd_text');
+        let xValue = [];
+        for (var index = 3; index < xContents.length; index += 4) {
+            const tamp = xContents[index].innerText.split(' ~ ').map((item) => {
+                return converntTime(item);
+            });
+            xValue = [tamp[0], tamp[0], tamp[1], tamp[1], ...xValue];
+        }
+        return xValue;
+    }
+
+    /* 获取当前页面的价格情况，构建绘图曲线Y轴数据集
+    *  @return  yNormal  普通会员价格Y数据
+    *  @return  yPlus    plus会员价格Y数据
+    */
+    const priceLineDataY = () => {
+        const div = $('.dd_price');
+        let yNormal = [];
+        let yPlus = [];
+        div.map((i, el) => {
+            const yOld = $(el).children('.dd_price_old').eq(0).text();
+            const yPriceNormal = $(el).children('.dd_price_off').eq(0).text();
+            // 普通会员价格曲线值
+            yNormal = [yOld, yPriceNormal, yPriceNormal, yOld, ...yNormal];
+            // PS+会员价格曲线值
+            const yPricePlus = $(el).children('.dd_price_plus').eq(0);
+            const pricePlusTamp = yPricePlus.length === 0 ? yPriceNormal : yPricePlus.text();
+            yPlus = [yOld, pricePlusTamp, pricePlusTamp, yOld, ...yPlus];
+        });
+        return { yNormal, yPlus };
+    }
+
+    /* 修正数据集的最后一组数据函数。如果当前日期在最后一次促销结束前，
+    *  则修改最后一组数据为当前日期，如在以后，则将最后一次促销的原始
+    *  价格作为最后一组数据的当前价格。
+    *  @param   [dataArray]  包含[datetime, price]的原始数据
+    * 
+    *  @return  [dataArray]  修改后的[datetime, price]数据
+    */
+    const fixTheLastElement = (data) => {
+        const today = new Date();
+        const todayArray = Date.UTC(
             today.getYear() + 1900,
             today.getMonth(),
             today.getDate()
         );
-        for (var xindex = 3; xindex < xContents.length; xindex += 4) {
-            var tamp = xContents[xindex].innerText.split(' ~ ');
-            tamp[0] = converntTime(tamp[0]);
-            tamp[1] = converntTime(tamp[1]);
-            xValue = [tamp[0], tamp[0], tamp[1], tamp[1]].concat(xValue);
-        }
-
-        //获取价格
-        var y = $('.dd_price');
-
-        var yValueNormal = [];
-        var yValuePlus = [];
-        for (var yindex = 0; yindex < y.length; yindex++) {
-            var yPriceOld = $(y[yindex]).children('.dd_price_old').text();
-            var yPriceNormal = $(y[yindex]).children('.dd_price_off').text();
-
-            // 普通会员价格曲线值
-            yValueNormal = [yPriceOld, yPriceNormal, yPriceNormal, yPriceOld].concat(
-                yValueNormal
-            );
-            // PS+会员价格曲线值
-            var yPricePlus = $(y[yindex]).children('.dd_price_plus');
-            var pricePlusTamp = '';
-            if (yPricePlus.length == 0) {
-                pricePlusTamp = yPriceNormal;
-            } else {
-                pricePlusTamp = yPricePlus.text();
-            }
-            yValuePlus = [yPriceOld, pricePlusTamp, pricePlusTamp, yPriceOld].concat(
-                yValuePlus
-            );
-        }
-        // 普通价格数据
-        var xForPlotNormal = new Array();
-        var xForPlotPlus = new Array();
-        // 判断地区
-        var replaceString = '';
-        switch (yValueNormal[0].substring(0, 1)) {
-            case 'H':
-                replaceString = 'HK$';
-                break;
-            case '$':
-                replaceString = '$';
-                break;
-            case '£':
-                replaceString = '£';
-                break;
-            case '¥':
-                replaceString = '¥';
-        }
-
-        // 构造绘图用数组函数
-        function createPlotArray(i, xArray, yArray, replaceString) {
-            return [xArray[i], Number(yArray[i].replace(replaceString, ''))]
-        }
-        for (var i = 0; i < xValue.length; i++) {
-            xForPlotNormal[i] = createPlotArray(i, xValue, yValueNormal, replaceString)
-            xForPlotPlus[i] = createPlotArray(i, xValue, yValuePlus, replaceString)
-        }
-        // 修正最后一组数据
-        if (xForPlotNormal[xForPlotNormal.length - 1][0] > todayArray) {
-            xForPlotNormal.pop();
-            xForPlotPlus.pop();
-            xForPlotNormal[xForPlotNormal.length - 1][0] = todayArray;
-            xForPlotPlus[xForPlotPlus.length - 1][0] = todayArray;
+        if (data[data.length - 1][0] > todayArray) {
+            data.pop();
+            data[data.length - 1][0] = todayArray;
         } else {
-            xForPlotNormal.push([
-                todayArray,
-                xForPlotNormal[xForPlotNormal.length - 1][1],
-            ]);
-            xForPlotPlus.push([
-                todayArray,
-                xForPlotPlus[xForPlotPlus.length - 1][1],
-            ]);
+            data.push([todayArray, data[data.length - 1][1]]);
         }
-        // 插入页面
-        $('.dd_ul').before(`<div id="container"></div>`);
+        return data;
+    }
 
-        var chart = {
+    /* 传入时间和一般、Plus会员价格数组，生成绘图用数据集
+    *  @param   xValue   价格变动时间数组
+    *  @param   yNormal  一般会员价格数组
+    *  @param   yPlus    Plus会员价格数组
+    * 
+    *  @return  normalData  一般会员价格绘图用数组
+    *  @return  plusData    Plus会员价格绘图用数组
+    *  @return  region      地区货币符
+    */
+    const createPriceLineData = (xValue, yNormal, yPlus) => {
+        // 用于保存绘图数据的变量
+        let normalData = [];
+        let plusData = [];
+        // 判断地区
+        const prefix = yNormal[0].substring(0, 1);
+        const region = prefix === 'H' ? 'HK$' : prefix;
+
+        xValue.map((item, i) => {
+            normalData.push([item, Number(yNormal[i].replace(region, ''))]);
+            plusData.push([item, Number(yPlus[i].replace(region, ''))]);
+        })
+        // 最后一组数组的处理，生成最终数据绘图数据集
+        normalData = fixTheLastElement(normalData);
+        plusData = fixTheLastElement(plusData);
+        return { normalData, plusData, region }
+    }
+
+    /* 根据数据绘制价格变动走势图
+    *  @param   normalData     一般会员价格绘图用数组
+    *  @param   plusData       Plus会员价格绘图用数组
+    *  @param   region         地区货币符
+    * 
+    *  @return  priceLinePlot  highChart对象
+    */
+    const createPriceLinePlot = (normalData, plusData, region) => {
+        const priceLineChart = {
             type: 'areaspline',
             backgroundColor: 'rgba(0,0,0,0)',
         };
-        var title = {
+        const priceLineTitle = {
             text: '价格变动走势图',
             style: {
                 color: '#808080',
             },
         };
-        var xAxis = {
+        const priceLineXAxis = {
             type: 'datetime',
             dateTimeLabelFormats: {
                 year: '%y年',
@@ -787,7 +791,7 @@
                 text: '日期',
             },
         };
-        var yAxis = {
+        const priceLineYAxis = {
             title: {
                 text: '价格',
             },
@@ -799,31 +803,31 @@
                 },
             ],
         };
-        var tooltip = {
+        const priceLineTooltip = {
             headerFormat: '<b>{series.name}</b><br>',
-            pointFormat: `{point.x:%y年%b%e日}: ${replaceString}{point.y:.2f}`,
+            pointFormat: `{point.x:%y年%b%e日}: ${region}{point.y:.2f}`,
         };
-        var plotOptions = {
+        const priceLinePlotOptions = {
             areaspline: {
                 fillOpacity: 0.25,
             },
         };
-        var series = [
+        const priceLineSeries = [
             {
                 name: '普通会员价',
                 color: '#00a2ff',
-                data: xForPlotNormal,
+                data: normalData,
             },
             {
                 name: 'PS+会员价',
                 color: '#ffd633',
-                data: xForPlotPlus,
+                data: plusData,
             },
         ];
-        var credits = {
+        const priceLineCredits = {
             enabled: false,
         };
-        var legend = {
+        const priceLineLegend = {
             itemStyle: {
                 color: '#808080',
             },
@@ -831,20 +835,32 @@
                 color: '#3890ff',
             },
         };
-        var json = {};
-        json.chart = chart;
-        json.title = title;
-        json.tooltip = tooltip;
-        json.xAxis = xAxis;
-        json.yAxis = yAxis;
-        json.series = series;
-        json.plotOptions = plotOptions;
-        json.credits = credits;
-        json.legend = legend;
-
-        $('#container').highcharts(json);
+        const priceLinePlot = {
+            chart: priceLineChart,
+            title: priceLineTitle,
+            tooltip: priceLineTooltip,
+            xAxis: priceLineXAxis,
+            yAxis: priceLineYAxis,
+            series: priceLineSeries,
+            plotOptions: priceLinePlotOptions,
+            credits: priceLineCredits,
+            legend: priceLineLegend,
+        };
+        return priceLinePlot;
     }
-
+    /* 
+    * 功能：在页面中插入价格变动走势图
+    */
+    const addPriceLinePlot = () => {
+        // 构建绘图数据
+        const xValue = priceLineDataX();
+        const { yNormal, yPlus } = priceLineDataY();
+        const { normalData, plusData, region } = createPriceLineData(xValue, yNormal, yPlus);
+        const priceLinePlot = createPriceLinePlot(normalData, plusData, region);
+        // 插入页面
+        $('.dd_ul').before(`<div id="container"></div>`);
+        $('#container').highcharts(priceLinePlot);
+    }
     /*
     * 增加单个价格或文字展示标签
     * @param  value        展示数值或字符串
@@ -1011,6 +1027,13 @@
         // 只看史低
         onlyLowest();
     }
+    // 页面：数折 > 商品页
+    if (
+        /\/dd\//.test(window.location.href) ||
+        /game\/[0-9]+\/dd$/.test(window.location.href)
+    ) {
+        addPriceLinePlot();
+    }
 
     // 页面：活动
     if (/huodong/.test(window.location.href)) {
@@ -1138,7 +1161,7 @@
             title: trophyRatioTitle,
             series: trophyRatioSeries,
             plotOptions: trophyRatioPlotOptions,
-            credits: credits,
+            credits: { enabled: false },
         };
         // 插入页面
         $('.box.pd10').append(
