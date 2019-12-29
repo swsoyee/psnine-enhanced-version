@@ -1189,13 +1189,13 @@
             const xTime = Date.UTC(...timeArray);
             getTimeArray.push(xTime);
         })
-        getTimeArray.push(Date.now());
+        // getTimeArray.push(Date.now());
         getTimeArray.sort();
         const data = getTimeArray.map((x, y) => {
             return [x, y + 1];
         })
         // 调整最终数据点
-        data[data.length - 1][1] -= 1;
+        // data[data.length - 1][1] -= 1;
         return data;
     }
 
@@ -1214,10 +1214,11 @@
         const data = createTropyGetTimeData('em.lh180.alert-success.pd5.r');
         const totalTropyCount = Number($('div.main>.box.pd10>em>.text-strong')
             .text().replace('总', ''));
+        const receivedTropyCount = data.length;
 
         // 悬浮内容设置
         const trophyGetTimeTooltip = {
-            pointFormat: '{series.name}: <b>{point.y}</b>',
+            pointFormat: '{series.name}<b>{point.y}</b>个奖杯',
         };
         // 日期格式设置
         const trophyGetTimeXaxis = {
@@ -1238,18 +1239,23 @@
         // 绘图数据
         const trophyGetTimeSeries = [
             {
-                name: '获得数目',
+                name: '第',
                 data: data,
                 showInLegend: false,
             },
         ];
         // 标题设置
+        const trophyGetRatio = ((receivedTropyCount / totalTropyCount) * 100).toFixed(2);
+        const trophyGetTimeTitleText = `奖杯获得时间（完成率：${trophyGetRatio}%）`;
         const trophyGetTimeTitle = {
-            text: '奖杯获得时间',
+            text: trophyGetTimeTitleText,
             style: {
                 color: '#808080',
             },
         };
+        const trophyGetTimeSubtitle = {
+            text: $('div.ml100>p').eq(0).text(), // 游戏名称
+        }
         // Y轴设置
         const trophyGetTimeYAxis = {
             title: {
@@ -1263,7 +1269,7 @@
         // 绘图设置
         const trophyGetTimeChart = {
             backgroundColor: 'rgba(0,0,0,0)',
-            type: 'areaspline',
+            type: 'area',
         };
         // 图形设置
         const trophyGetTimePlotOptions = {
@@ -1271,15 +1277,25 @@
                 fillOpacity: 0.5
             }
         };
+        // Credits设置
+        const trophyGetTimeCreditsText = []
+        $('div.main>.box.pd10>em:eq(0)>span').map((i, el) => {
+            trophyGetTimeCreditsText.push($(el).text());
+        })
+        const trophyGetTimeCredits = {
+            text: trophyGetTimeCreditsText.join(' '),
+            href: undefined,
+        }
         const trophyGetTime = {
             chart: trophyGetTimeChart,
             tooltip: trophyGetTimeTooltip,
             xAxis: trophyGetTimeXaxis,
             yAxis: trophyGetTimeYAxis,
             title: trophyGetTimeTitle,
+            subtitle: trophyGetTimeSubtitle,
             series: trophyGetTimeSeries,
             plotOptions: trophyGetTimePlotOptions,
-            credits: credits,
+            credits: trophyGetTimeCredits,
         };
         // 插入页面
         $('.box.pd10').append(
