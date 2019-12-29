@@ -106,7 +106,7 @@
                 '12月',
             ],
             thousandsSep: ',',
-            weekdays: ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期天'],
+            weekdays: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
         },
     });
     if (window.localStorage) {
@@ -1162,6 +1162,42 @@
         );
     }
     addPlotFrame('trophyRatioChart', 320);
+    addPlotFrame('trophyGetTimeChart', 460);
+
+    /*
+    * 构建奖杯获得时间绘图数据集
+    * @param  className  用于识别的类名
+    * 
+    * @return {object}   用于绘线形图的数据集
+    */
+    const createTropyGetTimeData = (className) => {
+        const timeElements = $(className);
+        const getTimeArray = [];
+        timeElements.map((i, el) => {
+            // 奖杯时间丢失部分处理
+            const currentValue = $(el).text().trim();
+            const index = currentValue === '时间丢失' ? 0 : i;
+            // 从页面上获取奖杯时间，生成时间对象并且放入数组中保存
+            const dayTime = timeElements.eq(index).text().trim();
+            const timeArray = [
+                timeElements.eq(index).attr('tips').replace('年', ''), // 年
+                Number(dayTime.substr(0, 2)) - 1, // 月
+                dayTime.substr(3, 2), // 日
+                dayTime.substr(5, 2), // 时
+                dayTime.substr(8, 2), // 分
+            ].map((x) => Number(x));
+            const xTime = Date.UTC(...timeArray);
+            getTimeArray.push(xTime);
+        })
+        getTimeArray.push(Date.now());
+        getTimeArray.sort();
+        const data = getTimeArray.map((x, y) => {
+            return [x, y + 1];
+        })
+        // 调整最终数据点
+        data[data.length - 1][1] -= 1;
+        return data;
+    }
 
     // 奖杯系统优化
     // 功能3-1：游戏奖杯界面可视化
@@ -1175,100 +1211,82 @@
         addTrophyPieChart();
 
         // 奖杯获得时间年月统计
-        var getTimeArray = [];
-        var timeElements = $('em.lh180.alert-success.pd5.r');
-        if (timeElements.length > 0) {
-            for (var timeIndex = 0; timeIndex < timeElements.length; timeIndex++) {
-                var dayTime = timeElements[timeIndex].innerText;
-                var yearTips = '';
-                // 时间丢失奖杯bug修复
-                if (dayTime == '时间丢失') {
-                    // 选取第一行的时间作为缺失时间补充
-                    dayTime = timeElements[0].innerText.split('\n');
-                    yearTips = Number(
-                        timeElements[0].getAttribute('tips').replace('年', '')
-                    );
-                } else {
-                    dayTime = dayTime.split('\n');
-                    yearTips = Number(
-                        timeElements[timeIndex].getAttribute('tips').replace('年', '')
-                    );
-                }
-                var monthDay = dayTime[0].split('-');
-                var houtMinute = dayTime[1].split(':');
-                var xTime = Date.UTC(
-                    yearTips,
-                    Number(monthDay[0]) - 1,
-                    Number(monthDay[1]),
-                    Number(houtMinute[0]),
-                    Number(houtMinute[1])
-                );
-                getTimeArray.push(xTime);
-            }
-            getTimeArray.sort();
-            var getTimeArrayX = [];
-            for (var k = 1; k <= timeElements.length; k++) {
-                getTimeArrayX.push([getTimeArray[k - 1], k]);
-            }
-            // 调整白金时间
-            getTimeArrayX[getTimeArrayX.length - 1][0] += 60000;
+        const data = createTropyGetTimeData('em.lh180.alert-success.pd5.r');
+        const totalTropyCount = Number($('div.main>.box.pd10>em>.text-strong')
+            .text().replace('总', ''));
 
-            var trophyGetTimeTooltip = {
-                pointFormat: '{series.name}: <b>{point.y}</b>',
-            };
-            var trophyGetTimeXaxis = {
-                type: 'datetime',
-                dateTimeLabelFormats: {
-                    second: '%Y-%m-%d<br/>%H:%M:%S',
-                    minute: '%Y-%m-%d<br/>%H:%M',
-                    hour: '%Y-%m-%d<br/>%H:%M',
-                    day: '%Y<br/>%m-%d',
-                    week: '%Y<br/>%m-%d',
-                    month: '%Y-%m',
-                    year: '%Y',
-                },
-                title: {
-                    display: false,
-                },
-            };
-            var trophyGetTimeSeries = [
-                {
-                    type: 'spline',
-                    name: '获得数目',
-                    data: getTimeArrayX,
-                    showInLegend: false,
-                },
-            ];
-            var trophyGetTimeTitle = {
-                text: '奖杯获得时间',
-                style: {
-                    color: '#808080',
-                },
-            };
-            var trophyGetTimeYAxis = {
-                title: {
-                    text: '奖杯获得个数',
-                },
-                min: 0,
-            };
-            // 背景设置
-            const trophyRatioChart = {
-                backgroundColor: 'rgba(0,0,0,0)',
-            };
-            var trophyGetTime = {};
-            trophyGetTime.chart = trophyRatioChart;
-            trophyGetTime.tooltip = trophyGetTimeTooltip;
-            trophyGetTime.xAxis = trophyGetTimeXaxis;
-            trophyGetTime.yAxis = trophyGetTimeYAxis;
-            trophyGetTime.title = trophyGetTimeTitle;
-            trophyGetTime.series = trophyGetTimeSeries;
-            trophyGetTime.credits = credits;
-            // 插入页面
-            $('.box.pd10').append(
-                `<div id="trophyGetTimeChart" align="left" style="width: 460px; height: 200px; margin: 0 0; display: inline-block;"></div>`
-            );
-            $('#trophyGetTimeChart').highcharts(trophyGetTime);
-        }
+        // 悬浮内容设置
+        const trophyGetTimeTooltip = {
+            pointFormat: '{series.name}: <b>{point.y}</b>',
+        };
+        // 日期格式设置
+        const trophyGetTimeXaxis = {
+            type: 'datetime',
+            dateTimeLabelFormats: {
+                second: '%Y-%m-%d<br/>%H:%M:%S',
+                minute: '%Y-%m-%d<br/>%H:%M',
+                hour: '%Y-%m-%d<br/>%H:%M',
+                day: '%Y<br/>%m-%d',
+                week: '%Y<br/>%m-%d',
+                month: '%Y-%m',
+                year: '%Y',
+            },
+            title: {
+                display: false,
+            },
+        };
+        // 绘图数据
+        const trophyGetTimeSeries = [
+            {
+                name: '获得数目',
+                data: data,
+                showInLegend: false,
+            },
+        ];
+        // 标题设置
+        const trophyGetTimeTitle = {
+            text: '奖杯获得时间',
+            style: {
+                color: '#808080',
+            },
+        };
+        // Y轴设置
+        const trophyGetTimeYAxis = {
+            title: {
+                text: '获得个数',
+            },
+            min: 0,
+            max: totalTropyCount,
+            endOnTick: false,
+            tickInterval: Math.floor(totalTropyCount / 4),
+        };
+        // 绘图设置
+        const trophyGetTimeChart = {
+            backgroundColor: 'rgba(0,0,0,0)',
+            type: 'areaspline',
+        };
+        // 图形设置
+        const trophyGetTimePlotOptions = {
+            areaspline: {
+                fillOpacity: 0.5
+            }
+        };
+        const trophyGetTime = {
+            chart: trophyGetTimeChart,
+            tooltip: trophyGetTimeTooltip,
+            xAxis: trophyGetTimeXaxis,
+            yAxis: trophyGetTimeYAxis,
+            title: trophyGetTimeTitle,
+            series: trophyGetTimeSeries,
+            plotOptions: trophyGetTimePlotOptions,
+            credits: credits,
+        };
+        // 插入页面
+        $('.box.pd10').append(
+            `<div id="trophyGetTimeChart" align="left"></div>`
+        );
+        $('#trophyGetTimeChart').highcharts(trophyGetTime);
+
 
         // 功能3-3：汇总以获得和未获得奖杯
         var tropyTitleStyle =
