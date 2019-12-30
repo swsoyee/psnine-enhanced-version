@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.9.2
+// @version      0.9.3
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404
@@ -127,10 +127,9 @@
     const toPageButton = () => {
         $('.bottombar').append("<a id='scrollbottom' class='yuan mt10'>B</a>");
         $('#scrollbottom').click(() => {
-            $('body,html').animate(
-                {
-                    scrollTop: document.body.clientHeight,
-                },
+            $('body,html').animate({
+                scrollTop: document.body.clientHeight,
+            },
                 500
             );
         });
@@ -343,9 +342,9 @@
     // 功能1-3：主题中存在 -插图- 一项时，提供预览悬浮窗
     $("a[target='_blank']").html((i, url) => {
         if (url == ' -插图- ') {
-            var xOffset = 5;
-            var yOffset = 5;
-            var imgUrl = $(this).attr('href');
+            const xOffset = 5;
+            const yOffset = 5;
+            const imgUrl = $(this).attr('href');
             $(this).hover(
                 (e) => {
                     $('body').append(
@@ -382,10 +381,19 @@
         settings.replyTraceback
     ) {
         GM_addStyle(
-            `.replyTraceback {background-color: rgb(0, 0, 0, 0.05) !important; padding: 10px !important; color: rgb(160, 160, 160, 1) !important; border-bottom: 1px solid !important;}`
+            `.replyTraceback {
+                background-color: rgb(0, 0, 0, 0.05) !important;
+                padding: 10px !important;
+                color: rgb(160, 160, 160, 1) !important;
+                border-bottom: 1px solid !important;
+            }`
         );
         // 悬浮框内容左对齐样式
-        GM_addStyle(`.tippy-content {text-align: left;}`);
+        GM_addStyle(`
+            .tippy-content {
+                text-align: left;
+            }`
+        );
         // 每一层楼的回复外框 (0 ~ N - 1)
         var allSourceOutside = document.querySelectorAll('.post > .ml64'); // 30楼的话是29
         // 每一层楼的回复框(0 ~ N - 1) floor
@@ -471,14 +479,12 @@
         let subFloorIndex = -1;
         $('span[class^=r]').map((i, el) => {
             if (i > 0) {
-                if ($(el).attr('class') == 'r') {
-                    $(el)
-                        .children('a:last')
+                if ($(el).attr('class') === 'r') {
+                    $(el).children('a:last')
                         .after(`&nbsp&nbsp<span>#${++baseFloorIndex}</span>`);
                     subFloorIndex = -1;
                 } else {
-                    $(el)
-                        .children('a:last')
+                    $(el).children('a:last')
                         .after(
                             `&nbsp&nbsp<span>#${baseFloorIndex}${subFloorIndex--}</span>`
                         );
@@ -491,7 +497,7 @@
     // 功能1-6：屏蔽黑名单中的用户发言内容
     const Filter = (psnnode, parent, userList) => {
         $(psnnode).map((i, el) => {
-            if ($(el).html().toLowerCase() == userList.toLowerCase()) {
+            if ($(el).html().toLowerCase() === userList.toLowerCase()) {
                 $(el).parents(parent).hide();
             }
         });
@@ -509,10 +515,14 @@
     }
     filterUserPost();
 
-    // 功能1-7：实时统计创建机因时候的文字数
-    if (/set\/gene/.test(window.location.href)) {
+    /*
+    * 功能：实时统计创建机因时候的文字数
+    */
+    const countInputLength = () => {
         $(".pr20 > textarea[name='content']").before(
-            "<div class='text-warning'><p>字数：<span class='wordCount'>0</span>/600</p></div>"
+            `<div class='text-warning'>
+                <p>字数：<span class='wordCount'>0</span>/600</p>
+            </div>`
         );
         $(".pr20 > textarea[name='content']").keyup(function () {
             $('.wordCount').text(
@@ -520,6 +530,11 @@
             );
         });
     }
+    // 功能1-7：实时统计创建机因时候的文字数
+    if (/set\/gene/.test(window.location.href)) {
+        countInputLength();
+    }
+
 
     // 功能1-8：回复按钮hover触发显示
     /*
@@ -1578,7 +1593,7 @@
                 'autoPagingInHomepage',
                 'removeHeaderInBattle',
                 'autoCheckIn',
-            ]; //只有true / false的设置项
+            ]; // 只有true / false的设置项
             var self = this;
             switchSettings.map((name, i) => {
                 if (newSettings[name]) {
