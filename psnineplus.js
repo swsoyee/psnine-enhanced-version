@@ -682,7 +682,9 @@
         }
     }
 
-    // 功能1-11：悬浮于头像显示个人界面
+    /*
+    * 功能：悬浮于头像显示个人界面
+    */
     const addHoverProfile = () => {
         if (settings.hoverHomepage) {
             $("a[href*='psnid/'] > img").parent().map(function (i, v) {
@@ -1265,17 +1267,10 @@
         return data;
     }
 
-    // 奖杯系统优化
-    // 功能3-1：游戏奖杯界面可视化
-    if (
-        /psngame\//.test(window.location.href) &&
-        /^(?!.*comment|.*rank|.*battle|.*gamelist|.*topic|.*qa)/.test(
-            window.location.href
-        )
-    ) {
-        // 追加奖杯统计扇形图
-        addTrophyPieChart();
-
+    /*
+    * 功能：在单独游戏页面上方追加奖杯获得时间线形图
+    */
+    const addTropyGetTimeLineChart = () => {
         // 奖杯获得时间年月统计
         const data = createTropyGetTimeData('em.lh180.alert-success.pd5.r');
         const totalTropyCount = Number($('div.main>.box.pd10>em>.text-strong')
@@ -1368,8 +1363,20 @@
             `<div id="trophyGetTimeChart" align="left"></div>`
         );
         $('#trophyGetTimeChart').highcharts(trophyGetTime);
+    }
 
-
+    // 奖杯系统优化
+    // 功能3-1：游戏奖杯界面可视化
+    if (
+        /psngame\//.test(window.location.href) &&
+        /^(?!.*comment|.*rank|.*battle|.*gamelist|.*topic|.*qa)/.test(
+            window.location.href
+        )
+    ) {
+        // 追加奖杯统计扇形图
+        addTrophyPieChart();
+        // 追加奖杯获得时间线形图
+        addTropyGetTimeLineChart();
         // 功能3-3：汇总以获得和未获得奖杯
         var tropyTitleStyle =
             'border-radius: 2px; padding:5px; background-color:' +
