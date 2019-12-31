@@ -245,7 +245,7 @@
                             filterUserPost();
                             addHoverProfile();
                             if (/\/qa/.test(window.location.href)) {
-                                addColorToQaTitle();
+                                addColorToQaTitle(settings.qaHighlightTitle);
                             }
                         },
                         'html'
@@ -618,9 +618,6 @@
             return;
         }
     }
-    if (/\/qa/.test(window.location.href)) {
-        addColorToQaTitle(settings.qaHighlightTitle);
-    }
 
     /*
     * 通过Ajax获取自己的该游戏页面的奖杯数目
@@ -637,6 +634,11 @@
         );
     }
 
+    /*
+    * 通过Ajax获取用户名片
+    * @param  data  Ajax获取的数据
+    * @param  tip   Tippy对象
+    */
     const getUserCardByAjax = (data, tip) => {
         const reg = /[\s\S]*<\/body>/g;
         const html = reg.exec(data)[0];
@@ -1063,6 +1065,10 @@
         })
     }
 
+    // 页面：问答
+    if (/\/qa/.test(window.location.href)) {
+        addColorToQaTitle(settings.qaHighlightTitle);
+    }
     // 页面：数折
     if (/\/dd/.test(window.location.href)) {
         // 外币转人民币
@@ -1084,15 +1090,6 @@
     if (/huodong/.test(window.location.href)) {
         // 只看史低
         onlyLowestSell();
-
-        // 活动页面根据降价幅度变更背景色
-        // $(document.querySelectorAll('li.store_box > .store_pic')).map(function (i, n) {
-        //     var percentValue = (this).querySelector('.store_tag_plus')
-        //     if (percentValue == null) {
-        //         percentValue = (this).querySelector('.store_tag_nor')
-        //     }
-        //     var priceDownLevel = Number(percentValue.innerText.match('省(.+)%')[1]);
-        // })
     }
 
     /*
