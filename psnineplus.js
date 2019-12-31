@@ -1463,14 +1463,62 @@
         }
     };
 
-    // 游戏页面优化
-    if (
-        /psngame/.test(window.location.href) & !/psnid/.test(window.location.href)
-    ) {
-        // 降低没有白金的游戏的图标亮度
-        filterNonePlatinum(settings.filterNonePlatinumAlpha);
+    /*
+    * 通过Ajax获取自己的该游戏页面的奖杯数目
+    * @param  url  Ajax获取目标地址
+    * @param  tip  Tippy对象
+    */
+    const getTropyContentByAjax = (url, tip) => {
+        $.ajax({
+            type: 'GET',
+            url: url,
+            dataType: 'html',
+            success: (data) => {
+                const reg = /[\s\S]*<\/body>/g;
+                const html = reg.exec(data)[0];
+                const inner = $(html).find('td>em>.text-strong');
+                tip.setContent(inner.length > 0
+                    ? `你的奖杯完成度：${inner.text()}`
+                    : '你还没有获得该游戏的任何奖杯'
+                );
+            },
+            error: () => {
+                tip.setContent('无法获取页面信息');
+            },
+        })
+    }
 
-        // 功能5-2：悬浮图标显示自己的游戏的完成度
+    /*
+    * 使用Tippy的OnShow部分函数
+    * @param  url              Ajax获取目标地址
+    * @param  tip              Tippy对象
+    * @param  successFunction  获取数据时调用函数
+    */
+    const tippyOnShow = (url, tip, successFunction) => {
+        if (!tip.state.ajax) {
+            tip.state.ajax = {
+                isFetching: false,
+                canFetch: true,
+            };
+        }
+        if (tip.state.ajax.isFetching || !tip.state.ajax.canFetch) {
+            return;
+        }
+        tip.state.ajax.isFetching = true;
+        tip.state.ajax.canFetch = false;
+        try {
+            successFunction(url, tip);
+        } catch (e) {
+            tip.setContent(`获取失败：${e}`);
+        } finally {
+            tip.state.ajax.isFetching = false;
+        }
+    }
+
+    /*
+    * 功能：悬浮图标显示自己的游戏的完成度
+    */
+    const getMyCompletion = () => {
         $('.imgbgnb').map((i, el) => {
             $(el).attr('id', 'game' + i);
             // 从cookie中取出psnid
@@ -1486,40 +1534,7 @@
                         placement: 'left',
                         delay: 500,
                         async onShow(tip) {
-                            if (!tip.state.ajax) {
-                                tip.state.ajax = {
-                                    isFetching: false,
-                                    canFetch: true,
-                                };
-                            }
-                            if (tip.state.ajax.isFetching || !tip.state.ajax.canFetch) {
-                                return;
-                            }
-                            tip.state.ajax.isFetching = true;
-                            tip.state.ajax.canFetch = false;
-                            try {
-                                $.ajax({
-                                    type: 'GET',
-                                    url: myGameUrl,
-                                    dataType: 'html',
-                                    success: (data) => {
-                                        const reg = /[\s\S]*<\/body>/g;
-                                        const html = reg.exec(data)[0];
-                                        const inner = $(html).find('td>em>.text-strong');
-                                        tip.setContent(inner.length > 0
-                                            ? `你的奖杯完成度：${inner.text()}`
-                                            : '你还没有获得该游戏的任何奖杯'
-                                        );
-                                    },
-                                    error: () => {
-                                        tip.setContent('无法获取页面信息');
-                                    },
-                                });
-                            } catch (e) {
-                                tip.setContent(`获取失败：${e}`);
-                            } finally {
-                                tip.state.ajax.isFetching = false;
-                            }
+                            tippyOnShow(myGameUrl, tip, getTropyContentByAjax);
                         },
                         onHidden(tip) {
                             tip.state.ajax.canFetch = true;
@@ -1529,6 +1544,16 @@
                 }
             }
         });
+    }
+
+    // 游戏页面优化
+    if (
+        /psngame/.test(window.location.href) & !/psnid/.test(window.location.href)
+    ) {
+        // 降低没有白金的游戏的图标亮度
+        filterNonePlatinum(settings.filterNonePlatinumAlpha);
+        // 悬浮图标显示自己的游戏的完成度
+        getMyCompletion();
     }
 
     // 约战页面可以选择去掉发起人头像
