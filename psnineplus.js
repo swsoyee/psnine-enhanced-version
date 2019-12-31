@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.9.3
+// @version      0.9.4
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404
@@ -515,27 +515,6 @@
     }
     filterUserPost();
 
-    /*
-    * 功能：实时统计创建机因时候的文字数
-    */
-    const countInputLength = () => {
-        $(".pr20 > textarea[name='content']").before(
-            `<div class='text-warning'>
-                <p>字数：<span class='wordCount'>0</span>/600</p>
-            </div>`
-        );
-        $(".pr20 > textarea[name='content']").keyup(function () {
-            $('.wordCount').text(
-                $("textarea[name='content']").val().replace(/\n|\r/gi, '').length
-            );
-        });
-    }
-    // 功能1-7：实时统计创建机因时候的文字数
-    if (/set\/gene/.test(window.location.href)) {
-        countInputLength();
-    }
-
-
     // 功能1-8：回复按钮hover触发显示
     /*
     * 回复按钮hover触发显示功能函数
@@ -565,40 +544,67 @@
         hoverShowReply("div[class$='ml64']");
     }
 
-    // 功能1-9：发帖BBCode实时渲染
-    if (/node\/talk\/add/.test(window.location.href)) {
-        $('.alert-warning.pd10.lh180').before(
-            "<div class='content pb10' style='padding:10px;' id='output'></div>"
-        );
-
-        function replaceAll(str, mapObj) {
-            for (var i in mapObj) {
-                var re = new RegExp(i, 'g');
-                str = str.replace(re, mapObj[i]);
-            }
-            return str;
+    /* 将BBCode替换成对应html代码
+    * @param   str  原始BBCode输入
+    *
+    * @return  str  转换后的html代码
+    */
+    const replaceAll = (str, mapObj) => {
+        for (var i in mapObj) {
+            var re = new RegExp(i, 'g');
+            str = str.replace(re, mapObj[i]);
         }
-        var bbcode = {
-            '\\[quote\\](.+?)\\[\/quote\\]': '<blockquote>$1</blockquote>',
-            '\\[mark\\](.+?)\\[\/mark\\]': '<span class="mark">$1</span>',
-            '\\[img\\](.+?)\\[\/img\\]': '<img src="$1"></img>',
-            '\\[b\\](.+?)\\[\/b\\]': '<b>$1</b>',
-            '\\[s\\](.+?)\\[\/s\\]': '<s>$1</s>',
-            '\\[center\\](.+?)\\[\/center\\]': '<center>$1</center>',
-            '\\[\\](.+?)\\[\/b\\]': '<b>$1</b>',
-            '\\[color=(.+?)\\](.+?)\\[\/color\\]': '<span style="color:$1;">$2</span>',
-            '\\[url\\](.+)\\[/url\\]': '<a href="$1">$1</a>',
-            '\\[url=(.+)\\](.+)\\[/url\\]': '<a href="$1">$2</a>',
-            //'\\[trophy=(.+)\\]\\[/trophy\\]': '<a href="$1">$2</a>',
-            //'\\[trophy=(.+)\\](.+)\\[/trophy\\]': '<a href="$1">$2</a>',
-            '\\n': '<br/>',
-        };
-        $("textarea[name='content']").keyup(function () {
-            var bbcodeSource = document.getElementsByName('content')[0].value;
-            var outputContent = replaceAll(bbcodeSource, bbcode);
-            $('#output').html(outputContent);
+        return str;
+    }
+    /*
+    * BBCode和html标签对应表
+    */
+    const bbcode = {
+        '\\[quote\\](.+?)\\[\/quote\\]': '<blockquote>$1</blockquote>',
+        '\\[mark\\](.+?)\\[\/mark\\]': '<span class="mark">$1</span>',
+        '\\[img\\](.+?)\\[\/img\\]': '<img src="$1"></img>',
+        '\\[b\\](.+?)\\[\/b\\]': '<b>$1</b>',
+        '\\[s\\](.+?)\\[\/s\\]': '<s>$1</s>',
+        '\\[center\\](.+?)\\[\/center\\]': '<center>$1</center>',
+        '\\[\\](.+?)\\[\/b\\]': '<b>$1</b>',
+        '\\[color=(.+?)\\](.+?)\\[\/color\\]': '<span style="color:$1;">$2</span>',
+        '\\[url\\](.+)\\[/url\\]': '<a href="$1">$1</a>',
+        '\\[url=(.+)\\](.+)\\[/url\\]': '<a href="$1">$2</a>',
+        //'\\[trophy=(.+)\\]\\[/trophy\\]': '<a href="$1">$2</a>',
+        //'\\[trophy=(.+)\\](.+)\\[/trophy\\]': '<a href="$1">$2</a>',
+        '\\n': '<br/>',
+    };
+
+    /* 功能：在输入框下方追加输入内容预览框
+    * @param   tag  可定位到输入框的标签名
+    */
+    const addInputPreview = (tag) => {
+        $(tag).after(
+            "<div class='content' style='padding: 0px 10px;' id='preview' />"
+        );
+        $(tag).keyup(() => {
+            $('#preview').html(replaceAll($(tag).val(), bbcode));
         });
     }
+
+    /*
+    * 功能：实时统计创建机因时候的文字数
+    */
+    const countInputLength = () => {
+        $(".pr20 > textarea[name='content']").before(
+            `<div class='text-warning'>
+            <p>字数：<span class='wordCount'>0</span>/600</p>
+        </div>`
+        );
+        $(".pr20 > textarea[name='content']").keyup(function () {
+            $('.wordCount').text(
+                $("textarea[name='content']").val().replace(/\n|\r/gi, '').length
+            );
+        });
+    }
+
+    // 评论框预览功能（等追加自定义设置后开放）
+    // addInputPreview("textarea#comment[name='content']");
 
     /*
      * 问答标题根据回答状况着色
@@ -1065,6 +1071,13 @@
         })
     }
 
+    // 页面：机因 > 发机因
+    if (/set\/gene/.test(window.location.href)) {
+        // 实时统计创建机因时候的文字数
+        countInputLength();
+        // 发基因时可实时预览结果内容
+        addInputPreview("textarea[name='content']");
+    }
     // 页面：问答
     if (/\/qa/.test(window.location.href)) {
         addColorToQaTitle(settings.qaHighlightTitle);
@@ -1085,7 +1098,6 @@
     ) {
         addPriceLinePlot();
     }
-
     // 页面：活动
     if (/huodong/.test(window.location.href)) {
         // 只看史低
