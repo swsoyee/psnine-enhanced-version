@@ -147,6 +147,7 @@
             );
         }
     }
+
     addNews(settings.addNews);
 
     // 功能0-2：夜间模式
@@ -156,20 +157,24 @@
 `);
     }
 
-    // 功能0-3：黑条文字鼠标悬浮显示
-    if (settings.hoverUnmark) {
-        $('.mark').hover(
-            function (i) {
-                var backGroundColor = $('.box.mt20').css('background-color');
-                $(this).css({ color: backGroundColor });
-            },
-            function (o) {
-                var sourceColor = $(this).css('background-color');
-                $(this).css({ color: sourceColor });
-            }
-        );
+    /*
+    * 功能：黑条文字鼠标悬浮显示
+    * param:  isOn  是否开启功能
+    */
+    const showMarkMessage = (isOn) => {
+        if(isOn){
+            $('.mark').hover(
+                () => {
+                    $(this).css({ color: $('.box.mt20').css('background-color') });
+                },
+                () => {
+                    $(this).css({ color: $(this).css('background-color') });
+                }
+            );
+        }
     }
-    // 功能0-4：markdown语法支持测试
+
+    showMarkMessage(settings.hoverUnmark);
 
     /*
      * 自动签到功能
@@ -261,7 +266,14 @@
     if (settings.autoPagingInHomepage) {
         var isbool2 = true; //触发开关，防止多次调用事件
         GM_addStyle(
-            `#loadingMessage {position: absolute;bottom: 0px;position: fixed;right: 1px !important;display:none; color:white;}`
+            `#loadingMessage {
+                position : absolute;
+                bottom   : 0px;
+                position : fixed;
+                right    : 1px !important;
+                display  : none;
+                color    : white;
+            }`
         );
         $('body').append("<div id='loadingMessage'></div>");
         if (
