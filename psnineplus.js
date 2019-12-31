@@ -162,7 +162,7 @@
     * param:  isOn  是否开启功能
     */
     const showMarkMessage = (isOn) => {
-        if(isOn){
+        if (isOn) {
             $('.mark').hover(
                 () => {
                     $(this).css({ color: $('.box.mt20').css('background-color') });
@@ -406,40 +406,35 @@
                 text-align: left;
             }`
         );
-        // 每一层楼的回复外框 (0 ~ N - 1)
-        var allSourceOutside = document.querySelectorAll('.post > .ml64'); // 30楼的话是29
-        // 每一层楼的回复框(0 ~ N - 1) floor
-        var allSource = document.querySelectorAll('.post .ml64 > .content'); // 30楼的话是29
-        // 每一层楼的回复者名字( 0 ~ N - 1)
-        var userId = document.querySelectorAll('.post > .ml64 > [class$=meta]'); // 30楼的话是29
-        // 每一层的头像(0 ~ N - 1)
-        var avator = document.querySelectorAll('.post > a.l'); // 30楼的话是29
-        for (var floor = allSource.length - 1; floor > 0; floor--) {
+        // 每一层楼的回复外框
+        const allSourceOutside = $('.post > .ml64');
+        // 每一层楼的回复框
+        const allSource = $('.post .ml64 > .content');
+        // 每一层楼的回复者用户名
+        const userId = $('.post > .ml64 > [class$=meta]');
+        // 每一层的头像
+        const avator = $('.post > a.l');
+        for (let floor = allSource.length - 1; floor > 0; floor--) {
             // 层内内容里包含链接（B的发言中是否有A）
-            var content = allSource[floor].querySelectorAll('a');
+            const content = allSource.eq(floor).find('a');
             if (content.length > 0) {
-                for (var userNum = 0; userNum < content.length; userNum++) {
+                for (let userNum = 0; userNum < content.length; userNum++) {
                     // 对每一个链接的文本内容判断
-                    var linkContent = content[userNum].innerText.match('@(.+)');
+                    const linkContent = content.eq(userNum).text().match('@(.+)');
                     // 链接里是@用户生成的链接， linkContent为用户名（B的发言中有A）
-                    if (linkContent != null) {
-                        var replayBox = document.createElement('div');
-                        replayBox.setAttribute('class', 'replyTraceback');
+                    if (linkContent !== null) {
                         // 从上层开始，回溯所@的用户的最近回复（找最近的一条A的发言）
-                        var traceIdFirst = -1;
-                        var traceIdTrue = -1;
-                        for (var traceId = floor - 1; traceId >= 0; traceId--) {
+                        let traceIdFirst = -1;
+                        let traceIdTrue = -1;
+                        for (let traceId = floor - 1; traceId >= 0; traceId--) {
                             // 如果回溯到了的话，选取内容
                             // 回溯层用户名
-                            var thisUserID = userId[traceId].getElementsByClassName(
-                                'psnnode'
-                            )[0].innerText;
-                            if (thisUserID == linkContent[1].toLowerCase()) {
+                            const thisUserID = userId.eq(traceId).find('.psnnode:eq(0)').text();
+                            if (thisUserID.toLowerCase() === linkContent[1].toLowerCase()) {
                                 // 判断回溯中的@（A的发言中有是否有B）
                                 if (
-                                    allSource[traceId].innerText.indexOf(
-                                        userId[floor].getElementsByClassName('psnnode')[0]
-                                            .innerText
+                                    allSource.eq(traceId).text().indexOf(
+                                        userId.eq(floor).find('.psnnode:eq(0)').text()
                                     ) > -1
                                 ) {
                                     traceIdTrue = traceId;
@@ -449,36 +444,33 @@
                                 }
                             }
                         }
-                        var outputID = -1;
-                        if (traceIdTrue != -1) {
+                        let outputID = -1;
+                        if (traceIdTrue !== -1) {
                             outputID = traceIdTrue;
                         } else if (traceIdFirst != -1) {
                             outputID = traceIdFirst;
                         }
                         // 输出
-                        if (outputID != -1) {
-                            var replyContents = '';
-                            if (allSource[outputID].innerText.length > 45) {
-                                replyContents =
-                                    allSource[outputID].innerText.substring(0, 45) + '......';
-                            } else {
-                                replyContents = allSource[outputID].innerText;
-                            }
-                            var avatorImg = avator[outputID]
-                                .getElementsByTagName('img')[0]
-                                .getAttribute('src');
-                            replayBox.innerHTML = `<div><span class="badge"><img src="${avatorImg}" height="15" width="15" style="margin-right: 5px; border-radius: 8px;"></img>${linkContent[1]}</span><span class="responserContent_${floor}_${outputID}" style="display: inline-block; padding-left: 10px;">${replyContents}</span></div>`;
+                        if (outputID !== -1) {
+                            const replyContentsText = allSource.eq(outputID).text();
+                            const replyContents = replyContentsText.length > 45
+                                ? `${replyContentsText.substring(0, 45)}......`
+                                : replyContentsText;
+                            const avatorImg = avator.eq(outputID).find('img:eq(0)').attr('src');
+                            const replayBox = document.createElement('div');
+                            replayBox.setAttribute('class', 'replyTraceback');
+                            replayBox.innerHTML = `<span class="badge"><img src="${avatorImg}" height="15" width="15" style="margin-right: 5px; border-radius: 8px;"></img>${linkContent[1]}</span><span class="responserContent_${floor}_${outputID}" style="display: inline-block; padding-left: 10px;">${replyContents}</span>`;
                             allSourceOutside[floor].insertBefore(
                                 replayBox,
                                 allSource[floor]
                             );
                             // 如果内容超过45个字符，则增加悬浮显示全文内容功能
-                            if (allSource[outputID].innerText.length > 45) {
-                                tippy(`.responserContent_${floor}_${outputID}`, {
-                                    content: allSource[outputID].innerText,
+                            replyContentsText.length > 45
+                                ? tippy(`.responserContent_${floor}_${outputID}`, {
+                                    content: replyContentsText,
                                     animateFill: false,
-                                });
-                            }
+                                })
+                                : null;
                         }
                     }
                 }
