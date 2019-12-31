@@ -622,57 +622,95 @@
         addColorToQaTitle(settings.qaHighlightTitle);
     }
 
+    /*
+    * 通过Ajax获取自己的该游戏页面的奖杯数目
+    * @param  url  Ajax获取目标地址
+    * @param  tip  Tippy对象
+    */
+    const getTropyContentByAjax = (url, tip) => {
+        $.ajax({
+            type: 'GET',
+            url: url,
+            dataType: 'html',
+            success: (data) => {
+                const reg = /[\s\S]*<\/body>/g;
+                const html = reg.exec(data)[0];
+                const inner = $(html).find('td>em>.text-strong');
+                tip.setContent(inner.length > 0
+                    ? `你的奖杯完成度：${inner.text()}`
+                    : '你还没有获得该游戏的任何奖杯'
+                );
+            },
+            error: () => {
+                tip.setContent('无法获取页面信息');
+            },
+        })
+    }
+
+    const getUserCardByAjax = (url, tip) => {
+        $.ajax({
+            type: 'GET',
+            url: url,
+            dataType: 'html',
+            success: (data) => {
+                const reg = /[\s\S]*<\/body>/g;
+                const html = reg.exec(data)[0];
+                const inner = $(html).find('.psnzz').parent().get(0);
+                $(inner).find('.inner').css('max-width', '400px');
+                tip.setContent(inner);
+            },
+            error: () => {
+                tip.setContent('无法获取页面信息');
+            },
+        })
+    }
+
+    /*
+    * 使用Tippy的OnShow部分函数
+    * @param  url              Ajax获取目标地址
+    * @param  tip              Tippy对象
+    * @param  successFunction  获取数据时调用函数
+    */
+    const tippyOnShow = (url, tip, successFunction) => {
+        if (!tip.state.ajax) {
+            tip.state.ajax = {
+                isFetching: false,
+                canFetch: true,
+            };
+        }
+        if (tip.state.ajax.isFetching || !tip.state.ajax.canFetch) {
+            return;
+        }
+        tip.state.ajax.isFetching = true;
+        tip.state.ajax.canFetch = false;
+        try {
+            successFunction(url, tip);
+        } catch (e) {
+            tip.setContent(`获取失败：${e}`);
+        } finally {
+            tip.state.ajax.isFetching = false;
+        }
+    }
+
     // 功能1-11：悬浮于头像显示个人界面
     const addHoverProfile = () => {
         if (settings.hoverHomepage) {
-            const INITIAL_CONTENT = '加载中...';
             $("a[href*='psnid/'] > img").parent().map(function (i, v) {
                 var url = $(this).attr('href');
                 $(this).attr('id', 'profile' + i);
                 tippy(`#profile${i}`, {
-                    content: INITIAL_CONTENT,
+                    content: '加载中...',
                     delay: 700,
                     maxWidth: '500px',
                     animateFill: false,
                     interactive: true,
                     placement: 'left',
                     async onShow(tip) {
-                        if (!tip.state.ajax) {
-                            tip.state.ajax = {
-                                isFetching: false,
-                                canFetch: true,
-                            };
-                        }
-                        if (tip.state.ajax.isFetching || !tip.state.ajax.canFetch) {
-                            return;
-                        }
-                        tip.state.ajax.isFetching = true;
-                        tip.state.ajax.canFetch = false;
-                        try {
-                            $.ajax({
-                                type: 'GET',
-                                url: url,
-                                dataType: 'html',
-                                success: (data) => {
-                                    const reg = /[\s\S]*<\/body>/g;
-                                    const html = reg.exec(data)[0];
-                                    const inner = $(html).find('.psnzz').parent().get(0);
-                                    $(inner).find('.inner').css('max-width', '400px');
-                                    tip.setContent(inner);
-                                },
-                                error: () => {
-                                    tip.setContent('无法获取页面信息');
-                                },
-                            });
-                        } catch (e) {
-                            tip.setContent(`获取失败：${e}`);
-                        } finally {
-                            tip.state.ajax.isFetching = false;
-                        }
+                        tippyOnShow(url, tip, getUserCardByAjax);
                     },
                     onHidden(tip) {
                         tip.state.ajax.canFetch = true;
-                        tip.setContent(INITIAL_CONTENT);
+                        tip.setContent('加载中...');
                     },
                 });
             });
@@ -1464,58 +1502,6 @@
     };
 
     /*
-    * 通过Ajax获取自己的该游戏页面的奖杯数目
-    * @param  url  Ajax获取目标地址
-    * @param  tip  Tippy对象
-    */
-    const getTropyContentByAjax = (url, tip) => {
-        $.ajax({
-            type: 'GET',
-            url: url,
-            dataType: 'html',
-            success: (data) => {
-                const reg = /[\s\S]*<\/body>/g;
-                const html = reg.exec(data)[0];
-                const inner = $(html).find('td>em>.text-strong');
-                tip.setContent(inner.length > 0
-                    ? `你的奖杯完成度：${inner.text()}`
-                    : '你还没有获得该游戏的任何奖杯'
-                );
-            },
-            error: () => {
-                tip.setContent('无法获取页面信息');
-            },
-        })
-    }
-
-    /*
-    * 使用Tippy的OnShow部分函数
-    * @param  url              Ajax获取目标地址
-    * @param  tip              Tippy对象
-    * @param  successFunction  获取数据时调用函数
-    */
-    const tippyOnShow = (url, tip, successFunction) => {
-        if (!tip.state.ajax) {
-            tip.state.ajax = {
-                isFetching: false,
-                canFetch: true,
-            };
-        }
-        if (tip.state.ajax.isFetching || !tip.state.ajax.canFetch) {
-            return;
-        }
-        tip.state.ajax.isFetching = true;
-        tip.state.ajax.canFetch = false;
-        try {
-            successFunction(url, tip);
-        } catch (e) {
-            tip.setContent(`获取失败：${e}`);
-        } finally {
-            tip.state.ajax.isFetching = false;
-        }
-    }
-
-    /*
     * 功能：悬浮图标显示自己的游戏的完成度
     */
     const getMyCompletion = () => {
@@ -1568,11 +1554,11 @@
         window.location.href.match(/psngame\/\d+$/) &&
         !/psnid/.test(window.location.href)
     ) {
-        //检查游戏页
-        var psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/); //从cookie中取出psnid
+        // 检查游戏页
+        // 从cookie中取出psnid
+        const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
         if (psnidCookie) {
-            var psnid = psnidCookie[1];
-            window.location.href += `?psnid=${psnid}`;
+            window.location.href += `?psnid=${psnidCookie[1]}`;
         }
     }
 
