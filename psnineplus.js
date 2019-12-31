@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.9.3
+// @version      0.9.4
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404
@@ -245,7 +245,7 @@
                             filterUserPost();
                             addHoverProfile();
                             if (/\/qa/.test(window.location.href)) {
-                                addColorToQaTitle();
+                                addColorToQaTitle(settings.qaHighlightTitle);
                             }
                         },
                         'html'
@@ -515,27 +515,6 @@
     }
     filterUserPost();
 
-    /*
-    * 功能：实时统计创建机因时候的文字数
-    */
-    const countInputLength = () => {
-        $(".pr20 > textarea[name='content']").before(
-            `<div class='text-warning'>
-                <p>字数：<span class='wordCount'>0</span>/600</p>
-            </div>`
-        );
-        $(".pr20 > textarea[name='content']").keyup(function () {
-            $('.wordCount').text(
-                $("textarea[name='content']").val().replace(/\n|\r/gi, '').length
-            );
-        });
-    }
-    // 功能1-7：实时统计创建机因时候的文字数
-    if (/set\/gene/.test(window.location.href)) {
-        countInputLength();
-    }
-
-
     // 功能1-8：回复按钮hover触发显示
     /*
     * 回复按钮hover触发显示功能函数
@@ -565,40 +544,67 @@
         hoverShowReply("div[class$='ml64']");
     }
 
-    // 功能1-9：发帖BBCode实时渲染
-    if (/node\/talk\/add/.test(window.location.href)) {
-        $('.alert-warning.pd10.lh180').before(
-            "<div class='content pb10' style='padding:10px;' id='output'></div>"
-        );
-
-        function replaceAll(str, mapObj) {
-            for (var i in mapObj) {
-                var re = new RegExp(i, 'g');
-                str = str.replace(re, mapObj[i]);
-            }
-            return str;
+    /* 将BBCode替换成对应html代码
+    * @param   str  原始BBCode输入
+    *
+    * @return  str  转换后的html代码
+    */
+    const replaceAll = (str, mapObj) => {
+        for (var i in mapObj) {
+            var re = new RegExp(i, 'g');
+            str = str.replace(re, mapObj[i]);
         }
-        var bbcode = {
-            '\\[quote\\](.+?)\\[\/quote\\]': '<blockquote>$1</blockquote>',
-            '\\[mark\\](.+?)\\[\/mark\\]': '<span class="mark">$1</span>',
-            '\\[img\\](.+?)\\[\/img\\]': '<img src="$1"></img>',
-            '\\[b\\](.+?)\\[\/b\\]': '<b>$1</b>',
-            '\\[s\\](.+?)\\[\/s\\]': '<s>$1</s>',
-            '\\[center\\](.+?)\\[\/center\\]': '<center>$1</center>',
-            '\\[\\](.+?)\\[\/b\\]': '<b>$1</b>',
-            '\\[color=(.+?)\\](.+?)\\[\/color\\]': '<span style="color:$1;">$2</span>',
-            '\\[url\\](.+)\\[/url\\]': '<a href="$1">$1</a>',
-            '\\[url=(.+)\\](.+)\\[/url\\]': '<a href="$1">$2</a>',
-            //'\\[trophy=(.+)\\]\\[/trophy\\]': '<a href="$1">$2</a>',
-            //'\\[trophy=(.+)\\](.+)\\[/trophy\\]': '<a href="$1">$2</a>',
-            '\\n': '<br/>',
-        };
-        $("textarea[name='content']").keyup(function () {
-            var bbcodeSource = document.getElementsByName('content')[0].value;
-            var outputContent = replaceAll(bbcodeSource, bbcode);
-            $('#output').html(outputContent);
+        return str;
+    }
+    /*
+    * BBCode和html标签对应表
+    */
+    const bbcode = {
+        '\\[quote\\](.+?)\\[\/quote\\]': '<blockquote>$1</blockquote>',
+        '\\[mark\\](.+?)\\[\/mark\\]': '<span class="mark">$1</span>',
+        '\\[img\\](.+?)\\[\/img\\]': '<img src="$1"></img>',
+        '\\[b\\](.+?)\\[\/b\\]': '<b>$1</b>',
+        '\\[s\\](.+?)\\[\/s\\]': '<s>$1</s>',
+        '\\[center\\](.+?)\\[\/center\\]': '<center>$1</center>',
+        '\\[\\](.+?)\\[\/b\\]': '<b>$1</b>',
+        '\\[color=(.+?)\\](.+?)\\[\/color\\]': '<span style="color:$1;">$2</span>',
+        '\\[url\\](.+)\\[/url\\]': '<a href="$1">$1</a>',
+        '\\[url=(.+)\\](.+)\\[/url\\]': '<a href="$1">$2</a>',
+        //'\\[trophy=(.+)\\]\\[/trophy\\]': '<a href="$1">$2</a>',
+        //'\\[trophy=(.+)\\](.+)\\[/trophy\\]': '<a href="$1">$2</a>',
+        '\\n': '<br/>',
+    };
+
+    /* 功能：在输入框下方追加输入内容预览框
+    * @param   tag  可定位到输入框的标签名
+    */
+    const addInputPreview = (tag) => {
+        $(tag).after(
+            "<div class='content' style='padding: 0px 10px;' id='preview' />"
+        );
+        $(tag).keyup(() => {
+            $('#preview').html(replaceAll($(tag).val(), bbcode));
         });
     }
+
+    /*
+    * 功能：实时统计创建机因时候的文字数
+    */
+    const countInputLength = () => {
+        $(".pr20 > textarea[name='content']").before(
+            `<div class='text-warning'>
+            <p>字数：<span class='wordCount'>0</span>/600</p>
+        </div>`
+        );
+        $(".pr20 > textarea[name='content']").keyup(function () {
+            $('.wordCount').text(
+                $("textarea[name='content']").val().replace(/\n|\r/gi, '').length
+            );
+        });
+    }
+
+    // 评论框预览功能（等追加自定义设置后开放）
+    // addInputPreview("textarea#comment[name='content']");
 
     /*
      * 问答标题根据回答状况着色
@@ -618,61 +624,93 @@
             return;
         }
     }
-    if (/\/qa/.test(window.location.href)) {
-        addColorToQaTitle(settings.qaHighlightTitle);
+
+    /*
+    * 通过Ajax获取自己的该游戏页面的奖杯数目
+    * @param  data  Ajax获取的数据
+    * @param  tip   Tippy对象
+    */
+    const getTropyContentByAjax = (data, tip) => {
+        const reg = /[\s\S]*<\/body>/g;
+        const html = reg.exec(data)[0];
+        const inner = $(html).find('td>em>.text-strong');
+        tip.setContent(inner.length > 0
+            ? `你的奖杯完成度：${inner.text()}`
+            : '你还没有获得该游戏的任何奖杯'
+        );
     }
 
-    // 功能1-11：悬浮于头像显示个人界面
+    /*
+    * 通过Ajax获取用户名片
+    * @param  data  Ajax获取的数据
+    * @param  tip   Tippy对象
+    */
+    const getUserCardByAjax = (data, tip) => {
+        const reg = /[\s\S]*<\/body>/g;
+        const html = reg.exec(data)[0];
+        const inner = $(html).find('.psnzz').parent().get(0);
+        $(inner).find('.inner').css('max-width', '400px');
+        tip.setContent(inner);
+    }
+
+    /*
+    * 使用Tippy的OnShow部分函数
+    * @param  url              Ajax获取目标地址
+    * @param  tip              Tippy对象
+    * @param  successFunction  获取数据时调用函数
+    */
+    const tippyOnShow = (url, tip, successFunction) => {
+        if (!tip.state.ajax) {
+            tip.state.ajax = {
+                isFetching: false,
+                canFetch: true,
+            };
+        }
+        if (tip.state.ajax.isFetching || !tip.state.ajax.canFetch) {
+            return;
+        }
+        tip.state.ajax.isFetching = true;
+        tip.state.ajax.canFetch = false;
+        try {
+            $.ajax({
+                type: 'GET',
+                url: url,
+                dataType: 'html',
+                success: (data) => {
+                    successFunction(data, tip);
+                },
+                error: () => {
+                    tip.setContent('无法获取页面信息');
+                },
+            })
+        } catch (e) {
+            tip.setContent(`获取失败：${e}`);
+        } finally {
+            tip.state.ajax.isFetching = false;
+        }
+    }
+
+    /*
+    * 功能：悬浮于头像显示个人界面
+    */
     const addHoverProfile = () => {
         if (settings.hoverHomepage) {
-            const INITIAL_CONTENT = '加载中...';
             $("a[href*='psnid/'] > img").parent().map(function (i, v) {
                 var url = $(this).attr('href');
                 $(this).attr('id', 'profile' + i);
                 tippy(`#profile${i}`, {
-                    content: INITIAL_CONTENT,
+                    content: '加载中...',
                     delay: 700,
                     maxWidth: '500px',
                     animateFill: false,
                     interactive: true,
                     placement: 'left',
                     async onShow(tip) {
-                        if (!tip.state.ajax) {
-                            tip.state.ajax = {
-                                isFetching: false,
-                                canFetch: true,
-                            };
-                        }
-                        if (tip.state.ajax.isFetching || !tip.state.ajax.canFetch) {
-                            return;
-                        }
-                        tip.state.ajax.isFetching = true;
-                        tip.state.ajax.canFetch = false;
-                        try {
-                            $.ajax({
-                                type: 'GET',
-                                url: url,
-                                dataType: 'html',
-                                success: function (data) {
-                                    var reg = /[\s\S]*<\/body>/g;
-                                    var html = reg.exec(data)[0];
-                                    var inner = $(html).find('.psnzz').parent().get(0);
-                                    $(inner).find('.inner').css('max-width', '400px');
-                                    tip.setContent(inner);
-                                },
-                                error: function () {
-                                    console.log('无法获取页面信息');
-                                },
-                            });
-                        } catch (e) {
-                            tip.setContent(`获取失败：${e}`);
-                        } finally {
-                            tip.state.ajax.isFetching = false;
-                        }
+                        tippyOnShow(url, tip, getUserCardByAjax);
                     },
                     onHidden(tip) {
                         tip.state.ajax.canFetch = true;
-                        tip.setContent(INITIAL_CONTENT);
+                        tip.setContent('加载中...');
                     },
                 });
             });
@@ -1033,6 +1071,17 @@
         })
     }
 
+    // 页面：机因 > 发机因
+    if (/set\/gene/.test(window.location.href)) {
+        // 实时统计创建机因时候的文字数
+        countInputLength();
+        // 发基因时可实时预览结果内容
+        addInputPreview("textarea[name='content']");
+    }
+    // 页面：问答
+    if (/\/qa/.test(window.location.href)) {
+        addColorToQaTitle(settings.qaHighlightTitle);
+    }
     // 页面：数折
     if (/\/dd/.test(window.location.href)) {
         // 外币转人民币
@@ -1049,20 +1098,10 @@
     ) {
         addPriceLinePlot();
     }
-
     // 页面：活动
     if (/huodong/.test(window.location.href)) {
         // 只看史低
         onlyLowestSell();
-
-        // 活动页面根据降价幅度变更背景色
-        // $(document.querySelectorAll('li.store_box > .store_pic')).map(function (i, n) {
-        //     var percentValue = (this).querySelector('.store_tag_plus')
-        //     if (percentValue == null) {
-        //         percentValue = (this).querySelector('.store_tag_nor')
-        //     }
-        //     var priceDownLevel = Number(percentValue.innerText.match('省(.+)%')[1]);
-        // })
     }
 
     /*
@@ -1237,17 +1276,10 @@
         return data;
     }
 
-    // 奖杯系统优化
-    // 功能3-1：游戏奖杯界面可视化
-    if (
-        /psngame\//.test(window.location.href) &&
-        /^(?!.*comment|.*rank|.*battle|.*gamelist|.*topic|.*qa)/.test(
-            window.location.href
-        )
-    ) {
-        // 追加奖杯统计扇形图
-        addTrophyPieChart();
-
+    /*
+    * 功能：在单独游戏页面上方追加奖杯获得时间线形图
+    */
+    const addTropyGetTimeLineChart = () => {
         // 奖杯获得时间年月统计
         const data = createTropyGetTimeData('em.lh180.alert-success.pd5.r');
         const totalTropyCount = Number($('div.main>.box.pd10>em>.text-strong')
@@ -1340,8 +1372,20 @@
             `<div id="trophyGetTimeChart" align="left"></div>`
         );
         $('#trophyGetTimeChart').highcharts(trophyGetTime);
+    }
 
-
+    // 奖杯系统优化
+    // 功能3-1：游戏奖杯界面可视化
+    if (
+        /psngame\//.test(window.location.href) &&
+        /^(?!.*comment|.*rank|.*battle|.*gamelist|.*topic|.*qa)/.test(
+            window.location.href
+        )
+    ) {
+        // 追加奖杯统计扇形图
+        addTrophyPieChart();
+        // 追加奖杯获得时间线形图
+        addTropyGetTimeLineChart();
         // 功能3-3：汇总以获得和未获得奖杯
         var tropyTitleStyle =
             'border-radius: 2px; padding:5px; background-color:' +
@@ -1463,72 +1507,45 @@
         }
     };
 
+    /*
+    * 功能：悬浮图标显示自己的游戏的完成度
+    */
+    const getMyCompletion = () => {
+        $('.imgbgnb').map((i, el) => {
+            $(el).attr('id', 'game' + i);
+            // 从cookie中取出psnid
+            const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
+            if (psnidCookie) {
+                const psnid = psnidCookie[1];
+                let myGameUrl = $(el).parent().attr('href');
+                if (myGameUrl !== undefined) {
+                    myGameUrl += `?psnid=${psnid}`;
+                    tippy(`#game${i}`, {
+                        content: '加载中...',
+                        animateFill: false,
+                        placement: 'left',
+                        delay: 500,
+                        async onShow(tip) {
+                            tippyOnShow(myGameUrl, tip, getTropyContentByAjax);
+                        },
+                        onHidden(tip) {
+                            tip.state.ajax.canFetch = true;
+                            tip.setContent('加载中...');
+                        },
+                    });
+                }
+            }
+        });
+    }
+
     // 游戏页面优化
     if (
         /psngame/.test(window.location.href) & !/psnid/.test(window.location.href)
     ) {
         // 降低没有白金的游戏的图标亮度
         filterNonePlatinum(settings.filterNonePlatinumAlpha);
-
-        // 功能5-2：悬浮图标显示自己的游戏的完成度
-        $('.imgbgnb').map((i, el) => {
-            $(el).attr('id', 'game' + i);
-            var psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/); //从cookie中取出psnid
-            if (psnidCookie) {
-                var psnid = psnidCookie[1];
-                var myGameUrl = $(el).parent().attr('href');
-                if (myGameUrl != undefined) {
-                    myGameUrl = $(el).parent().attr('href') + `?psnid=${psnid}`;
-                    tippy('#game' + i, {
-                        content: '加载中',
-                        animateFill: false,
-                        placement: 'left',
-                        delay: 500,
-                        async onShow(tip) {
-                            if (!tip.state.ajax) {
-                                tip.state.ajax = {
-                                    isFetching: false,
-                                    canFetch: true,
-                                };
-                            }
-                            if (tip.state.ajax.isFetching || !tip.state.ajax.canFetch) {
-                                return;
-                            }
-                            tip.state.ajax.isFetching = true;
-                            tip.state.ajax.canFetch = false;
-                            try {
-                                $.ajax({
-                                    type: 'GET',
-                                    url: myGameUrl,
-                                    dataType: 'html',
-                                    success: function (data) {
-                                        var reg = /[\s\S]*<\/body>/g;
-                                        var html = reg.exec(data)[0];
-                                        var inner = $(html).find('td > em > .text-strong');
-                                        if (inner.length > 0) {
-                                            tip.setContent('你的奖杯完成度：' + inner.text());
-                                        } else {
-                                            tip.setContent('你还没有获得该游戏的任何奖杯');
-                                        }
-                                    },
-                                    error: function () {
-                                        console.log('无法获取页面信息');
-                                    },
-                                });
-                            } catch (e) {
-                                tip.setContent(`获取失败：${e}`);
-                            } finally {
-                                tip.state.ajax.isFetching = false;
-                            }
-                        },
-                        onHidden(tip) {
-                            tip.state.ajax.canFetch = true;
-                            tip.setContent('加载中');
-                        },
-                    });
-                }
-            }
-        });
+        // 悬浮图标显示自己的游戏的完成度
+        getMyCompletion();
     }
 
     // 约战页面可以选择去掉发起人头像
@@ -1543,11 +1560,11 @@
         window.location.href.match(/psngame\/\d+$/) &&
         !/psnid/.test(window.location.href)
     ) {
-        //检查游戏页
-        var psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/); //从cookie中取出psnid
+        // 检查游戏页
+        // 从cookie中取出psnid
+        const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
         if (psnidCookie) {
-            var psnid = psnidCookie[1];
-            window.location.href += `?psnid=${psnid}`;
+            window.location.href += `?psnid=${psnidCookie[1]}`;
         }
     }
 
