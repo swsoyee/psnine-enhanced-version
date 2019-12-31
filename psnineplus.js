@@ -406,8 +406,6 @@
                 text-align: left;
             }`
         );
-        // 每一层楼的回复外框
-        const allSourceOutside = $('.post > .ml64');
         // 每一层楼的回复框
         const allSource = $('.post .ml64 > .content');
         // 每一层楼的回复者用户名
@@ -423,7 +421,7 @@
                     const linkContent = content.eq(userNum).text().match('@(.+)');
                     // 链接里是@用户生成的链接， linkContent为用户名（B的发言中有A）
                     if (linkContent !== null) {
-                        // 从上层开始，回溯所@的用户的最近回复（找最近的一条A的发言）
+                        // 从本层的上一层开始，回溯所@的用户的最近回复（找最近的一条A的发言）
                         let traceIdFirst = -1;
                         let traceIdTrue = -1;
                         for (let traceId = floor - 1; traceId >= 0; traceId--) {
@@ -433,9 +431,7 @@
                             if (thisUserID.toLowerCase() === linkContent[1].toLowerCase()) {
                                 // 判断回溯中的@（A的发言中有是否有B）
                                 if (
-                                    allSource.eq(traceId).text().indexOf(
-                                        userId.eq(floor).find('.psnnode:eq(0)').text()
-                                    ) > -1
+                                    allSource.eq(traceId).text() === userId.eq(floor).find('.psnnode:eq(0)').text()
                                 ) {
                                     traceIdTrue = traceId;
                                     break;
@@ -457,13 +453,16 @@
                                 ? `${replyContentsText.substring(0, 45)}......`
                                 : replyContentsText;
                             const avatorImg = avator.eq(outputID).find('img:eq(0)').attr('src');
-                            const replayBox = document.createElement('div');
-                            replayBox.setAttribute('class', 'replyTraceback');
-                            replayBox.innerHTML = `<span class="badge"><img src="${avatorImg}" height="15" width="15" style="margin-right: 5px; border-radius: 8px;"></img>${linkContent[1]}</span><span class="responserContent_${floor}_${outputID}" style="display: inline-block; padding-left: 10px;">${replyContents}</span>`;
-                            allSourceOutside[floor].insertBefore(
-                                replayBox,
-                                allSource[floor]
-                            );
+                            allSource.eq(floor).before(`
+                                <div class=replyTraceback>
+                                    <span class="badge">
+                                        <img src="${avatorImg}" height="15" width="15" style="margin-right: 5px; border-radius: 8px;"/>
+                                            ${linkContent[1]}
+                                    </span>
+                                    <span class="responserContent_${floor}_${outputID}" style="display: inline-block; padding-left: 10px;">
+                                        ${replyContents}
+                                    </span>
+                                </div>`);
                             // 如果内容超过45个字符，则增加悬浮显示全文内容功能
                             replyContentsText.length > 45
                                 ? tippy(`.responserContent_${floor}_${outputID}`, {
