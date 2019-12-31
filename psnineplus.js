@@ -653,15 +653,15 @@
                                 type: 'GET',
                                 url: url,
                                 dataType: 'html',
-                                success: function (data) {
-                                    var reg = /[\s\S]*<\/body>/g;
-                                    var html = reg.exec(data)[0];
-                                    var inner = $(html).find('.psnzz').parent().get(0);
+                                success: (data) => {
+                                    const reg = /[\s\S]*<\/body>/g;
+                                    const html = reg.exec(data)[0];
+                                    const inner = $(html).find('.psnzz').parent().get(0);
                                     $(inner).find('.inner').css('max-width', '400px');
                                     tip.setContent(inner);
                                 },
-                                error: function () {
-                                    console.log('无法获取页面信息');
+                                error: () => {
+                                    tip.setContent('无法获取页面信息');
                                 },
                             });
                         } catch (e) {
@@ -1473,14 +1473,15 @@
         // 功能5-2：悬浮图标显示自己的游戏的完成度
         $('.imgbgnb').map((i, el) => {
             $(el).attr('id', 'game' + i);
-            var psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/); //从cookie中取出psnid
+            // 从cookie中取出psnid
+            const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
             if (psnidCookie) {
-                var psnid = psnidCookie[1];
-                var myGameUrl = $(el).parent().attr('href');
-                if (myGameUrl != undefined) {
-                    myGameUrl = $(el).parent().attr('href') + `?psnid=${psnid}`;
-                    tippy('#game' + i, {
-                        content: '加载中',
+                const psnid = psnidCookie[1];
+                let myGameUrl = $(el).parent().attr('href');
+                if (myGameUrl !== undefined) {
+                    myGameUrl += `?psnid=${psnid}`;
+                    tippy(`#game${i}`, {
+                        content: '加载中...',
                         animateFill: false,
                         placement: 'left',
                         delay: 500,
@@ -1501,18 +1502,17 @@
                                     type: 'GET',
                                     url: myGameUrl,
                                     dataType: 'html',
-                                    success: function (data) {
-                                        var reg = /[\s\S]*<\/body>/g;
-                                        var html = reg.exec(data)[0];
-                                        var inner = $(html).find('td > em > .text-strong');
-                                        if (inner.length > 0) {
-                                            tip.setContent('你的奖杯完成度：' + inner.text());
-                                        } else {
-                                            tip.setContent('你还没有获得该游戏的任何奖杯');
-                                        }
+                                    success: (data) => {
+                                        const reg = /[\s\S]*<\/body>/g;
+                                        const html = reg.exec(data)[0];
+                                        const inner = $(html).find('td>em>.text-strong');
+                                        tip.setContent(inner.length > 0
+                                            ? `你的奖杯完成度：${inner.text()}`
+                                            : '你还没有获得该游戏的任何奖杯'
+                                        );
                                     },
-                                    error: function () {
-                                        console.log('无法获取页面信息');
+                                    error: () => {
+                                        tip.setContent('无法获取页面信息');
                                     },
                                 });
                             } catch (e) {
@@ -1523,7 +1523,7 @@
                         },
                         onHidden(tip) {
                             tip.state.ajax.canFetch = true;
-                            tip.setContent('加载中');
+                            tip.setContent('加载中...');
                         },
                     });
                 }
