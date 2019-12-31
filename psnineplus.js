@@ -624,45 +624,25 @@
 
     /*
     * 通过Ajax获取自己的该游戏页面的奖杯数目
-    * @param  url  Ajax获取目标地址
-    * @param  tip  Tippy对象
+    * @param  data  Ajax获取的数据
+    * @param  tip   Tippy对象
     */
-    const getTropyContentByAjax = (url, tip) => {
-        $.ajax({
-            type: 'GET',
-            url: url,
-            dataType: 'html',
-            success: (data) => {
-                const reg = /[\s\S]*<\/body>/g;
-                const html = reg.exec(data)[0];
-                const inner = $(html).find('td>em>.text-strong');
-                tip.setContent(inner.length > 0
-                    ? `你的奖杯完成度：${inner.text()}`
-                    : '你还没有获得该游戏的任何奖杯'
-                );
-            },
-            error: () => {
-                tip.setContent('无法获取页面信息');
-            },
-        })
+    const getTropyContentByAjax = (data, tip) => {
+        const reg = /[\s\S]*<\/body>/g;
+        const html = reg.exec(data)[0];
+        const inner = $(html).find('td>em>.text-strong');
+        tip.setContent(inner.length > 0
+            ? `你的奖杯完成度：${inner.text()}`
+            : '你还没有获得该游戏的任何奖杯'
+        );
     }
 
-    const getUserCardByAjax = (url, tip) => {
-        $.ajax({
-            type: 'GET',
-            url: url,
-            dataType: 'html',
-            success: (data) => {
-                const reg = /[\s\S]*<\/body>/g;
-                const html = reg.exec(data)[0];
-                const inner = $(html).find('.psnzz').parent().get(0);
-                $(inner).find('.inner').css('max-width', '400px');
-                tip.setContent(inner);
-            },
-            error: () => {
-                tip.setContent('无法获取页面信息');
-            },
-        })
+    const getUserCardByAjax = (data, tip) => {
+        const reg = /[\s\S]*<\/body>/g;
+        const html = reg.exec(data)[0];
+        const inner = $(html).find('.psnzz').parent().get(0);
+        $(inner).find('.inner').css('max-width', '400px');
+        tip.setContent(inner);
     }
 
     /*
@@ -684,7 +664,17 @@
         tip.state.ajax.isFetching = true;
         tip.state.ajax.canFetch = false;
         try {
-            successFunction(url, tip);
+            $.ajax({
+                type: 'GET',
+                url: url,
+                dataType: 'html',
+                success: (data) => {
+                    successFunction(data, tip);
+                },
+                error: () => {
+                    tip.setContent('无法获取页面信息');
+                },
+            })
         } catch (e) {
             tip.setContent(`获取失败：${e}`);
         } finally {
