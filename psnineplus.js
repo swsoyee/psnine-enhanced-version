@@ -124,7 +124,7 @@
     /*
      * 页面右下角追加点击跳转到页面底部按钮
      */
-    const toPageButton = () => {
+    const toPageBottom = () => {
         $('.bottombar').append("<a id='scrollbottom' class='yuan mt10'>B</a>");
         $('#scrollbottom').click(() => {
             $('body,html').animate({
@@ -134,7 +134,6 @@
             );
         });
     }
-    toPageButton();
 
     /*
      * 恢复Header部的新闻链接
@@ -147,8 +146,6 @@
             );
         }
     }
-
-    addNews(settings.addNews);
 
     // 功能0-2：夜间模式
     if (settings.nightMode) {
@@ -1106,6 +1103,11 @@
         // 只看史低
         onlyLowestSell();
     }
+    // 页面：全局
+    // 跳转至底部按钮
+    toPageBottom();
+    // 恢复新闻入口
+    addNews(settings.addNews);
 
     /*
     * 获取奖杯各种类个数
@@ -1377,6 +1379,37 @@
         $('#trophyGetTimeChart').highcharts(trophyGetTime);
     }
 
+    /*
+    * 功能：奖杯筛选功能
+    */
+    const addTropyFilter = () => {
+        $('.dropmenu').append('<li><em>筛选</em></li>'); // 追加“筛选”字样
+        // 追加“未获得”的按钮
+        $('.dropmenu').append("<a id='selectUnget'>尚未获得</a>");
+        // 点击按钮隐藏或者显示
+        let clickHideShowNum = 0;
+        $('#selectUnget').click(() => {
+            $('.lh180.alert-success.pd5.r')
+                .parent()
+                .parent()
+                .toggle('slow', () => {
+                    if (clickHideShowNum++ % 2 == 0) {
+                        $('#selectUnget').text('显示全部');
+                        $('#selectUnget').css({
+                            'background-color': '#E7EBEE',
+                            color: '#99A1A7'
+                        });
+                    } else {
+                        $('#selectUnget').text('尚未获得');
+                        $('#selectUnget').css({
+                            'background-color': '#3498db',
+                            color: '#FFFFFF'
+                        });
+                    }
+                });
+        });
+    }
+
     // 奖杯系统优化
     // 功能3-1：游戏奖杯界面可视化
     if (
@@ -1468,27 +1501,8 @@
         $('.tropyCount').click(function () {
             $(this).next().slideToggle();
         });
-
-        // 功能3-3：追加奖杯筛选功能
-        $('.dropmenu').append('<li><em>筛选</em></li>'); // 追加“筛选”字样
-        // 追加“未获得”的按钮
-        $('.dropmenu').append("<a id='selectUnget'>尚未获得</a>");
-        // 点击按钮隐藏或者显示
-        var clickHideShowNum = 0;
-        $('#selectUnget').click(function () {
-            $('.lh180.alert-success.pd5.r')
-                .parent()
-                .parent()
-                .toggle('slow', function () {
-                    if (clickHideShowNum++ % 2 == 0) {
-                        $('#selectUnget').text('显示全部');
-                        $('#selectUnget').css({ 'background-color': '#E7EBEE', 'color': '#99A1A7' });
-                    } else {
-                        $('#selectUnget').text('尚未获得');
-                        $('#selectUnget').css({ 'background-color': '#3498db', 'color': '#FFFFFF' });
-                    }
-                });
-        });
+        // 追加奖杯筛选功能
+        addTropyFilter();
     }
 
     /*
