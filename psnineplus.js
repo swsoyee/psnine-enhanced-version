@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.9.4
+// @version      0.9.5
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404
@@ -124,7 +124,7 @@
     /*
      * 页面右下角追加点击跳转到页面底部按钮
      */
-    const toPageButton = () => {
+    const toPageBottom = () => {
         $('.bottombar').append("<a id='scrollbottom' class='yuan mt10'>B</a>");
         $('#scrollbottom').click(() => {
             $('body,html').animate({
@@ -134,7 +134,6 @@
             );
         });
     }
-    toPageButton();
 
     /*
      * 恢复Header部的新闻链接
@@ -147,7 +146,6 @@
             );
         }
     }
-    addNews(settings.addNews);
 
     // 功能0-2：夜间模式
     if (settings.nightMode) {
@@ -156,20 +154,24 @@
 `);
     }
 
-    // 功能0-3：黑条文字鼠标悬浮显示
-    if (settings.hoverUnmark) {
-        $('.mark').hover(
-            function (i) {
-                var backGroundColor = $('.box.mt20').css('background-color');
-                $(this).css({ color: backGroundColor });
-            },
-            function (o) {
-                var sourceColor = $(this).css('background-color');
-                $(this).css({ color: sourceColor });
-            }
-        );
+    /*
+    * 功能：黑条文字鼠标悬浮显示
+    * param:  isOn  是否开启功能
+    */
+    const showMarkMessage = (isOn) => {
+        if (isOn) {
+            $('.mark').hover(
+                () => {
+                    $(this).css({ color: $('.box.mt20').css('background-color') });
+                },
+                () => {
+                    $(this).css({ color: $(this).css('background-color') });
+                }
+            );
+        }
     }
-    // 功能0-4：markdown语法支持测试
+
+    showMarkMessage(settings.hoverUnmark);
 
     /*
      * 自动签到功能
@@ -261,7 +263,14 @@
     if (settings.autoPagingInHomepage) {
         var isbool2 = true; //触发开关，防止多次调用事件
         GM_addStyle(
-            `#loadingMessage {position: absolute;bottom: 0px;position: fixed;right: 1px !important;display:none; color:white;}`
+            `#loadingMessage {
+                position : absolute;
+                bottom   : 0px;
+                position : fixed;
+                right    : 1px !important;
+                display  : none;
+                color    : white;
+            }`
         );
         $('body').append("<div id='loadingMessage'></div>");
         if (
@@ -375,97 +384,90 @@
             });
         }
     });
-    // 功能1-4：回复内容回溯，仅支持机因、主题（目前仅限主贴，common下不会显示）
-    if (
-        /(gene|topic|trade|battle)\//.test(window.location.href) &&
-        settings.replyTraceback
-    ) {
-        GM_addStyle(
-            `.replyTraceback {
-                background-color: rgb(0, 0, 0, 0.05) !important;
-                padding: 10px !important;
-                color: rgb(160, 160, 160, 1) !important;
-                border-bottom: 1px solid !important;
-            }`
-        );
-        // 悬浮框内容左对齐样式
-        GM_addStyle(`
-            .tippy-content {
-                text-align: left;
-            }`
-        );
-        // 每一层楼的回复外框 (0 ~ N - 1)
-        var allSourceOutside = document.querySelectorAll('.post > .ml64'); // 30楼的话是29
-        // 每一层楼的回复框(0 ~ N - 1) floor
-        var allSource = document.querySelectorAll('.post .ml64 > .content'); // 30楼的话是29
-        // 每一层楼的回复者名字( 0 ~ N - 1)
-        var userId = document.querySelectorAll('.post > .ml64 > [class$=meta]'); // 30楼的话是29
-        // 每一层的头像(0 ~ N - 1)
-        var avator = document.querySelectorAll('.post > a.l'); // 30楼的话是29
-        for (var floor = allSource.length - 1; floor > 0; floor--) {
-            // 层内内容里包含链接（B的发言中是否有A）
-            var content = allSource[floor].querySelectorAll('a');
-            if (content.length > 0) {
-                for (var userNum = 0; userNum < content.length; userNum++) {
-                    // 对每一个链接的文本内容判断
-                    var linkContent = content[userNum].innerText.match('@(.+)');
-                    // 链接里是@用户生成的链接， linkContent为用户名（B的发言中有A）
-                    if (linkContent != null) {
-                        var replayBox = document.createElement('div');
-                        replayBox.setAttribute('class', 'replyTraceback');
-                        // 从上层开始，回溯所@的用户的最近回复（找最近的一条A的发言）
-                        var traceIdFirst = -1;
-                        var traceIdTrue = -1;
-                        for (var traceId = floor - 1; traceId >= 0; traceId--) {
-                            // 如果回溯到了的话，选取内容
-                            // 回溯层用户名
-                            var thisUserID = userId[traceId].getElementsByClassName(
-                                'psnnode'
-                            )[0].innerText;
-                            if (thisUserID == linkContent[1].toLowerCase()) {
-                                // 判断回溯中的@（A的发言中有是否有B）
-                                if (
-                                    allSource[traceId].innerText.indexOf(
-                                        userId[floor].getElementsByClassName('psnnode')[0]
-                                            .innerText
-                                    ) > -1
-                                ) {
-                                    traceIdTrue = traceId;
-                                    break;
-                                } else if (traceIdFirst == -1) {
-                                    traceIdFirst = traceId;
+    /*
+    * 功能：回复内容回溯，仅支持机因、主题（目前仅限主贴，comment下不会显示）
+    * @param  isOn  是否开启功能
+    */
+    const showReplyContent = (isOn) => {
+        if (isOn) {
+            GM_addStyle(
+                `.replyTraceback {
+                    background-color: rgb(0, 0, 0, 0.05) !important;
+                    padding: 10px !important;
+                    color: rgb(160, 160, 160, 1) !important;
+                    border-bottom: 1px solid !important;
+                }`
+            );
+            // 悬浮框内容左对齐样式
+            GM_addStyle(`
+                .tippy-content {
+                    text-align: left;
+                }`
+            );
+            // 每一层楼的回复框
+            const allSource = $('.post .ml64 > .content');
+            // 每一层楼的回复者用户名
+            const userId = $('.post > .ml64 > [class$=meta]');
+            // 每一层的头像
+            const avator = $('.post > a.l');
+            for (let floor = allSource.length - 1; floor > 0; floor--) {
+                // 层内内容里包含链接（B的发言中是否有A）
+                const content = allSource.eq(floor).find('a');
+                if (content.length > 0) {
+                    for (let userNum = 0; userNum < content.length; userNum++) {
+                        // 对每一个链接的文本内容判断
+                        const linkContent = content.eq(userNum).text().match('@(.+)');
+                        // 链接里是@用户生成的链接， linkContent为用户名（B的发言中有A）
+                        if (linkContent !== null) {
+                            // 从本层的上一层开始，回溯所@的用户的最近回复（找最近的一条A的发言）
+                            let traceIdFirst = -1;
+                            let traceIdTrue = -1;
+                            for (let traceId = floor - 1; traceId >= 0; traceId--) {
+                                // 如果回溯到了的话，选取内容
+                                // 回溯层用户名
+                                const thisUserID = userId.eq(traceId).find('.psnnode:eq(0)').text();
+                                if (thisUserID.toLowerCase() === linkContent[1].toLowerCase()) {
+                                    // 判断回溯中的@（A的发言中有是否有B）
+                                    if (
+                                        allSource.eq(traceId).text() === userId.eq(floor).find('.psnnode:eq(0)').text()
+                                    ) {
+                                        traceIdTrue = traceId;
+                                        break;
+                                    } else if (traceIdFirst == -1) {
+                                        traceIdFirst = traceId;
+                                    }
                                 }
                             }
-                        }
-                        var outputID = -1;
-                        if (traceIdTrue != -1) {
-                            outputID = traceIdTrue;
-                        } else if (traceIdFirst != -1) {
-                            outputID = traceIdFirst;
-                        }
-                        // 输出
-                        if (outputID != -1) {
-                            var replyContents = '';
-                            if (allSource[outputID].innerText.length > 45) {
-                                replyContents =
-                                    allSource[outputID].innerText.substring(0, 45) + '......';
-                            } else {
-                                replyContents = allSource[outputID].innerText;
+                            let outputID = -1;
+                            if (traceIdTrue !== -1) {
+                                outputID = traceIdTrue;
+                            } else if (traceIdFirst != -1) {
+                                outputID = traceIdFirst;
                             }
-                            var avatorImg = avator[outputID]
-                                .getElementsByTagName('img')[0]
-                                .getAttribute('src');
-                            replayBox.innerHTML = `<div><span class="badge"><img src="${avatorImg}" height="15" width="15" style="margin-right: 5px; border-radius: 8px;"></img>${linkContent[1]}</span><span class="responserContent_${floor}_${outputID}" style="display: inline-block; padding-left: 10px;">${replyContents}</span></div>`;
-                            allSourceOutside[floor].insertBefore(
-                                replayBox,
-                                allSource[floor]
-                            );
-                            // 如果内容超过45个字符，则增加悬浮显示全文内容功能
-                            if (allSource[outputID].innerText.length > 45) {
-                                tippy(`.responserContent_${floor}_${outputID}`, {
-                                    content: allSource[outputID].innerText,
-                                    animateFill: false,
-                                });
+                            // 输出
+                            if (outputID !== -1) {
+                                const replyContentsText = allSource.eq(outputID).text();
+                                const replyContents = replyContentsText.length > 45
+                                    ? `${replyContentsText.substring(0, 45)}......`
+                                    : replyContentsText;
+                                const avatorImg = avator.eq(outputID).find('img:eq(0)').attr('src');
+                                allSource.eq(floor).before(`
+                                    <div class=replyTraceback>
+                                        <span class="badge">
+                                            <img src="${avatorImg}" height="15" width="15" style="margin-right: 5px; border-radius: 8px;"/>
+                                                ${linkContent[1]}
+                                        </span>
+                                        <span class="responserContent_${floor}_${outputID}" style="display: inline-block; padding-left: 10px;">
+                                            ${replyContents}
+                                        </span>
+                                    </div>`);
+                                // 如果内容超过45个字符，则增加悬浮显示全文内容功能
+                                replyContentsText.length > 45
+                                    ? tippy(`.responserContent_${floor}_${outputID}`, {
+                                        content: replyContentsText,
+                                        animateFill: false,
+                                    })
+                                    : null;
                             }
                         }
                     }
@@ -473,6 +475,7 @@
             }
         }
     }
+
     // 功能1-5：增加帖子楼层信息
     const addFloorIndex = () => {
         let baseFloorIndex = 0;
@@ -1078,6 +1081,12 @@
         // 发基因时可实时预览结果内容
         addInputPreview("textarea[name='content']");
     }
+    // 页面：机因、主题
+    if (
+        /(gene|topic|trade|battle)\//.test(window.location.href)
+    ) {
+        showReplyContent(settings.replyTraceback);
+    }
     // 页面：问答
     if (/\/qa/.test(window.location.href)) {
         addColorToQaTitle(settings.qaHighlightTitle);
@@ -1103,6 +1112,11 @@
         // 只看史低
         onlyLowestSell();
     }
+    // 页面：全局
+    // 跳转至底部按钮
+    toPageBottom();
+    // 恢复新闻入口
+    addNews(settings.addNews);
 
     /*
     * 获取奖杯各种类个数
@@ -1374,6 +1388,37 @@
         $('#trophyGetTimeChart').highcharts(trophyGetTime);
     }
 
+    /*
+    * 功能：奖杯筛选功能
+    */
+    const addTropyFilter = () => {
+        $('.dropmenu').append('<li><em>筛选</em></li>'); // 追加“筛选”字样
+        // 追加“未获得”的按钮
+        $('.dropmenu').append("<a id='selectUnget'>尚未获得</a>");
+        // 点击按钮隐藏或者显示
+        let clickHideShowNum = 0;
+        $('#selectUnget').click(() => {
+            $('.lh180.alert-success.pd5.r')
+                .parent()
+                .parent()
+                .toggle('slow', () => {
+                    if (clickHideShowNum++ % 2 == 0) {
+                        $('#selectUnget').text('显示全部');
+                        $('#selectUnget').css({
+                            'background-color': '#E7EBEE',
+                            color: '#99A1A7'
+                        });
+                    } else {
+                        $('#selectUnget').text('尚未获得');
+                        $('#selectUnget').css({
+                            'background-color': '#3498db',
+                            color: '#FFFFFF'
+                        });
+                    }
+                });
+        });
+    }
+
     // 奖杯系统优化
     // 功能3-1：游戏奖杯界面可视化
     if (
@@ -1465,27 +1510,8 @@
         $('.tropyCount').click(function () {
             $(this).next().slideToggle();
         });
-
-        // 功能3-3：追加奖杯筛选功能
-        $('.dropmenu').append('<li><em>筛选</em></li>'); // 追加“筛选”字样
-        // 追加“未获得”的按钮
-        $('.dropmenu').append("<a id='selectUnget'>尚未获得</a>");
-        // 点击按钮隐藏或者显示
-        var clickHideShowNum = 0;
-        $('#selectUnget').click(function () {
-            $('.lh180.alert-success.pd5.r')
-                .parent()
-                .parent()
-                .toggle('slow', function () {
-                    if (clickHideShowNum++ % 2 == 0) {
-                        $('#selectUnget').text('显示全部');
-                        $('#selectUnget').css({ 'background-color': '#E7EBEE', 'color': '#99A1A7' });
-                    } else {
-                        $('#selectUnget').text('尚未获得');
-                        $('#selectUnget').css({ 'background-color': '#3498db', 'color': '#FFFFFF' });
-                    }
-                });
-        });
+        // 追加奖杯筛选功能
+        addTropyFilter();
     }
 
     /*
