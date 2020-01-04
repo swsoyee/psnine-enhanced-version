@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.9.5
+// @version      0.9.6
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404
@@ -385,7 +385,7 @@
         }
     });
     /*
-    * 功能：回复内容回溯，仅支持机因、主题（目前仅限主贴，comment下不会显示）
+    * 功能：回复内容回溯，仅支持机因、主题
     * @param  isOn  是否开启功能
     */
     const showReplyContent = (isOn) => {
@@ -454,10 +454,10 @@
                                 allSource.eq(floor).before(`
                                     <div class=replyTraceback>
                                         <span class="badge">
-                                            <img src="${avatorImg}" height="15" width="15" style="margin-right: 5px; border-radius: 8px;"/>
+                                            <img src="${avatorImg}" height="15" width="15" style="margin-right: 5px; border-radius: 8px;vertical-align:sub;"/>
                                                 ${linkContent[1]}
                                         </span>
-                                        <span class="responserContent_${floor}_${outputID}" style="display: inline-block; padding-left: 10px;">
+                                        <span class="responserContent_${floor}_${outputID}" style="padding-left: 10px;">
                                             ${replyContents}
                                         </span>
                                     </div>`);
@@ -466,6 +466,7 @@
                                     ? tippy(`.responserContent_${floor}_${outputID}`, {
                                         content: replyContentsText,
                                         animateFill: false,
+                                        maxWidth: '500px',
                                     })
                                     : null;
                             }
@@ -1605,7 +1606,26 @@
     // 右上角头像下拉框中增加插件设定按钮
     if (window.localStorage) {
         // 如果支持localstorage
-        var newSettings = JSON.parse(JSON.stringify(settings));
+        let newSettings = JSON.parse(JSON.stringify(settings));
+        const switchSettings = [
+            'hoverUnmark',
+            'replyTraceback',
+            'nightMode',
+            'foldTropySummary',
+            'addNews',
+            'qaHighlightTitle',
+            'hoverHomepage',
+            'autoPagingInHomepage',
+            'removeHeaderInBattle',
+            'autoCheckIn',
+        ]; // 只有true / false的设置项
+        const numberSettings = [
+            'dollarHKRatio', // HK$汇率
+            'dollarRatio',   // $汇率
+            'poundRatio',    // £汇率
+            'yenRatio',      // ¥汇率
+            'autoPaging'     // 自动翻页
+        ] // 数值型设置项
         $('.header .dropdown ul').append(`
 <li><a href="javascript:void(0);" id="psnine-enhanced-version-opensetting">插件设置</a></li>
 `);
@@ -1615,102 +1635,69 @@
 `);
 
         // 点击打开设置面板
-        $('#psnine-enhanced-version-opensetting').on('click', function () {
+        $('#psnine-enhanced-version-opensetting').on('click', () => {
             $('.setting-panel-box').addClass('show');
-            tippy('#highlightSpecificID', {
-                content: 'ID以英文逗号隔开，不区分大小写',
-                zIndex: 10000,
-            });
-            tippy('#blockList', {
-                content: 'ID以英文逗号隔开，不区分大小写',
-                zIndex: 10000,
-            });
-            var switchSettings = [
-                'hoverUnmark',
-                'replyTraceback',
-                'nightMode',
-                'foldTropySummary',
-                'addNews',
-                'qaHighlightTitle',
-                'hoverHomepage',
-                'autoPagingInHomepage',
-                'removeHeaderInBattle',
-                'autoCheckIn',
-            ]; // 只有true / false的设置项
-            var self = this;
+            ['#highlightSpecificID', '#blockList'].map((item) => {
+                tippy(item, {
+                    content: 'ID以英文逗号隔开，不区分大小写',
+                    zIndex: 10000,
+                });
+            })
             switchSettings.map((name, i) => {
-                if (newSettings[name]) {
-                    $(`#${name} option:nth-child(1)`).attr('selected', 'true');
-                } else {
-                    $(`#${name} option:nth-child(2)`).attr('selected', 'true');
-                }
+                $(`#${name} option:nth-child(${newSettings[name] ? '1' : '2'})`)
+                    .attr('selected', 'true');
                 $(`#${name}`).change(function () {
                     newSettings[name] = JSON.parse(
                         $(this).children('option:selected').val()
                     );
                 });
             });
-
+            numberSettings.map((item) => {
+                $(`#${item}`).val(newSettings[item]);
+            })
             // 降低无白金透明度设置
             $('#filterNonePlatinum').val(newSettings.filterNonePlatinumAlpha);
             $('#filterNonePlatinumValue').html(
                 newSettings.filterNonePlatinumAlpha * 100 + '%'
             );
-            $('#filterNonePlatinum').on('input', function () {
-                var value = $('#filterNonePlatinum').val();
+            $('#filterNonePlatinum').on('input', () => {
+                const value = $('#filterNonePlatinum').val();
                 $('#filterNonePlatinumValue').html(value * 100 + '%');
                 newSettings.filterNonePlatinumAlpha = value;
             });
-
             // 高亮用户
-            var highlightSpecificIDText = newSettings.highlightSpecificID.length
+            const highlightSpecificIDText = newSettings.highlightSpecificID.length
                 ? newSettings.highlightSpecificID.join(',')
                 : '';
             $('#highlightSpecificID').val(highlightSpecificIDText);
             // 黑名单
-            var blockListText = newSettings.blockList.length
+            const blockListText = newSettings.blockList.length
                 ? newSettings.blockList.join(',')
                 : '';
             $('#blockList').val(blockListText);
-            // 汇率
-            $('#dollarHKRatio').val(newSettings.dollarHKRatio);
-            $('#dollarRatio').val(newSettings.dollarRatio);
-            $('#poundRatio').val(newSettings.poundRatio);
-            $('#yenRatio').val(newSettings.yenRatio);
-            // 自动翻页页数
-            $('#autoPaging').val(newSettings.autoPaging);
-            console.log(newSettings.autoPaging);
         });
         // 点击取消
-        $('.setting-panel-box .btnbox .cancel').on('click', function () {
+        $('.setting-panel-box .btnbox .cancel').on('click', () => {
             $('.setting-panel-box').removeClass('show');
         });
         // 点击确定
-        $('.setting-panel-box .btnbox .confirm').on('click', function () {
-            var highlightSpecificIDText = $.trim(
+        $('.setting-panel-box .btnbox .confirm').on('click', () => {
+            const highlightSpecificIDText = $.trim(
                 $('#highlightSpecificID').val().replace('，', ',')
-            )
-                .replace(/,$/, '')
-                .replace(/^,/, '');
-            if (highlightSpecificIDText) {
-                newSettings.highlightSpecificID = highlightSpecificIDText.split(',');
-            } else {
-                newSettings.highlightSpecificID = [];
-            }
-            var blockListText = $.trim($('#blockList').val().replace('，', ','))
-                .replace(/,$/, '')
-                .replace(/^,/, '');
-            if (blockListText) {
-                newSettings.blockList = blockListText.split(',');
-            } else {
-                newSettings.blockList = [];
-            }
+                ).replace(/,$/, '').replace(/^,/, '');
+            newSettings.highlightSpecificID = highlightSpecificIDText
+                ? highlightSpecificIDText.split(',')
+                : [];
+            const blockListText = $.trim(
+                $('#blockList').val().replace('，', ',')
+                ).replace(/,$/, '').replace(/^,/, '');
+            newSettings.blockList = blockListText
+                ? blockListText.split(',')
+                : [];
             newSettings.filterNonePlatinumAlpha = $('#filterNonePlatinum').val();
-            newSettings.dollarHKRatio = $('#dollarHKRatio').val();
-            newSettings.dollarRatio = $('#dollarRatio').val();
-            newSettings.poundRatio = $('#poundRatio').val();
-            newSettings.yenRatio = $('#yenRatio').val();
-            newSettings.autoPaging = $('#autoPaging').val();
+            numberSettings.map((item) => {
+                newSettings[item] = $(`#${item}`).val();
+            })
             $('.setting-panel-box').removeClass('show');
             localStorage['psnine-night-mode-CSS-settings'] = JSON.stringify(
                 newSettings
