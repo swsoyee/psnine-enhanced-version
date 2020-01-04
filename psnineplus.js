@@ -385,7 +385,7 @@
         }
     });
     /*
-    * 功能：回复内容回溯，仅支持机因、主题（目前仅限主贴，comment下不会显示）
+    * 功能：回复内容回溯，仅支持机因、主题
     * @param  isOn  是否开启功能
     */
     const showReplyContent = (isOn) => {
@@ -454,10 +454,10 @@
                                 allSource.eq(floor).before(`
                                     <div class=replyTraceback>
                                         <span class="badge">
-                                            <img src="${avatorImg}" height="15" width="15" style="margin-right: 5px; border-radius: 8px;"/>
+                                            <img src="${avatorImg}" height="15" width="15" style="margin-right: 5px; border-radius: 8px;vertical-align:sub;"/>
                                                 ${linkContent[1]}
                                         </span>
-                                        <span class="responserContent_${floor}_${outputID}" style="display: inline-block; padding-left: 10px;">
+                                        <span class="responserContent_${floor}_${outputID}" style="padding-left: 10px;">
                                             ${replyContents}
                                         </span>
                                     </div>`);
@@ -466,6 +466,7 @@
                                     ? tippy(`.responserContent_${floor}_${outputID}`, {
                                         content: replyContentsText,
                                         animateFill: false,
+                                        maxWidth: '500px',
                                     })
                                     : null;
                             }
