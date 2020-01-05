@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.9.6
+// @version      0.9.7
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404
@@ -477,7 +477,9 @@
         }
     }
 
-    // 功能1-5：增加帖子楼层信息
+    /*
+    * 功能：增加帖子楼层信息
+    */
     const addFloorIndex = () => {
         let baseFloorIndex = 0;
         let subFloorIndex = -1;
@@ -496,6 +498,30 @@
             }
         });
     }
+
+    /*
+    * 功能：层内逆序显示
+    * @param  isOn  是否开启该功能
+    */
+   const reverseSubReply = (isOn) => {
+    $('div.btn.btn-white.font12').click();
+    const blocks = $('div.sonlistmark.ml64.mt10:not([style="display:none;"])');
+    blocks.map((index, block) => {
+        const reversedBlock = $($(block).find('li').get().reverse());
+        $(block).find('.sonlist').remove();
+        $(block).append('<ul class="sonlist">');
+        reversedBlock.map((index, li) => {
+            if (index === 0) {
+                $(li).attr({ style : 'border-top:none;' });
+            } else {
+                $(li).attr({ style : '' });
+            }
+            $(block).find('.sonlist').append(li);
+        })
+    })
+}
+
+    reverseSubReply(true);
     addFloorIndex();
 
     // 功能1-6：屏蔽黑名单中的用户发言内容
@@ -511,9 +537,10 @@
         if (settings.blockList.length > 0) {
             settings.blockList.map((user, i) => {
                 if (window.location.href.indexOf('gene') > -1) {
-                    Filter('div.post .psnnode', 'div.post', user);
-                    Filter('.touchclick .psnnode', '.touchclick', user);
+                    Filter('div.post .psnnode', 'div.post', user); // 机因回复
+                    Filter('.touchclick .psnnode', '.touchclick', user); // 机因一览
                 }
+                Filter('div.ml64>.meta>.psnnode', 'li', user); // 主页、问答
             });
         }
     }
