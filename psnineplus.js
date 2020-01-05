@@ -511,9 +511,10 @@
         if (settings.blockList.length > 0) {
             settings.blockList.map((user, i) => {
                 if (window.location.href.indexOf('gene') > -1) {
-                    Filter('div.post .psnnode', 'div.post', user);
-                    Filter('.touchclick .psnnode', '.touchclick', user);
+                    Filter('div.post .psnnode', 'div.post', user); // 机因回复
+                    Filter('.touchclick .psnnode', '.touchclick', user); // 机因一览
                 }
+                Filter('div.ml64>.meta>.psnnode', 'li', user); // 主页、问答
             });
         }
     }
