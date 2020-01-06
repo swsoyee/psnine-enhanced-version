@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.9.7
+// @version      0.9.8
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404
@@ -185,8 +185,6 @@
     }
     automaticSignIn(settings.autoCheckIn);
 
-    // 功能0-6：自动翻页
-
     /* 获取当前页面的后一页页码和链接
     *  @return  nextPage      后一页页码
     *  @return  nextPageLink  后一页的链接
@@ -206,16 +204,25 @@
         }
         return { nextPage, nextPageLink }
     }
-    if (settings.autoPaging > 0) {
-        let isbool = true; //触发开关，防止多次调用事件
-        $('body').append(
-            "<div id='loadingMessage' style='position: absolute;bottom: 0px;position: fixed;right: 1px !important;display:none; color:white;'></div>"
-        );
-        if (
-            /((gene($|\?))|(qa($|\?))|(topic($|\?))|(planlist($|\?))|(gamelist($|\?))|(trade($|\?)))/.test(
-                window.location.href
-            )
-        ) {
+
+    GM_addStyle(
+        `#loadingMessage {
+            position : absolute;
+            bottom   : 0px;
+            position : fixed;
+            right    : 1px !important;
+            display  : none;
+            color    : white;
+        }`
+    );
+
+    /*
+    * 功能：自动翻页
+    * @param  pagingSetting  自动翻页的页数
+    */
+    const autoPaging = (pagingSetting) => {
+        if (pagingSetting > 0) {
+            let isbool = true; //触发开关，防止多次调用事件
             let autoPagingLimitCount = 0;
             $(window).scroll(function () {
                 //当内容滚动到底部时加载新的内容
@@ -236,19 +243,19 @@
                         nextPageLink,
                         {},
                         (data) => {
-                            var $response = $('<div />').html(data);
+                            const $response = $('<div />').html(data);
                             $(`.loadPage${nextPage}`)
                                 .append($response.find('.list'))
                                 .append($response.find('.page'));
                             isbool = true;
                             autoPagingLimitCount++;
                             // 各个页面的功能追加
-                            addHighlightOnID();
-                            filterUserPost();
-                            addHoverProfile();
                             if (/\/qa/.test(window.location.href)) {
                                 addColorToQaTitle(settings.qaHighlightTitle);
                             }
+                            addHighlightOnID();
+                            filterUserPost();
+                            addHoverProfile();
                         },
                         'html'
                     );
@@ -259,20 +266,12 @@
             });
         }
     }
+
     // 功能0-7：个人主页下显示所有游戏
     if (settings.autoPagingInHomepage) {
-        var isbool2 = true; //触发开关，防止多次调用事件
-        GM_addStyle(
-            `#loadingMessage {
-                position : absolute;
-                bottom   : 0px;
-                position : fixed;
-                right    : 1px !important;
-                display  : none;
-                color    : white;
-            }`
-        );
-        $('body').append("<div id='loadingMessage'></div>");
+        let isbool2 = true; //触发开关，防止多次调用事件
+        // 插入加载提示信息
+        $('body').append("<div id='loadingMessage'/>");
         if (
             /psnid\/[A-Za-z0-9_-]+$/.test(window.location.href) &&
             $('tbody').length > 2
@@ -503,23 +502,23 @@
     * 功能：层内逆序显示
     * @param  isOn  是否开启该功能
     */
-   const reverseSubReply = (isOn) => {
-    $('div.btn.btn-white.font12').click();
-    const blocks = $('div.sonlistmark.ml64.mt10:not([style="display:none;"])');
-    blocks.map((index, block) => {
-        const reversedBlock = $($(block).find('li').get().reverse());
-        $(block).find('.sonlist').remove();
-        $(block).append('<ul class="sonlist">');
-        reversedBlock.map((index, li) => {
-            if (index === 0) {
-                $(li).attr({ style : 'border-top:none;' });
-            } else {
-                $(li).attr({ style : '' });
-            }
-            $(block).find('.sonlist').append(li);
+    const reverseSubReply = (isOn) => {
+        $('div.btn.btn-white.font12').click();
+        const blocks = $('div.sonlistmark.ml64.mt10:not([style="display:none;"])');
+        blocks.map((index, block) => {
+            const reversedBlock = $($(block).find('li').get().reverse());
+            $(block).find('.sonlist').remove();
+            $(block).append('<ul class="sonlist">');
+            reversedBlock.map((index, li) => {
+                if (index === 0) {
+                    $(li).attr({ style: 'border-top:none;' });
+                } else {
+                    $(li).attr({ style: '' });
+                }
+                $(block).find('.sonlist').append(li);
+            })
         })
-    })
-}
+    }
 
     reverseSubReply(true);
     addFloorIndex();
@@ -1102,6 +1101,10 @@
         })
     }
 
+    // 综合页面：一览
+    if (/((gene|qa|topic|trade)($|\?))/.test(window.location.href)) {
+        autoPaging(settings.autoPaging);
+    }
     // 页面：机因 > 发机因
     if (/set\/gene/.test(window.location.href)) {
         // 实时统计创建机因时候的文字数
@@ -1711,13 +1714,13 @@
         $('.setting-panel-box .btnbox .confirm').on('click', () => {
             const highlightSpecificIDText = $.trim(
                 $('#highlightSpecificID').val().replace('，', ',')
-                ).replace(/,$/, '').replace(/^,/, '');
+            ).replace(/,$/, '').replace(/^,/, '');
             newSettings.highlightSpecificID = highlightSpecificIDText
                 ? highlightSpecificIDText.split(',')
                 : [];
             const blockListText = $.trim(
                 $('#blockList').val().replace('，', ',')
-                ).replace(/,$/, '').replace(/^,/, '');
+            ).replace(/,$/, '').replace(/^,/, '');
             newSettings.blockList = blockListText
                 ? blockListText.split(',')
                 : [];
