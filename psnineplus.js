@@ -162,7 +162,7 @@
         if (isOn) {
             $('.mark').hover(
                 function() {
-                    $(this).css({ color: $('.box.mt20').css('background-color') });
+                    $(this).css({ color: "rgb(255,255,255)" });
                 },
                 function() {
                     $(this).css({ color: $(this).css('background-color') });
