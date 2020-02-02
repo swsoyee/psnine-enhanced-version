@@ -160,14 +160,16 @@
     */
     const showMarkMessage = (isOn) => {
         if (isOn) {
-            $('.mark').hover(
-                function() {
-                    $(this).css({ color: "rgb(255,255,255)" });
-                },
-                function() {
-                    $(this).css({ color: $(this).css('background-color') });
-                }
-            );
+            window.addEventListener('load', () => {
+                $('.mark').hover(
+                    function () {
+                        $(this).css({ color: "rgb(255,255,255)" });
+                    },
+                    function () {
+                        $(this).css({ color: $(this).css('background-color') });
+                    }
+                );
+            })
         }
     }
 
