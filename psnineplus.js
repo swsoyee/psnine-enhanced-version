@@ -8,7 +8,8 @@
 // @include      *psnine.com/*
 // @include      *d7vg.com/*
 // @require      http://cdn.staticfile.org/jquery/2.1.4/jquery.min.js
-// @require      http://code.highcharts.com/highcharts.js
+// @require      https://code.highcharts.com/highcharts.js
+// @require      https://code.highcharts.com/modules/histogram-bellcurve.js
 // @require      https://unpkg.com/tippy.js@3/dist/tippy.all.min.js
 // @license      MIT
 // @supportURL   https://github.com/swsoyee/psnine-night-mode-CSS/issues/new
@@ -62,7 +63,9 @@
         // 约战页面去掉发起人头像
         removeHeaderInBattle: false,
         // 测评评分页面显示平均分
-        criticScoreAverage: true
+        criticScoreAverage: true,
+        // 测评评分页面平均分显示正态分布
+        criticScoreAverageGaussian: false
     };
     Highcharts.setOptions({
         lang: {
@@ -1638,7 +1641,7 @@
     }
 
     // 游戏评论页面计算平均分
-    const createScoreBarChart = (scoreAxix, scoreData, scoreAverage, criticsCount, scoreCountMin, scoreCountMax) => {
+    const createScoreBarChart = (scoreAxix, scoreDataBarChart, scoreDataGaussian, scoreAverage, criticsCount, scoreCountMin, scoreCountMax, gradientStops) => {
         const scoreChart = {
             type: 'column'
         };
@@ -1646,31 +1649,79 @@
             text: '评分分布（均分：' + scoreAverage + '）',
             style: { color: '#808080' }
         };
-        const scoreXaxis = {
+        const scoreXaxis = [{
             categories: scoreAxix,
             crosshair: true
-        };
-        const scoreYaxis = {
+        }];
+        const scoreYaxis = [{
             tickInterval: 1,
             min: scoreCountMin - 1,
             max: scoreCountMax,
             title: { text: '数量' }
-        };
+        }];
         const scoreTooltip = {
-            pointFormat: '<b>{point.y}人</b>'
+            formatter() {
+                switch (this.series.index) {
+                    case 0:
+                        return '<b>' + this.y + '人</b>';
+                    case 1:
+                        return '<b>' + (this.y * 100).toFixed(2) + '%</b>';
+                    default:
+                        return this.y;
+                }
+            },
+            pointFormat: '<b>{point.y}</b>'
         };
         const scorePlotOptions = {
             column: {
                 pointPadding: 0.2,
                 borderWidth: 0,
+            },
+            bellcurve: {
+                color: '#8080807f',
+                fillColor: {
+                    linearGradient: { x1: 0, x2: 1, y1: 0, y2: 0 },
+                    stops: gradientStops
+                }
             }
         };
         const scoreSeries = [{
-            name: '',
-            data: scoreData
+            xAxis: 0,
+            yAxis: 0,
+            zIndex: 1,
+            baseSeries: 0,
+            data: scoreDataBarChart
         }];
         const scoreCredits = {
             text: '评分人数：' + criticsCount
+        };
+        if (settings.criticScoreAverageGaussian) {
+            scoreXaxis.push(
+                {
+                    min: 0.5,
+                    max: 10.5,
+                    alignTicks: true,
+                    visible: false
+                });
+            scoreYaxis.push({
+                min: 0,
+                title: { text: '正态分布' },
+                opposite: true,
+                labels: {
+                    formatter: function () {
+                        return this.value * 100 + '%';
+                    }
+                }
+            });
+            scoreSeries.push(
+                {
+                    type: 'bellcurve',
+                    xAxis: 1,
+                    yAxis: 1,
+                    zIndex: 0,
+                    baseSeries: 1,
+                    data: scoreDataGaussian
+                });
         }
         const scoreBarChart = {
             chart: scoreChart,
@@ -1685,10 +1736,10 @@
         };
         return scoreBarChart;
     };
-    const showCriticScoreAverage = (isOn) => {
+    const showCriticScoreAverage = (isOn, gaussianOn) => {
         if (isOn && window.location.href.match(/psngame\/[1-9][0-9]+\/comment/)) {
             var score_total = 0;
-            var score_data = new Array(10).fill(0);
+            const score_data_barchart = new Array(10).fill(0);
             var score_parser;
             var score_elements = $('div.min-inner.mt40 div.box ul.list li div.ml64 div.meta.pb10 span.alert-success.pd5:contains(评分 )');
             if (score_elements.length > 0)
@@ -1700,37 +1751,82 @@
                 else
                     return;
             }
-            score_elements.each(function () {
-                const score = score_parser($(this));
-                score_total += score;
-                score_data[score - 1]++;
-            });
-            const score_average = (score_total / score_elements.length).toFixed(2);
+            if (gaussianOn) {
+                var score_data_gaussian = [];
+                score_elements.each(function () {
+                    const score = score_parser($(this));
+                    score_data_gaussian.push(score);
+                    score_total += score;
+                    score_data_barchart[score - 1]++;
+                });
+                var score_average = (score_total / score_elements.length).toFixed(2);
+                var score_stddev = 0;
+                score_data_gaussian.forEach(score => {
+                    const dev = score - score_average;
+                    score_stddev += dev * dev;
+                });
+                score_stddev = Math.sqrt(score_stddev) / Math.sqrt(score_elements.length);
+            } else {
+                score_elements.each(function () {
+                    const score = score_parser($(this));
+                    score_total += score;
+                    score_data_barchart[score - 1]++;
+                });
+                var score_average = (score_total / score_elements.length).toFixed(2);
+            }
             // adding score average to stats
             const psnine_stats = $('div.min-inner.mt40 div.box.pd10');
             psnine_stats.append('<em> </em><span class="alert-success pd5" align="right">' + '均分 ' + score_average + '</span><p/>');
             // create bar chart
             const score_color = ['#a50026', '#d73027', '#f46d43', '#fdae61', '#fee08b', '#d9ef8b', '#a6d96a', '#66bd63', '#1a9850', '#006837'];// generated via https://colorbrewer2.org/#type=diverging&scheme=RdYlGn&n=10
-            var score_axis = [], score_count_min = Number.MAX_SAFE_INTEGER, score_count_max = Number.MIN_SAFE_INTEGER;
-            for (var score = 10; score >= 1; score--) {
-                const index = score - 1;
-                const score_count = score_data[index];
-                if (score_count == 0)
-                    score_data.splice(index, 1);
-                else {
-                    if (score_count < score_count_min)
+            const score_axis = [];
+            var score_count_min = Number.MAX_SAFE_INTEGER, score_count_max = Number.MIN_SAFE_INTEGER;
+            if (gaussianOn) {
+                for (var score = 10; score >= 1; score--) {
+                    const index = score - 1;
+                    const score_count = score_data_barchart[index];
+                    if (score_count > 0 && score_count < score_count_min)
                         score_count_min = score_count;
                     if (score_count > score_count_max)
                         score_count_max = score_count;
-                    score_data[index] = { y: score_count, color: score_color[index] };
+                    score_data_barchart[index] = { y: score_count, color: score_color[index] };
                     score_axis.unshift('评分 ' + score);
+                }
+            } else {
+                for (var score = 10; score >= 1; score--) {
+                    const index = score - 1;
+                    const score_count = score_data_barchart[index];
+                    if (score_count == 0)
+                        score_data_barchart.splice(index, 1);
+                    else {
+                        if (score_count < score_count_min)
+                            score_count_min = score_count;
+                        if (score_count > score_count_max)
+                            score_count_max = score_count;
+                        score_data_barchart[index] = { y: score_count, color: score_color[index] };
+                        score_axis.unshift('评分 ' + score);
+                    }
                 }
             }
             psnine_stats.append('<div id="scoreBarChart" align="center" style="height: 200px"/>')
-            $('#scoreBarChart').highcharts(createScoreBarChart(score_axis, score_data, score_average, score_elements.length, score_count_min, score_count_max));
+            if (gaussianOn) {
+                var gradient_start = parseFloat(score_average) - parseFloat(3 * score_stddev);
+                if (gradient_start < 0.5) gradient_start = 0.5;
+                var gradient_end = parseFloat(score_average) + parseFloat(3 * score_stddev);
+                if (gradient_end > 10.5) gradient_end = 10.5;
+                const gradient_score_start = Math.ceil(gradient_start);
+                const gradient_score_end = Math.floor(gradient_end);
+                const gradient_stops = [];
+                const gradient_width = gradient_end - gradient_start;
+                for (var color_index = gradient_score_start - 1; color_index < gradient_score_end; color_index++)
+                    gradient_stops.push([(color_index + 1 - gradient_start) / gradient_width, score_color[color_index] + '7f']);
+                $('#scoreBarChart').highcharts(createScoreBarChart(score_axis, score_data_barchart, score_data_gaussian, score_average, score_elements.length, score_count_min, score_count_max, gradient_stops));
+            }
+            else
+                $('#scoreBarChart').highcharts(createScoreBarChart(score_axis, score_data_barchart, null, score_average, score_elements.length, score_count_min, score_count_max, null));
         }
     }
-    showCriticScoreAverage(settings.criticScoreAverage);
+    showCriticScoreAverage(settings.criticScoreAverage, settings.criticScoreAverageGaussian);
 
 
     // 右上角头像下拉框中增加插件设定按钮
@@ -1748,7 +1844,8 @@
             'autoPagingInHomepage',
             'removeHeaderInBattle',
             'autoCheckIn',
-            'criticScoreAverage'
+            'criticScoreAverage',
+            'criticScoreAverageGaussian'
         ]; // 只有true / false的设置项
         const numberSettings = [
             'dollarHKRatio', // HK$汇率
@@ -1760,11 +1857,16 @@
         $('.header .dropdown ul').append(`
 <li><a href="javascript:void(0);" id="psnine-enhanced-version-opensetting">插件设置</a></li>
 `);
-        $('body').append(`
+        if (settings.criticScoreAverage)
+            $('body').append(`
+<style>.setting-panel-box{z-index:9999;background-color:#fff;transition:all .4s ease;position:fixed;left:50%;transform:translateX(-50%);top:-5000px;width:500px;box-shadow:0 0 20px rgba(0,0,0,0.3);padding:10px 0;box-sizing:border-box;border-radius:4px;max-height:700px;overflow-y:scroll;scrollbar-color:#dcdcdc #fff;scrollbar-width:thin}.setting-panel-box::-webkit-scrollbar{width:4px;background-color:#fff}.setting-panel-box::-webkit-scrollbar-button{display:none}.setting-panel-box::-webkit-scrollbar-thumb{background-color:#dcdcdc}.setting-panel-box.show{top:20px}.setting-panel-box h2{margin-bottom:10px;padding-left:20px}.setting-panel-box h4{margin-bottom:10px;padding-left:20px;font-weight:400;color:#1f2f3d;font-size:22px}.setting-panel-box .row{display:flex;align-items:center;justify-content:flex-start;width:100%;margin-bottom:5px;padding-left:20px;box-sizing:border-box}.setting-panel-box .row label{line-height:32px;text-align:left;font-size:14px;color:#606266;width:190px}.setting-panel-box .row .mini{line-height:26px;text-align:left;font-size:14px;color:#606266;margin:0 10px 0 0;width:50px}.setting-panel-box .row .normal{line-height:26px;text-align:left;font-size:14px;color:#606266;margin:0 10px 0 0;width:205px}.setting-panel-box .row textarea{resize:vertical;min-height:30px;border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;line-height:26px;box-sizing:border-box;width:227px;padding:0 10px}.setting-panel-box .row input{border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;height:26px;line-height:26px;display:inline-block;width:227px;padding:0 10px}.setting-panel-box .row input#filterNonePlatinum{height:6px;background-color:#e4e7ed;margin:16px 0;border-radius:3px;position:relative;cursor:pointer;vertical-align:middle;outline:none;padding:0}.setting-panel-box .row input#filterNonePlatinum::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border:2px solid #409eff;background-color:#fff;border-radius:50%;transition:.2s;user-select:none}.setting-panel-box .row input#filterNonePlatinum::-moz-range-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border:2px solid #409eff;background-color:#fff;border-radius:50%;transition:.2s;user-select:none}.setting-panel-box .row #filterNonePlatinumValue{margin-left:5px}.setting-panel-box .row select{border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;height:26px;line-height:26px;display:inline-block;width:227px;padding:0 10px}.setting-panel-box .row span{line-height:32px;text-align:left;font-size:14px;color:#606266;margin-right:10px}.setting-panel-box .btnbox{display:flex;align-items:center;justify-content:center}.setting-panel-box button{-webkit-appearance:button;padding:9px 15px;font-size:12px;border-radius:3px;display:inline-block;line-height:1;white-space:nowrap;cursor:pointer;background:#fff;border:1px solid #dcdfe6;color:#606266;text-align:center;box-sizing:border-box;outline:0;margin:0;transition:.1s;font-weight:500;margin:0 10px}.setting-panel-box button:hover{color:#409eff;border-color:#c6e2ff;background-color:#ecf5ff}.setting-panel-box button.confirm{color:#fff;background-color:#3890ff}.setting-panel-box button.confirm:hover{background-color:#9ec9ff}</style>
+<div class=setting-panel-box><h2>PSN中文网功能增强插件设置</h2><div class=row><a href=https://github.com/swsoyee/psnine-enhanced-version><img src=https://img.shields.io/github/stars/swsoyee/psnine-enhanced-version.svg?style=social></img></a></div><div class=row><label>夜间模式</label><select id=nightMode><option value=true>启用<option value=false>关闭</select></div><div class=row><label>导航增加新闻入口</label><select id=addNews><option value=true>启用<option value=false>关闭</select></div><div class=row><label>高亮用户ID</label><textarea name="" id="highlightSpecificID" cols="30" rows="2"></textarea></div><div class=row><label>黑名单ID</label><textarea name="" id="blockList" cols="30" rows="2"></textarea></div><div class=row><label>机因中显示被@的内容</label><select id=replyTraceback><option value=true>启用<option value=false>关闭</select></div><div class=row><label>悬浮显示刮刮卡内容</label><select id=hoverUnmark><option value=true>启用<option value=false>关闭</select></div><div class=row><label>个人主页下显示所有游戏</label><select id=autoPagingInHomepage><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动签到</label><select id=autoCheckIn><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动向后翻页数</label><input type=number class=normal id=autoPaging></div><div class=row><label>问答区标题着色</label><select id=qaHighlightTitle><option value=true>启用<option value=false>关闭</select></div><div class=row><label>悬浮头像显示个人信息</label><select id=hoverHomepage><option value=true>启用<option value=false>关闭</select></div><div class=row><label>奖杯默认折叠</label><select id=foldTropySummary><option value=true>启用<option value=false>关闭</select></div><div class=row><label>约战页面去掉发起人头像</label><select id=removeHeaderInBattle><option value=true>启用<option value=false>关闭</select></div><div class=row><label>测评评分页面显示平均分</label><select id=criticScoreAverage><option value=true>启用<option value=false>关闭</select></div><div class=row><label>测评均分显示正态分布</label><select id=criticScoreAverageGaussian><option value=true>启用<option value=false>关闭</select></div><div class=row><label>无白金游戏图标透明度</label><input id=filterNonePlatinum type=range min=0 max=1 step=0.1><span id=filterNonePlatinumValue></span></div><div class=row><label>汇率</label><span>港币</span><input type=number class=mini name="" id=dollarHKRatio><span>美元</span><input type=number class=mini name="" id=dollarRatio></div><div class=row><label></label><span>英镑</span><input type=number class=mini name="" id=poundRatio><span>日元</span><input type=number class=mini name="" id=yenRatio></div><div class=btnbox><button class=confirm>确定</button><button class=cancel>取消</button></div></div>
+`);
+        else
+            $('body').append(`
 <style>.setting-panel-box{z-index:9999;background-color:#fff;transition:all .4s ease;position:fixed;left:50%;transform:translateX(-50%);top:-5000px;width:500px;box-shadow:0 0 20px rgba(0,0,0,0.3);padding:10px 0;box-sizing:border-box;border-radius:4px;max-height:700px;overflow-y:scroll;scrollbar-color:#dcdcdc #fff;scrollbar-width:thin}.setting-panel-box::-webkit-scrollbar{width:4px;background-color:#fff}.setting-panel-box::-webkit-scrollbar-button{display:none}.setting-panel-box::-webkit-scrollbar-thumb{background-color:#dcdcdc}.setting-panel-box.show{top:20px}.setting-panel-box h2{margin-bottom:10px;padding-left:20px}.setting-panel-box h4{margin-bottom:10px;padding-left:20px;font-weight:400;color:#1f2f3d;font-size:22px}.setting-panel-box .row{display:flex;align-items:center;justify-content:flex-start;width:100%;margin-bottom:5px;padding-left:20px;box-sizing:border-box}.setting-panel-box .row label{line-height:32px;text-align:left;font-size:14px;color:#606266;width:190px}.setting-panel-box .row .mini{line-height:26px;text-align:left;font-size:14px;color:#606266;margin:0 10px 0 0;width:50px}.setting-panel-box .row .normal{line-height:26px;text-align:left;font-size:14px;color:#606266;margin:0 10px 0 0;width:205px}.setting-panel-box .row textarea{resize:vertical;min-height:30px;border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;line-height:26px;box-sizing:border-box;width:227px;padding:0 10px}.setting-panel-box .row input{border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;height:26px;line-height:26px;display:inline-block;width:227px;padding:0 10px}.setting-panel-box .row input#filterNonePlatinum{height:6px;background-color:#e4e7ed;margin:16px 0;border-radius:3px;position:relative;cursor:pointer;vertical-align:middle;outline:none;padding:0}.setting-panel-box .row input#filterNonePlatinum::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border:2px solid #409eff;background-color:#fff;border-radius:50%;transition:.2s;user-select:none}.setting-panel-box .row input#filterNonePlatinum::-moz-range-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border:2px solid #409eff;background-color:#fff;border-radius:50%;transition:.2s;user-select:none}.setting-panel-box .row #filterNonePlatinumValue{margin-left:5px}.setting-panel-box .row select{border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;height:26px;line-height:26px;display:inline-block;width:227px;padding:0 10px}.setting-panel-box .row span{line-height:32px;text-align:left;font-size:14px;color:#606266;margin-right:10px}.setting-panel-box .btnbox{display:flex;align-items:center;justify-content:center}.setting-panel-box button{-webkit-appearance:button;padding:9px 15px;font-size:12px;border-radius:3px;display:inline-block;line-height:1;white-space:nowrap;cursor:pointer;background:#fff;border:1px solid #dcdfe6;color:#606266;text-align:center;box-sizing:border-box;outline:0;margin:0;transition:.1s;font-weight:500;margin:0 10px}.setting-panel-box button:hover{color:#409eff;border-color:#c6e2ff;background-color:#ecf5ff}.setting-panel-box button.confirm{color:#fff;background-color:#3890ff}.setting-panel-box button.confirm:hover{background-color:#9ec9ff}</style>
 <div class=setting-panel-box><h2>PSN中文网功能增强插件设置</h2><div class=row><a href=https://github.com/swsoyee/psnine-enhanced-version><img src=https://img.shields.io/github/stars/swsoyee/psnine-enhanced-version.svg?style=social></img></a></div><div class=row><label>夜间模式</label><select id=nightMode><option value=true>启用<option value=false>关闭</select></div><div class=row><label>导航增加新闻入口</label><select id=addNews><option value=true>启用<option value=false>关闭</select></div><div class=row><label>高亮用户ID</label><textarea name="" id="highlightSpecificID" cols="30" rows="2"></textarea></div><div class=row><label>黑名单ID</label><textarea name="" id="blockList" cols="30" rows="2"></textarea></div><div class=row><label>机因中显示被@的内容</label><select id=replyTraceback><option value=true>启用<option value=false>关闭</select></div><div class=row><label>悬浮显示刮刮卡内容</label><select id=hoverUnmark><option value=true>启用<option value=false>关闭</select></div><div class=row><label>个人主页下显示所有游戏</label><select id=autoPagingInHomepage><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动签到</label><select id=autoCheckIn><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动向后翻页数</label><input type=number class=normal id=autoPaging></div><div class=row><label>问答区标题着色</label><select id=qaHighlightTitle><option value=true>启用<option value=false>关闭</select></div><div class=row><label>悬浮头像显示个人信息</label><select id=hoverHomepage><option value=true>启用<option value=false>关闭</select></div><div class=row><label>奖杯默认折叠</label><select id=foldTropySummary><option value=true>启用<option value=false>关闭</select></div><div class=row><label>约战页面去掉发起人头像</label><select id=removeHeaderInBattle><option value=true>启用<option value=false>关闭</select></div><div class=row><label>测评评分页面显示平均分</label><select id=criticScoreAverage><option value=true>启用<option value=false>关闭</select></div><div class=row><label>无白金游戏图标透明度</label><input id=filterNonePlatinum type=range min=0 max=1 step=0.1><span id=filterNonePlatinumValue></span></div><div class=row><label>汇率</label><span>港币</span><input type=number class=mini name="" id=dollarHKRatio><span>美元</span><input type=number class=mini name="" id=dollarRatio></div><div class=row><label></label><span>英镑</span><input type=number class=mini name="" id=poundRatio><span>日元</span><input type=number class=mini name="" id=yenRatio></div><div class=btnbox><button class=confirm>确定</button><button class=cancel>取消</button></div></div>
 `);
-
         // 点击打开设置面板
         $('#psnine-enhanced-version-opensetting').on('click', () => {
             $('.setting-panel-box').addClass('show');
