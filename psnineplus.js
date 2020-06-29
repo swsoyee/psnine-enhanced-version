@@ -1638,7 +1638,7 @@
     }
 
     // 游戏评论页面计算平均分
-    const createScoreBarChart = (scoreAxix, scoreData, scoreAverage, scoreCountMin, scoreCountMax) => {
+    const createScoreBarChart = (scoreAxix, scoreData, scoreAverage, criticsCount, scoreCountMin, scoreCountMax) => {
         const scoreChart = {
             type: 'column'
         };
@@ -1669,6 +1669,9 @@
             name: '',
             data: scoreData
         }];
+        const scoreCredits = {
+            text: '评分人数：' + criticsCount
+        }
         const scoreBarChart = {
             chart: scoreChart,
             title: scoreTitle,
@@ -1678,7 +1681,7 @@
             plotOptions: scorePlotOptions,
             series: scoreSeries,
             legend: { enabled: false },
-            credits: { enabled: false }
+            credits: scoreCredits
         };
         return scoreBarChart;
     };
@@ -1724,7 +1727,7 @@
                 }
             }
             psnine_stats.append('<div id="scoreBarChart" align="center" style="height: 200px"/>')
-            $('#scoreBarChart').highcharts(createScoreBarChart(score_axis, score_data, score_average, score_count_min, score_count_max));
+            $('#scoreBarChart').highcharts(createScoreBarChart(score_axis, score_data, score_average, score_elements.length, score_count_min, score_count_max));
         }
     }
     showCriticScoreAverage(settings.criticScoreAverage);
