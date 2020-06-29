@@ -1642,6 +1642,7 @@
 
     // 游戏评论页面计算平均分
     const createScoreBarChart = (scoreAxix, scoreDataBarChart, scoreDataGaussian, scoreAverage, criticsCount, scoreCountMin, scoreCountMax, gradientStops) => {
+        const gaussianOn = scoreDataGaussian && gradientStops;
         const scoreChart = {
             type: 'column'
         };
@@ -1654,8 +1655,8 @@
             crosshair: true
         }];
         const scoreYaxis = [{
-            tickInterval: 1,
-            min: scoreCountMin - 1,
+            tickInterval: gaussianOn ? 2 : 1,
+            min: scoreCountMin < 3 ? 0 : scoreCountMin,
             max: scoreCountMax,
             title: { text: '数量' }
         }];
@@ -1695,7 +1696,7 @@
         const scoreCredits = {
             text: '评分人数：' + criticsCount
         };
-        if (settings.criticScoreAverageGaussian) {
+        if (gaussianOn) {
             scoreXaxis.push(
                 {
                     min: 0.5,
