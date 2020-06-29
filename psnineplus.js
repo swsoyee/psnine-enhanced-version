@@ -1638,16 +1638,93 @@
     }
 
     // 游戏评论页面计算平均分
+    const createScoreBarChart = (scoreAxix, scoreData, scoreAverage, scoreCountMin, scoreCountMax) => {
+        const scoreChart = {
+            type: 'column'
+        };
+        const scoreTitle = {
+            text: '评分分布（均分：' + scoreAverage + '）',
+            style: { color: '#808080' }
+        };
+        const scoreXaxis = {
+            categories: scoreAxix,
+            crosshair: true
+        };
+        const scoreYaxis = {
+            tickInterval: 1,
+            min: scoreCountMin - 1,
+            max: scoreCountMax,
+            title: { text: '数量' }
+        };
+        const scoreTooltip = {
+            pointFormat: '<b>{point.y}人</b>'
+        };
+        const scorePlotOptions = {
+            column: {
+                pointPadding: 0.2,
+                borderWidth: 0,
+            }
+        };
+        const scoreSeries = [{
+            name: '',
+            data: scoreData
+        }];
+        const scoreBarChart = {
+            chart: scoreChart,
+            title: scoreTitle,
+            xAxis: scoreXaxis,
+            yAxis: scoreYaxis,
+            tooltip: scoreTooltip,
+            plotOptions: scorePlotOptions,
+            series: scoreSeries,
+            legend: { enabled: false },
+            credits: { enabled: false }
+        };
+        return scoreBarChart;
+    };
     const showCriticScoreAverage = (isOn) => {
         if (isOn && window.location.href.match(/psngame\/[1-9][0-9]+\/comment/)) {
             var score_total = 0;
+            var score_data = new Array(10).fill(0);
+            var score_parser;
             var score_elements = $('div.min-inner.mt40 div.box ul.list li div.ml64 div.meta.pb10 span.alert-success.pd5:contains(评分 )');
-            if (score_elements.length > 0) {
-                score_elements.each(function () { score_total += parseInt($(this).text().replace('评分 ', '')); });
-                var score_average = (score_total / score_elements.length).toFixed(2);
-                var psnine_stats = $('div.min-inner.mt40 div.box.pd10 em:last');
-                psnine_stats.text(score_average + '均分 ' + psnine_stats.text());
+            if (score_elements.length > 0)
+                score_parser = (element) => { return parseInt(element.text().replace('评分 ', '')); };
+            else {
+                score_elements = $('div.min-inner.mt40 div.box div.ml64 p.text-success:contains(评分 ) b');
+                if (score_elements.length > 0)
+                    score_parser = (element) => { return parseInt(element.text()); };
+                else
+                    return;
             }
+            score_elements.each(function () {
+                const score = score_parser($(this));
+                score_total += score;
+                score_data[score - 1]++;
+            });
+            const score_average = (score_total / score_elements.length).toFixed(2);
+            // adding score average to stats
+            const psnine_stats = $('div.min-inner.mt40 div.box.pd10');
+            psnine_stats.append('<em> </em><span class="alert-success pd5" align="right">' + '均分 ' + score_average + '</span><p/>');
+            // create bar chart
+            const score_color = ['#a50026', '#d73027', '#f46d43', '#fdae61', '#fee08b', '#d9ef8b', '#a6d96a', '#66bd63', '#1a9850', '#006837'];// generated via https://colorbrewer2.org/#type=diverging&scheme=RdYlGn&n=10
+            var score_axis = [], score_count_min = Number.MAX_SAFE_INTEGER, score_count_max = Number.MIN_SAFE_INTEGER;
+            for (var score = 10; score >= 1; score--) {
+                const index = score - 1;
+                const score_count = score_data[index];
+                if (score_count == 0)
+                    score_data.splice(index, 1);
+                else {
+                    if (score_count < score_count_min)
+                        score_count_min = score_count;
+                    if (score_count > score_count_max)
+                        score_count_max = score_count;
+                    score_data[index] = { y: score_count, color: score_color[index] };
+                    score_axis.unshift('评分 ' + score);
+                }
+            }
+            psnine_stats.append('<div id="scoreBarChart" align="center" style="height: 200px"/>')
+            $('#scoreBarChart').highcharts(createScoreBarChart(score_axis, score_data, score_average, score_count_min, score_count_max));
         }
     }
     showCriticScoreAverage(settings.criticScoreAverage);
