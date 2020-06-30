@@ -803,7 +803,7 @@
     *  则修改最后一组数据为当前日期，如在以后，则将最后一次促销的原始
     *  价格作为最后一组数据的当前价格。
     *  @param   [dataArray]  包含[datetime, price]的原始数据
-    * 
+    *
     *  @return  [dataArray]  修改后的[datetime, price]数据
     */
     const fixTheLastElement = (data) => {
@@ -826,7 +826,7 @@
     *  @param   xValue   价格变动时间数组
     *  @param   yNormal  一般会员价格数组
     *  @param   yPlus    Plus会员价格数组
-    * 
+    *
     *  @return  normalData  一般会员价格绘图用数组
     *  @return  plusData    Plus会员价格绘图用数组
     *  @return  region      地区货币符
@@ -853,7 +853,7 @@
     *  @param   normalData     一般会员价格绘图用数组
     *  @param   plusData       Plus会员价格绘图用数组
     *  @param   region         地区货币符
-    * 
+    *
     *  @return  priceLinePlot  highChart对象
     */
     const createPriceLinePlot = (normalData, plusData, region) => {
@@ -936,7 +936,7 @@
         };
         return priceLinePlot;
     }
-    /* 
+    /*
     * 功能：在页面中插入价格变动走势图
     */
     const addPriceLinePlot = () => {
@@ -1159,7 +1159,7 @@
     * @param  className  用于识别的类名
     * @param  name       奖杯种类名
     * @param  color      色块所用颜色码
-    * 
+    *
     * @return {object}   用于绘扇形图的单个数据块
     */
     const getTrophyCategory = (className, name, color) => {
@@ -1294,7 +1294,7 @@
     /*
     * 构建奖杯获得时间绘图数据集
     * @param  className  用于识别的类名
-    * 
+    *
     * @return {object}   用于绘线形图的数据集
     */
     const createTropyGetTimeData = (className) => {
@@ -1654,7 +1654,7 @@
                 }
             };
             const scoreTitle = {
-                text: '评分分布',
+                text: '评论分数分布',
                 style: { color: '#808080' }
             };
             const scoreXaxis = [{
@@ -1671,9 +1671,9 @@
                 formatter() {
                     switch (this.series.index) {
                         case 0:
-                            return '<b>' + this.y + '人</b>';
+                            return `<b>${this.y}人</b>`;
                         case 1:
-                            return '<b>' + (this.y * 100).toFixed(2) + '%</b>';
+                            return `<b>${(this.y * 100).toFixed(2)}%</b>`;
                         default:
                             return this.y;
                     }
@@ -1750,14 +1750,15 @@
         score_data_barchart = new Array(10).fill(0);
         var score_parser;
         var score_elements = $('div.min-inner.mt40 div.box ul.list li div.ml64 div.meta.pb10 span.alert-success.pd5:contains(评分 )');
-        if (score_elements.length > 0)
+        if (score_elements.length > 0) {
             score_parser = (element) => { return parseInt(element.text().replace('评分 ', '')); };
-        else {
+        } else {
             score_elements = $('div.min-inner.mt40 div.box div.ml64 p.text-success:contains(评分 ) b');
-            if (score_elements.length > 0)
+            if (score_elements.length > 0) {
                 score_parser = (element) => { return parseInt(element.text()); };
-            else
+            } else {
                 return;
+            }
         }
         score_data_gaussian = [];
         score_elements.each(function () {
@@ -1775,7 +1776,7 @@
         score_stddev = Math.sqrt(score_stddev) / Math.sqrt(score_elements.length);
         // adding score average to stats
         const psnine_stats = $('div.min-inner.mt40 div.box.pd10');
-        psnine_stats.append('<em> </em><span class="alert-success pd5" align="right">' + '均分 ' + score_average + '</span><p/>');
+        psnine_stats.append(`<em>&nbsp<span class="alert-success pd5" align="right">均分 ${score_average}</span></em><p/>`);
         // create bar chart & gaussian
         const score_colors = ['#d73027', '#d73027', '#d73027', '#d73027', '#d73027', '#fee08b', '#fee08b', '#fee08b', '#1a9850', '#1a9850'];// generated via https://colorbrewer2.org
         score_axis = [];
@@ -1785,13 +1786,15 @@
         for (var score = 10; score >= 1; score--) {
             const index = score - 1;
             const score_count = score_data_barchart[index];
-            if (score_count == 0)
+            if (score_count == 0) {
                 score_data_barchart_no_gaussian.splice(index, 1);
-            else {
-                if (score_count < score_count_min)
+            } else {
+                if (score_count < score_count_min) {
                     score_count_min = score_count;
-                if (score_count > score_count_max)
+                }
+                if (score_count > score_count_max) {
                     score_count_max = score_count;
+                }
                 score_data_barchart_no_gaussian[index] = { y: score_count, color: score_colors[index] };
                 score_axis_no_gaussian.unshift(score);
             }
@@ -1812,7 +1815,7 @@
             for (var color_index = gradient_score_start - 1; color_index < gradient_score_end; color_index++)
                 gradient_stops.push([(color_index + 1 - gradient_start) / gradient_width, gradient_colors[color_index] + '5f']);
         }
-        psnine_stats.append('<div id="scoreBarChart" align="center" style="height: 200px"/>')
+        psnine_stats.append('<div id="scoreBarChart" align="center" style="height: 200px;"/>')
         $('#scoreBarChart').highcharts(createScoreBarChart(score_elements.length, score_count_min, score_count_max));
     }
 
