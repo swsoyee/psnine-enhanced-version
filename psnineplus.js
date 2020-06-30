@@ -1769,12 +1769,15 @@
         // adding score average to stats
         const psnine_stats = $('div.min-inner.mt40 div.box.pd10');
         psnine_stats.append(`<em>&nbsp<span class="alert-success pd5" align="right">均分 ${score_average}</span></em><p/>`);
-        // create bar chart & gaussian
-        const score_colors = ['#d73027', '#d73027', '#d73027', '#d73027', '#d73027', '#fee08b', '#fee08b', '#fee08b', '#1a9850', '#1a9850'];// generated via https://colorbrewer2.org
         score_axis = [];
         score_axis_no_gaussian = [];
-        var score_count_min = Number.MAX_SAFE_INTEGER, score_count_max = Number.MIN_SAFE_INTEGER;
+        let score_count_min = Number.MAX_SAFE_INTEGER, score_count_max = Number.MIN_SAFE_INTEGER;
         score_data_barchart_no_gaussian = score_data_barchart.slice(0);
+        // 评分人数最高区间（分数）
+        const max_score_count_index = score_data_barchart.indexOf(Math.max(...score_data_barchart));
+        // 柱状图颜色
+        let score_colors = new Array(10).fill('#3890ff');
+        score_colors[max_score_count_index] = '#da314b';
         for (var score = 10; score >= 1; score--) {
             const index = score - 1;
             const score_count = score_data_barchart[index];
@@ -1793,7 +1796,7 @@
             score_data_barchart[index] = { y: score_count, color: score_colors[index] };
             score_axis.unshift(score);
         }
-        psnine_stats.append('<div id="scoreBarChart" align="center" style="height: 200px;"/>')
+        psnine_stats.append('<div id="scoreBarChart" align="center" style="height: 200px;width: 50%;"/>')
         $('#scoreBarChart').highcharts(createScoreBarChart(score_elements.length, score_count_min, score_count_max));
     }
 
