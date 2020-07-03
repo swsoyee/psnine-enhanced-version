@@ -1,6 +1,6 @@
 # 🎮 PSN中文网功能增强插件
 
-![users](https://img.shields.io/badge/install-580-orange.svg)
+![users](https://img.shields.io/badge/install-637-orange.svg)
 ![Last commit](https://img.shields.io/github/last-commit/swsoyee/psnine-enhanced-version.svg)
 ![license](https://img.shields.io/github/license/swsoyee/psnine-enhanced-version.svg)  
 
@@ -13,7 +13,7 @@
 
 ### ⏫ 全局优化
 
-- 🌙 增加`黑夜模式`主题选择<sup>3</sup>。  
+- 🌙 增加`黑夜模式`主题选择<sup>4</sup>。  
 - 👮 红色高亮特定`用户ID`（默认高亮管理员）<sup>1</sup>。  
 - 🚫 增加`黑名单`功能，屏蔽不想看到的用户的一切发言。  
 - ⏬ 增加`回到底部`按钮，快速跳转**回复框**或者**翻页**处。  
@@ -43,7 +43,7 @@
 ### 💸 数折查看强化
 
 - 📉 [`数折`](https://psnine.com/dd/HP9000-CUSA08392_00-ASIAPLACEHOLDER1)中增加`价格走势图`，快速了解**走势**和**史低**。  
-- 💱 [`数折`](https://psnine.com/dd)增加人民币价格换算，无需自己进行价格换算<sup>2</sup>。  
+- 💱 [`数折`](https://psnine.com/dd)增加人民币价格换算，无需自己进行价格换算<sup>3</sup>。  
 - 🈹 根据**降价幅度**变更游戏标题颜色`💚<20%` `💛<50%` `🧡<80%` `💖>80%`，快速区分最大优惠。  
 - 🈹 [`数折`](https://psnine.com/dd)和`活动`页面增加`只看史低`功能按键~~不花任何一分冤枉钱~~。  
 
@@ -78,8 +78,9 @@
 ## ❕ 附注
 
 1. 功能由[`mordom0404`](https://psnine.com/psnid/mordom0404)提供。
-2. 由于没有合适的外汇API，汇率为定值，可以自行在脚本中更改。
-3. 如果使用插件内的**黑夜模式**时存在瞬时白转黑的情况，建议关闭插件中的**黑夜模式**，使用`Stylus`或者`Stylish`扩展安装[`CSS`](https://userstyles.org/styles/167244/p9)版`黑夜模式`，或者在[`Greasy Fork`](https://greasyfork.org/zh-CN/scripts/376181-p9%E5%A4%9C%E9%97%B4%E6%A8%A1%E5%BC%8F)上安装独立插件版**黑夜模式**。
+2. 功能由[`Nathaniel_Wu`](https://github.com/Nathaniel-Wu)提供。
+3. 由于没有合适的外汇API，汇率为定值，可以自行在脚本中更改。
+4. 如果使用插件内的**黑夜模式**时存在瞬时白转黑的情况，建议关闭插件中的**黑夜模式**，使用`Stylus`或者`Stylish`扩展安装[`CSS`](https://userstyles.org/styles/167244/p9)版`黑夜模式`，或者在[`Greasy Fork`](https://greasyfork.org/zh-CN/scripts/376181-p9%E5%A4%9C%E9%97%B4%E6%A8%A1%E5%BC%8F)上安装独立插件版**黑夜模式**。
 
 ## 🌙夜间模式CSS版
 
