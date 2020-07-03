@@ -1658,8 +1658,31 @@
         }
     }
 
+    /*
+    * 功能：奖杯心得按“顶”的数量排序功能
+    */
+    const sortTipsByLikes = () => {
+        $('.list').css({
+            display: 'flex',
+            flexDirection: 'column-reverse'
+        });
+        $('.list>li').each((index, ele) => {
+            let likeStr = $(ele).find('.text-success')[0].innerHTML;
+            likeStr = likeStr.replace(/[^0-9]/ig,"");
+            $(ele).css({
+                order: likeStr
+            });
+        });
+    }
+
     // 奖杯心得页面输入框可缩放大小
     if (window.location.href.match(/trophy\/\d+$/)) {
+        $('<div class="sidetitle">根据顶数排序</div>').insertBefore('.sidetitle').css({
+            top: 100,
+            cursor: 'pointer'
+        }).click(() => {
+            sortTipsByLikes();
+        });
         $('#comment').css({
             resize: 'vertical',
             minHeight: 200,
