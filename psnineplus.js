@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.9.11
+// @version      0.9.12
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404, Nathaniel_Wu
@@ -10,6 +10,7 @@
 // @require      http://cdn.staticfile.org/jquery/2.1.4/jquery.min.js
 // @require      https://code.highcharts.com/highcharts.js
 // @require      https://code.highcharts.com/modules/histogram-bellcurve.js
+// @require      https://blacklabel.github.io/custom_events/js/customEvents.js
 // @require      https://unpkg.com/tippy.js@3/dist/tippy.all.min.js
 // @license      MIT
 // @supportURL   https://github.com/swsoyee/psnine-night-mode-CSS/issues/new
@@ -538,13 +539,17 @@
                 sonlistmark.hide();
             }
         } : el => el.parents(parent).remove();
+        let removed = 0;
         $(psnnode).map((i, el) => {
             psnInfo = psnInfoGetter($(el));
             if (userListLowerCase.find(userNameCheckerFinal) != undefined) {
                 remover($(el));
+                removed++;
             }
         });
+        return removed;
     }
+    var filteredCriticPost = false;
     const filterUserPost = () => {
         if (settings.blockList.length > 0) {
             let window_href = window.location.href;
@@ -561,9 +566,12 @@
                 FilterRegular('div.ml64>.meta>.psnnode', 'div.post'); // 主页帖回复、交易帖回复、约战帖回复
             } else if (window_href.match(/\/my\/notice/)) {
                 FilterRegular('.psnnode', 'li'); // 消息通知
-            } else if (window_href.indexOf('trophy') > -1 || window_href.match(/\/psngame\/[1-9][0-9]+\/comment/) != null || window_href.match(/\/psnid\/[^\/]+\/comment/) != null) {
-                FilterRegular('div.ml64>.meta.pb10>.psnnode', 'li'); // 奖杯TIPS、游戏测评、个人主页留言
-                FilterRegular('ul.sonlist .content>.psnnode', 'ul.sonlist>li'); //奖杯TIPS二级回复、游戏测评二级回复、个人主页留言二级回复
+            } else if (window_href.indexOf('trophy') > -1 || window_href.match(/\/psnid\/[^\/]+\/comment/) != null) {
+                FilterRegular('div.ml64>.meta.pb10>.psnnode', 'li'); // 奖杯TIPS、个人主页留言
+                FilterRegular('ul.sonlist .content>.psnnode', 'ul.sonlist>li'); // 奖杯TIPS二级回复、个人主页留言二级回复
+            } else if (window_href.match(/\/psngame\/[1-9][0-9]+\/comment/) != null) {
+                filteredCriticPost = FilterRegular('div.ml64>.meta.pb10>.psnnode', 'li') > 0; // 游戏测评
+                FilterRegular('ul.sonlist .content>.psnnode', 'ul.sonlist>li'); // 游戏测评二级回复
             } else if (window_href.indexOf('battle') > -1) {
                 Filter('table.list td.pdd15.h-p>a', 'tr', userListLowerCase, el => el[0].href, (user, element_href) => element_href.indexOf(`psnid/${user}`) > -1); // 约战一览
             }
@@ -1649,10 +1657,10 @@
     ) {
         // 检查游戏页
         window.onpageshow = (e) => {
-            const backTrigger = e||window.event;
+            const backTrigger = e || window.event;
             // 从cookie中取出psnid
             const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
-            if(!backTrigger.persisted || psnidCookie){
+            if (!backTrigger.persisted || psnidCookie) {
                 window.location.href += `?psnid=${psnidCookie[1]}`;
             }
         }
@@ -1669,6 +1677,91 @@
     // 游戏评论页面计算平均分
     function showCriticAverage() {
         if (window.location.href.match(/psngame\/[1-9][0-9]+\/comment/)) {
+            var score_parser, score_elements, score_parent_review;
+            const selectScoreElements = () => {
+                score_elements = $('div.min-inner.mt40 div.box ul.list li div.ml64 div.meta.pb10 span.alert-success.pd5:contains(评分 )');
+                if (score_elements.length > 0) {
+                    score_parser = (element) => { return parseInt(element.text().replace('评分 ', '')); };
+                    score_parent_review = 'li';
+                } else {
+                    score_elements = $('div.min-inner.mt40 div.box div.ml64 p.text-success:contains(评分 ) b');
+                    if (score_elements.length > 0) {
+                        score_parser = (element) => { return parseInt(element.text()); };
+                        score_parent_review = 'div.post';
+                    } else {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            if (!selectScoreElements())
+                return;
+            var reviews_no_score = null, reviews_no_score_hidden = false;
+            const selectReviewsNoScore = () => {
+                if (reviews_no_score == null)
+                    reviews_no_score = $('div.min-inner.mt40 div.box ul.list li div.ml64 div.meta.pb10:not(:has(span.alert-success.pd5))').parents('li');
+                if (reviews_no_score.length == 0)
+                    reviews_no_score = $('div.min-inner.mt40 div.box div.ml64:not(:has(p.text-success))').parents('div.post');
+            }
+            const hideReviewsNoScore = () => {
+                if (reviews_no_score_hidden)
+                    return;
+                selectReviewsNoScore();
+                reviews_no_score.hide();
+                reviews_no_score_hidden = true;
+            }
+            const showReviewsNoScore = () => {
+                if (!reviews_no_score_hidden)
+                    return;
+                selectReviewsNoScore();
+                reviews_no_score.show();
+                reviews_no_score_hidden = false;
+            }
+            var hidden_scores = [];
+            const hideSpecificScore = (score) => {
+                if (hidden_scores.indexOf(score) > -1)
+                    return;
+                var hidden = 0;
+                score_elements.each(function () {
+                    if (score_parser($(this)) == score) {
+                        $(this).parents(score_parent_review).hide();
+                        hidden++;
+                    }
+                });
+                if (hidden > 0) {
+                    hideReviewsNoScore();
+                    hidden_scores.push(score);
+                }
+            }
+            const showSpecificScore = (score) => {
+                var hidden_score_index = hidden_scores.indexOf(score);
+                if (hidden_score_index >= 0) {
+                    score_elements.each(function () {
+                        if (score_parser($(this)) == score)
+                            $(this).parents(score_parent_review).show();
+                    });
+                    hidden_scores.splice(hidden_score_index, 1);
+                    if (hidden_scores.length == 0)
+                        showReviewsNoScore();
+                }
+            }
+            const scoreOnclick = (chart, seriesEntry, score) => {
+                if (filteredCriticPost) {
+                    selectScoreElements();
+                    filteredCriticPost = false;
+                }
+                switch (seriesEntry.color.length) {
+                    case 7:// no alpha, score is being shown
+                        seriesEntry.color += '7f';
+                        hideSpecificScore(score);
+                        break;
+                    case 9:// has alpha, score is being hidden
+                        seriesEntry.color = seriesEntry.color.substring(0, 7);
+                        showSpecificScore(score);
+                        break;
+                }
+                chart.redraw();
+            }
             var gaussian_on = true, gradient_stops = null;
             var score_data_barchart, score_data_barchart_no_gaussian, score_data_gaussian;
             var score_axis, score_axis_no_gaussian;
@@ -1678,7 +1771,10 @@
                     events: {
                         click: function (event) {
                             gaussian_on = !gaussian_on;
-                            $('#scoreBarChart').highcharts(createScoreBarChart(criticsCount, scoreCountMin, scoreCountMax));
+                            var scoreBarChart = $('#scoreBarChart');
+                            scoreBarChart.highcharts(createScoreBarChart(criticsCount, scoreCountMin, scoreCountMax));
+                            var chart = scoreBarChart.highcharts();
+                            hidden_scores.forEach(s => scoreOnclick(chart, chart.series[0].data[chart.xAxis[0].categories.indexOf(s)], s));
                         }
                     }
                 };
@@ -1688,7 +1784,8 @@
                 };
                 const scoreXaxis = [{
                     categories: gaussian_on ? score_axis : score_axis_no_gaussian,
-                    crosshair: true
+                    crosshair: true,
+                    labels: { events: { click: function () { scoreOnclick(this.chart, this.chart.series[0].data[this.pos], parseInt(this.value)); } } }
                 }];
                 const scoreYaxis = [{
                     tickInterval: gaussian_on ? 2 : 1,
@@ -1717,9 +1814,11 @@
                     bellcurve: {
                         color: '#8080807f',
                         fillColor: '#00000000'
-                    }
+                    },
+                    series: { point: { events: { click: function () { if (this.series.name == '评分计数') scoreOnclick(this.series.chart, this, this.category); } } } }
                 };
                 const scoreSeries = [{
+                    name: '评分计数',
                     xAxis: 0,
                     yAxis: 0,
                     zIndex: 1,
@@ -1771,18 +1870,6 @@
             };
             var score_total = 0;
             score_data_barchart = new Array(10).fill(0);
-            var score_parser;
-            var score_elements = $('div.min-inner.mt40 div.box ul.list li div.ml64 div.meta.pb10 span.alert-success.pd5:contains(评分 )');
-            if (score_elements.length > 0) {
-                score_parser = (element) => { return parseInt(element.text().replace('评分 ', '')); };
-            } else {
-                score_elements = $('div.min-inner.mt40 div.box div.ml64 p.text-success:contains(评分 ) b');
-                if (score_elements.length > 0) {
-                    score_parser = (element) => { return parseInt(element.text()); };
-                } else {
-                    return;
-                }
-            }
             score_data_gaussian = [];
             score_elements.each(function () {
                 const score = score_parser($(this));
@@ -1807,7 +1894,7 @@
             // 评分人数最高区间（分数）
             const max_score_count_index = score_data_barchart.indexOf(Math.max(...score_data_barchart));
             // 柱状图颜色
-            let score_colors = new Array(10).fill('#3890ff');
+            let score_colors = new Array(10).fill('#3890ff'); // do not assign transparency! otherwise scoreOnclick() will break
             score_colors[max_score_count_index] = '#da314b';
             for (var score = 10; score >= 1; score--) {
                 const index = score - 1;
