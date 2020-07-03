@@ -552,8 +552,6 @@
                 Filter('.touchclick .psnnode', '.touchclick', userListLowerCase); // 机因一览
             } else if (window_href.indexOf('gene') > -1) {
                 Filter('div.post .psnnode', 'div.post', userListLowerCase); // 机因回复
-            } else if (window_href.match(/\/qa\/[1-9][0-9]*/)) {
-                Filter('ul.sonlist .content>.psnnode', 'ul.sonlist>li', userListLowerCase); // 问答二级回复
             } else if (window_href.match(/\.co(m\/|m)$/) != null || window_href.indexOf('node') > -1 || window_href.indexOf('qa') > -1 || window_href.match(/\/trad(e\/|e)$/) != null) {
                 Filter('div.ml64>.meta>.psnnode', 'li', userListLowerCase); // 主页一览、问答一览、问答回复、交易一览
             } else if (window_href.indexOf('topic') > -1 || window_href.indexOf('trade') > -1 || window_href.match(/\/battle\/[1-9][0-9]+/) != null) {
@@ -565,6 +563,9 @@
                 Filter('ul.sonlist .content>.psnnode', 'ul.sonlist>li', userListLowerCase); //奖杯TIPS二级回复、游戏测评二级回复、个人主页留言二级回复
             } else if (window_href.indexOf('battle') > -1) {
                 FilterBattle(userListLowerCase); // 约战一览
+            }
+            if (window_href.match(/\/qa\/[1-9][0-9]*/)) {
+                Filter('ul.sonlist .content>.psnnode', 'ul.sonlist>li', userListLowerCase); // 问答二级回复
             }
         }
     }
