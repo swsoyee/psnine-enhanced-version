@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.9.12
+// @version      0.9.13
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404, Nathaniel_Wu
@@ -1675,6 +1675,41 @@
     }
 
     // 游戏评论页面计算平均分
+    function p9TimeTextParser(timestamp_text) { // returns UTC time
+        let array = null;
+        if (timestamp_text.match(/[0-9]{4}-[0-9]{2}-[0-9]{2}\s[0-9]{2}:[0-9]{2}/)) {
+            array = timestamp_text.split(/-|\s|:/);
+        } else if (timestamp_text.match(/[0-9]{2}-[0-9]{2}\s[0-9]{2}:[0-9]{2}/)) {
+            array = timestamp_text.split(/-|\s|:/);
+            array.unshift((new Date()).getFullYear());
+        } else if (timestamp_text.match(/[0-9]+天前\s[0-9]{2}:[0-9]{2}/)) { // if time were not offset by 8 hours, date calculation would be incorrect when description involves '[0-9]+天前'
+            array = (new Date((new Date()).getTime() + 8 * 60 * 60 * 1000 - parseInt(timestamp_text.replace(/天前.+$/g, '')) * (24 * 60 * 60 * 1000))).toLocaleDateString('en-CA', { timeZone: "Asia/Shanghai" }).split('-').concat(timestamp_text.replace(/[0-9]+天前\s/g, '').split(/:/));
+        } else if (timestamp_text.match(/前天\s[0-9]{2}:[0-9]{2}/)) {
+            array = (new Date((new Date()).getTime() + 8 * 60 * 60 * 1000 - 2 * (24 * 60 * 60 * 1000))).toLocaleDateString('en-CA', { timeZone: "Asia/Shanghai" }).split('-').concat(timestamp_text.replace(/前天\s/g, '').split(/:/));
+        } else if (timestamp_text.match(/昨天\s[0-9]{2}:[0-9]{2}/)) {
+            array = (new Date((new Date()).getTime() + 8 * 60 * 60 * 1000 - 1 * (24 * 60 * 60 * 1000))).toLocaleDateString('en-CA', { timeZone: "Asia/Shanghai" }).split('-').concat(timestamp_text.replace(/昨天\s/g, '').split(/:/));
+        } else if (timestamp_text.match(/[0-9]+小时前/)) {
+            let post_time = (new Date((new Date()).getTime() - parseInt(timestamp_text.replace(/小时.+$/g, '')) * (60 * 60 * 1000)));
+            (array = post_time.toLocaleDateString('en-CA', { timeZone: "Asia/Shanghai" }).split('-').concat(post_time.toLocaleString('en-CA', { timeZone: "Asia/Shanghai", hour12: false }).replace(/^.+?\,\s/g, '').split(':'))).pop();
+        } else if (timestamp_text.match(/[0-9]+分钟前/)) {
+            let post_time = new Date((new Date()).getTime() - parseInt(timestamp_text.replace(/分钟.+$/g, '')) * (60 * 1000));
+            (array = post_time.toLocaleDateString('en-CA', { timeZone: "Asia/Shanghai" }).split('-').concat(post_time.toLocaleString('en-CA', { timeZone: "Asia/Shanghai", hour12: false }).replace(/^.+?\,\s/g, '').split(':'))).pop();
+        } else if (timestamp_text.match(/刚刚/)) {
+            let post_time = new Date((new Date()).getTime());
+            (array = post_time.toLocaleDateString('en-CA', { timeZone: "Asia/Shanghai" }).split('-').concat(post_time.toLocaleString('en-CA', { timeZone: "Asia/Shanghai", hour12: false }).replace(/^.+?\,\s/g, '').split(':'))).pop();
+        }
+        if (array) {
+            for (let i = array.length - 1; i >= 0; i--) {
+                if (array[i] == '')
+                    array.splice(i, 1);
+            }
+            for (let i = 0; i < 5; i++)
+                array[i] = parseInt(array[i]);
+            return Date.UTC(...array);
+        }
+        console.log('not parsed: ' + timestamp_text);
+        return null;
+    }
     function showCriticAverage() {
         if (window.location.href.match(/psngame\/[1-9][0-9]+\/comment/)) {
             var score_parser, score_elements, score_parent_review;
@@ -1804,7 +1839,7 @@
                                 return this.y;
                         }
                     },
-                    pointFormat: '<b>{point.y}</b>'
+                    pointFormat: '{point.y}'
                 };
                 const scorePlotOptions = {
                     column: {
@@ -1868,6 +1903,117 @@
                 };
                 return scoreBarChart;
             };
+            const createScoreTrendChart = () => {
+                var score_trend = [], min_score = Number.MAX_SAFE_INTEGER, max_score = Number.MIN_SAFE_INTEGER;
+                const createScoreTrendChartData = () => {
+                    const scoreElementTime = (score_element) => {//must be single element
+                        let timestamp_element = $(score_element).parents('div.ml64').find('div.meta:not(.pb10) > span:nth-child(2)');
+                        if (timestamp_element.length > 0) {
+                            return p9TimeTextParser(timestamp_element.text().replace(/(^\s)|(\s$)|(修改)/g, ''));
+                        }
+                        timestamp_element = $(score_element).parents('div.ml64').find('div.meta');
+                        if (timestamp_element.length > 0) {
+                            let text_array = timestamp_element.text().split(/\r?\n/);
+                            let index = -1, text;
+                            do {
+                                text = text_array[text_array.length + index].replace(/(^\s)|(\s$)|(修改)/g, '')
+                                index--;
+                            } while (text == '')
+                            return p9TimeTextParser(text);
+                        }
+                        return null;
+                    }
+                    score_elements.each(function () {
+                        let timestamp = scoreElementTime($(this));
+                        if (timestamp != null)
+                            score_trend.push([timestamp, score_parser($(this))]);
+                    });
+                    score_trend.sort((e1, e2) => (e1[0] - e2[0]));
+                    let accumulated_score = 0;
+                    for (let i = 0; i < score_trend.length; i++) {
+                        accumulated_score += score_trend[i][1];
+                        let updated_average_score = accumulated_score / (i + 1);
+                        score_trend[i][1] = updated_average_score;
+                        if (updated_average_score < min_score)
+                            min_score = updated_average_score;
+                        if (updated_average_score > max_score)
+                            max_score = updated_average_score;
+                    }
+                };
+                createScoreTrendChartData();
+                // 悬浮内容设置
+                const scoreTrendTooltip = {
+                    formatter() {
+                        return `<b>${this.y.toFixed(2)}</b>`;
+                    },
+                    pointFormat: '{point.y}',
+                };
+                // 日期格式设置
+                const scoreTrendXaxis = {
+                    type: 'datetime',
+                    dateTimeLabelFormats: {
+                        second: '%Y-%m-%d<br/>%H:%M:%S',
+                        minute: '%Y-%m-%d<br/>%H:%M',
+                        hour: '%Y-%m-%d<br/>%H:%M',
+                        day: '%Y<br/>%m-%d',
+                        week: '%Y<br/>%m-%d',
+                        month: '%Y-%m',
+                        year: '%Y',
+                    },
+                    title: {
+                        display: false,
+                    },
+                };
+                // 绘图数据
+                const scoreTrendSeries = [
+                    {
+                        name: '第',
+                        data: score_trend,
+                        showInLegend: false,
+                    },
+                ];
+                // 标题设置
+                const scoreTrendTitle = {
+                    text: '平均分趋势图',
+                    style: {
+                        color: '#808080',
+                    },
+                };
+                // Y轴设置
+                const scoreTrendYAxis = {
+                    title: {
+                        text: '平均分',
+                    },
+                    min: min_score - 0.2 > 0 ? min_score - 0.2 : min_score,
+                    max: max_score + 0.2 < 10 ? max_score + 0.2 : 10,
+                    endOnTick: true,
+                    tickInterval: 0.1
+                };
+                // 绘图设置
+                const scoreTrendChart = {
+                    backgroundColor: 'rgba(0,0,0,0)',
+                    type: 'area',
+                };
+                // 图形设置
+                const scoreTrendPlotOptions = {
+                    areaspline: {
+                        fillOpacity: 0.5
+                    }
+                };
+                // Credits设置
+                const scoreTrendChartData = {
+                    chart: scoreTrendChart,
+                    tooltip: scoreTrendTooltip,
+                    xAxis: scoreTrendXaxis,
+                    yAxis: scoreTrendYAxis,
+                    title: scoreTrendTitle,
+                    series: scoreTrendSeries,
+                    plotOptions: scoreTrendPlotOptions,
+                    legend: { enabled: false },
+                    credits: { enabled: false }
+                };
+                return scoreTrendChartData;
+            }
             var score_total = 0;
             score_data_barchart = new Array(10).fill(0);
             score_data_gaussian = [];
@@ -1914,8 +2060,10 @@
                 score_data_barchart[index] = { y: score_count, color: score_colors[index] };
                 score_axis.unshift(score);
             }
-            psnine_stats.append('<div id="scoreBarChart" align="center" style="height: 200px;width: 50%;"/>')
+            psnine_stats.append('<div id="scoreBarChart" align="left" style="height: 200px;width: 50%;display: inline-block"/>');
+            psnine_stats.append('<div id="scoreTrendChart" align="right" style="height: 200px;width: 50%;display: inline-block"/>');
             $('#scoreBarChart').highcharts(createScoreBarChart(score_elements.length, score_count_min, score_count_max));
+            $('#scoreTrendChart').highcharts(createScoreTrendChart());
         }
     }
 
