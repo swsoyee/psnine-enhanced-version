@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.9.9
+// @version      0.9.10
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404, Nathaniel_Wu
@@ -527,23 +527,45 @@
     addFloorIndex();
 
     // 功能1-6：屏蔽黑名单中的用户发言内容
-    const Filter = (psnnode, parent, userList) => {
+    const Filter = (psnnode, parent, userListLowerCase) => {
         $(psnnode).map((i, el) => {
-            if ($(el).html().toLowerCase() === userList.toLowerCase()) {
+            var psnid = $(el).html().toLowerCase();
+            if (userListLowerCase.find(user => user == psnid) != undefined) {
                 $(el).parents(parent).hide();
             }
         });
     }
-
+    const FilterBattle = (userListLowerCase) => {
+        $('table.list td.pdd15.h-p>a').map((i, el) => {
+            var element_href = $(el)[0].href;
+            if (userListLowerCase.find(user => element_href.indexOf(`psnid/${user}`) > -1) != undefined) {
+                $(el).parents(parent).hide();
+            }
+        });
+    }
     const filterUserPost = () => {
         if (settings.blockList.length > 0) {
-            settings.blockList.map((user, i) => {
-                if (window.location.href.indexOf('gene') > -1) {
-                    Filter('div.post .psnnode', 'div.post', user); // 机因回复
-                    Filter('.touchclick .psnnode', '.touchclick', user); // 机因一览
-                }
-                Filter('div.ml64>.meta>.psnnode', 'li', user); // 主页、问答
-            });
+            let window_href = window.location.href;
+            let userListLowerCase = [];
+            settings.blockList.forEach(user => { userListLowerCase.push(user.toLowerCase()); });
+            if (window_href.match(/\/gen(e\/|e)$/)) {
+                Filter('.touchclick .psnnode', '.touchclick', userListLowerCase); // 机因一览
+            } else if (window_href.indexOf('gene') > -1) {
+                Filter('div.post .psnnode', 'div.post', userListLowerCase); // 机因回复
+            } else if (window_href.match(/\/qa\/[1-9][0-9]*/)) {
+                Filter('ul.sonlist .content>.psnnode', 'ul.sonlist>li', userListLowerCase); // 问答二级回复
+            } else if (window_href.match(/\.co(m\/|m)$/) != null || window_href.indexOf('node') > -1 || window_href.indexOf('qa') > -1 || window_href.match(/\/trad(e\/|e)$/) != null) {
+                Filter('div.ml64>.meta>.psnnode', 'li', userListLowerCase); // 主页一览、问答一览、问答回复、交易一览
+            } else if (window_href.indexOf('topic') > -1 || window_href.indexOf('trade') > -1 || window_href.match(/\/battle\/[1-9][0-9]+/) != null) {
+                Filter('div.ml64>.meta>.psnnode', 'div.post', userListLowerCase); // 主页帖回复、交易帖回复、约战帖回复
+            } else if (window_href.match(/\/my\/notice/)) {
+                Filter('.psnnode', 'li', userListLowerCase); // 消息通知
+            } else if (window_href.indexOf('trophy') > -1 || window_href.match(/\/psngame\/[1-9][0-9]+\/comment/) != null || window_href.match(/\/psnid\/[^\/]+\/comment/) != null) {
+                Filter('div.ml64>.meta.pb10>.psnnode', 'li', userListLowerCase); // 奖杯TIPS、游戏测评、个人主页留言
+                Filter('ul.sonlist .content>.psnnode', 'ul.sonlist>li', userListLowerCase); //奖杯TIPS二级回复、游戏测评二级回复、个人主页留言二级回复
+            } else if (window_href.indexOf('battle') > -1) {
+                FilterBattle(userListLowerCase); // 约战一览
+            }
         }
     }
     filterUserPost();
