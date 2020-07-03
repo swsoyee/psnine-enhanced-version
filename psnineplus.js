@@ -1664,6 +1664,8 @@
     const sortTipsByLikes = () => {
         let containerName = '.list';
         let itemName = 'li';
+
+        // P9的一些老页面的html结构和新页面不同
         if($('.post').length > 0) {
             containerName = '.mt20';
             itemName = '.post';
@@ -1676,8 +1678,12 @@
             let likeStr = $(ele).find('.text-success')[0].innerHTML;
             likeStr = likeStr.replace(/[^0-9]/ig,"");
             $(ele).css({
-                order: likeStr
+                order: likeStr?likeStr:0
             });
+        });
+        // 这里强行把提交评论的form写死为最后一个
+        $('form').css({
+            order: -1
         });
     }
 
