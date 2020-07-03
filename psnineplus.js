@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.9.9
+// @version      0.9.10
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404, Nathaniel_Wu
@@ -527,25 +527,52 @@
     addFloorIndex();
 
     // 功能1-6：屏蔽黑名单中的用户发言内容
-    const Filter = (psnnode, parent, userList) => {
+    const Filter = (psnnode, parent, userListLowerCase, psnInfoGetter, userNameChecker) => {
+        let psnInfo = '';
+        let userNameCheckerFinal = user => userNameChecker(user, psnInfo);
+        let remover = parent.replace(/\s/g, '') == 'ul.sonlist>li' ? el => {
+            let parentElements = el.parents(parent);
+            let sonlistmark = parentElements.parents('div.sonlistmark.ml64.mt10');
+            parentElements.remove();
+            if (sonlistmark[0].querySelector('ul.sonlist>li') == null) {
+                sonlistmark.hide();
+            }
+        } : el => el.parents(parent).remove();
         $(psnnode).map((i, el) => {
-            if ($(el).html().toLowerCase() === userList.toLowerCase()) {
-                $(el).parents(parent).hide();
+            psnInfo = psnInfoGetter($(el));
+            if (userListLowerCase.find(userNameCheckerFinal) != undefined) {
+                remover($(el));
             }
         });
     }
-
     const filterUserPost = () => {
         if (settings.blockList.length > 0) {
-            settings.blockList.map((user, i) => {
-                if (window.location.href.indexOf('gene') > -1) {
-                    Filter('div.post .psnnode', 'div.post', user); // 机因回复
-                    Filter('.touchclick .psnnode', '.touchclick', user); // 机因一览
-                }
-                Filter('div.ml64>.meta>.psnnode', 'li', user); // 主页、问答
-            });
+            let window_href = window.location.href;
+            let userListLowerCase = [];
+            settings.blockList.forEach(user => { userListLowerCase.push(user.toLowerCase()); });
+            let FilterRegular = (psnnode, parent) => Filter(psnnode, parent, userListLowerCase, el => el.html().toLowerCase(), (user, psnid) => user == psnid);
+            if (window_href.match(/\/gen(e\/|e)$/)) {
+                FilterRegular('.touchclick .psnnode', '.touchclick'); // 机因一览
+            } else if (window_href.indexOf('gene') > -1) {
+                FilterRegular('div.post .psnnode', 'div.post'); // 机因回复
+            } else if (window_href.match(/\.co(m\/|m)$/) != null || window_href.indexOf('node') > -1 || window_href.indexOf('qa') > -1 || window_href.match(/\/trad(e\/|e)$/) != null) {
+                FilterRegular('div.ml64>.meta>.psnnode', 'li'); // 主页一览、问答一览、问答回复、交易一览
+            } else if (window_href.indexOf('topic') > -1 || window_href.indexOf('trade') > -1 || window_href.match(/\/battle\/[1-9][0-9]+/) != null) {
+                FilterRegular('div.ml64>.meta>.psnnode', 'div.post'); // 主页帖回复、交易帖回复、约战帖回复
+            } else if (window_href.match(/\/my\/notice/)) {
+                FilterRegular('.psnnode', 'li'); // 消息通知
+            } else if (window_href.indexOf('trophy') > -1 || window_href.match(/\/psngame\/[1-9][0-9]+\/comment/) != null || window_href.match(/\/psnid\/[^\/]+\/comment/) != null) {
+                FilterRegular('div.ml64>.meta.pb10>.psnnode', 'li'); // 奖杯TIPS、游戏测评、个人主页留言
+                FilterRegular('ul.sonlist .content>.psnnode', 'ul.sonlist>li'); //奖杯TIPS二级回复、游戏测评二级回复、个人主页留言二级回复
+            } else if (window_href.indexOf('battle') > -1) {
+                Filter('table.list td.pdd15.h-p>a', 'tr', userListLowerCase, el => el[0].href, (user, element_href) => element_href.indexOf(`psnid/${user}`) > -1); // 约战一览
+            }
+            if (window_href.match(/\/qa\/[1-9][0-9]*/)) {
+                FilterRegular('ul.sonlist .content>.psnnode', 'ul.sonlist>li'); // 问答二级回复
+            }
         }
     }
+    showCriticAverage();
     filterUserPost();
 
     // 功能1-8：回复按钮hover触发显示
@@ -1637,167 +1664,169 @@
     }
 
     // 游戏评论页面计算平均分
-    if (window.location.href.match(/psngame\/[1-9][0-9]+\/comment/)) {
-        var gaussian_on = true, gradient_stops = null;
-        var score_data_barchart, score_data_barchart_no_gaussian, score_data_gaussian;
-        var score_axis, score_axis_no_gaussian;
-        const createScoreBarChart = (criticsCount, scoreCountMin, scoreCountMax) => {
-            const scoreChart = {
-                type: 'column',
-                events: {
-                    click: function (event) {
-                        gaussian_on = !gaussian_on;
-                        $('#scoreBarChart').highcharts(createScoreBarChart(criticsCount, scoreCountMin, scoreCountMax));
-                    }
-                }
-            };
-            const scoreTitle = {
-                text: '评论分数分布',
-                style: { color: '#808080' }
-            };
-            const scoreXaxis = [{
-                categories: gaussian_on ? score_axis : score_axis_no_gaussian,
-                crosshair: true
-            }];
-            const scoreYaxis = [{
-                tickInterval: gaussian_on ? 2 : 1,
-                min: scoreCountMin < 3 ? 0 : scoreCountMin,
-                max: scoreCountMax,
-                title: { text: '点评人数' }
-            }];
-            const scoreTooltip = {
-                formatter() {
-                    switch (this.series.index) {
-                        case 0:
-                            return `<b>${this.y}人</b>`;
-                        case 1:
-                            return `<b>${(this.y * 100).toFixed(2)}%</b>`;
-                        default:
-                            return this.y;
-                    }
-                },
-                pointFormat: '<b>{point.y}</b>'
-            };
-            const scorePlotOptions = {
-                column: {
-                    pointPadding: 0,
-                    borderWidth: 0
-                },
-                bellcurve: {
-                    color: '#8080807f',
-                    fillColor: '#00000000'
-                }
-            };
-            const scoreSeries = [{
-                xAxis: 0,
-                yAxis: 0,
-                zIndex: 1,
-                baseSeries: 0,
-                data: gaussian_on ? score_data_barchart : score_data_barchart_no_gaussian
-            }];
-            const scoreCredits = {
-                text: '点评总人数：' + criticsCount
-            };
-            if (gaussian_on) {
-                scoreXaxis.push({
-                    min: 0.5,
-                    max: 10.5,
-                    alignTicks: true,
-                    opposite: true,
-                    visible: false
-                });
-                scoreYaxis.push({
-                    min: 0,
-                    title: { text: '正态分布' },
-                    opposite: true,
-                    labels: {
-                        formatter: function () {
-                            return this.value * 100 + '%';
+    function showCriticAverage() {
+        if (window.location.href.match(/psngame\/[1-9][0-9]+\/comment/)) {
+            var gaussian_on = true, gradient_stops = null;
+            var score_data_barchart, score_data_barchart_no_gaussian, score_data_gaussian;
+            var score_axis, score_axis_no_gaussian;
+            const createScoreBarChart = (criticsCount, scoreCountMin, scoreCountMax) => {
+                const scoreChart = {
+                    type: 'column',
+                    events: {
+                        click: function (event) {
+                            gaussian_on = !gaussian_on;
+                            $('#scoreBarChart').highcharts(createScoreBarChart(criticsCount, scoreCountMin, scoreCountMax));
                         }
                     }
-                });
-                scoreSeries.push({
-                    type: 'bellcurve',
-                    xAxis: 1,
-                    yAxis: 1,
-                    zIndex: 0,
-                    baseSeries: 1,
-                    data: score_data_gaussian
-                });
-            }
-            const scoreBarChart = {
-                chart: scoreChart,
-                title: scoreTitle,
-                xAxis: scoreXaxis,
-                yAxis: scoreYaxis,
-                tooltip: scoreTooltip,
-                plotOptions: scorePlotOptions,
-                series: scoreSeries,
-                legend: { enabled: false },
-                credits: scoreCredits
+                };
+                const scoreTitle = {
+                    text: '评论分数分布',
+                    style: { color: '#808080' }
+                };
+                const scoreXaxis = [{
+                    categories: gaussian_on ? score_axis : score_axis_no_gaussian,
+                    crosshair: true
+                }];
+                const scoreYaxis = [{
+                    tickInterval: gaussian_on ? 2 : 1,
+                    min: scoreCountMin < 3 ? 0 : scoreCountMin,
+                    max: scoreCountMax,
+                    title: { text: '点评人数' }
+                }];
+                const scoreTooltip = {
+                    formatter() {
+                        switch (this.series.index) {
+                            case 0:
+                                return `<b>${this.y}人</b>`;
+                            case 1:
+                                return `<b>${(this.y * 100).toFixed(2)}%</b>`;
+                            default:
+                                return this.y;
+                        }
+                    },
+                    pointFormat: '<b>{point.y}</b>'
+                };
+                const scorePlotOptions = {
+                    column: {
+                        pointPadding: 0,
+                        borderWidth: 0
+                    },
+                    bellcurve: {
+                        color: '#8080807f',
+                        fillColor: '#00000000'
+                    }
+                };
+                const scoreSeries = [{
+                    xAxis: 0,
+                    yAxis: 0,
+                    zIndex: 1,
+                    baseSeries: 0,
+                    data: gaussian_on ? score_data_barchart : score_data_barchart_no_gaussian
+                }];
+                const scoreCredits = {
+                    text: '点评总人数：' + criticsCount
+                };
+                if (gaussian_on) {
+                    scoreXaxis.push({
+                        min: 0.5,
+                        max: 10.5,
+                        alignTicks: true,
+                        opposite: true,
+                        visible: false
+                    });
+                    scoreYaxis.push({
+                        min: 0,
+                        title: { text: '正态分布' },
+                        opposite: true,
+                        labels: {
+                            formatter: function () {
+                                return this.value * 100 + '%';
+                            }
+                        }
+                    });
+                    scoreSeries.push({
+                        type: 'bellcurve',
+                        xAxis: 1,
+                        yAxis: 1,
+                        zIndex: 0,
+                        baseSeries: 1,
+                        data: score_data_gaussian
+                    });
+                }
+                const scoreBarChart = {
+                    chart: scoreChart,
+                    title: scoreTitle,
+                    xAxis: scoreXaxis,
+                    yAxis: scoreYaxis,
+                    tooltip: scoreTooltip,
+                    plotOptions: scorePlotOptions,
+                    series: scoreSeries,
+                    legend: { enabled: false },
+                    credits: scoreCredits
+                };
+                return scoreBarChart;
             };
-            return scoreBarChart;
-        };
-        var score_total = 0;
-        score_data_barchart = new Array(10).fill(0);
-        var score_parser;
-        var score_elements = $('div.min-inner.mt40 div.box ul.list li div.ml64 div.meta.pb10 span.alert-success.pd5:contains(评分 )');
-        if (score_elements.length > 0) {
-            score_parser = (element) => { return parseInt(element.text().replace('评分 ', '')); };
-        } else {
-            score_elements = $('div.min-inner.mt40 div.box div.ml64 p.text-success:contains(评分 ) b');
+            var score_total = 0;
+            score_data_barchart = new Array(10).fill(0);
+            var score_parser;
+            var score_elements = $('div.min-inner.mt40 div.box ul.list li div.ml64 div.meta.pb10 span.alert-success.pd5:contains(评分 )');
             if (score_elements.length > 0) {
-                score_parser = (element) => { return parseInt(element.text()); };
+                score_parser = (element) => { return parseInt(element.text().replace('评分 ', '')); };
             } else {
-                return;
-            }
-        }
-        score_data_gaussian = [];
-        score_elements.each(function () {
-            const score = score_parser($(this));
-            score_data_gaussian.push(score);
-            score_total += score;
-            score_data_barchart[score - 1]++;
-        });
-        var score_average = (score_total / score_elements.length).toFixed(2);
-        var score_stddev = 0;
-        score_data_gaussian.forEach(score => {
-            const dev = score - score_average;
-            score_stddev += dev * dev;
-        });
-        score_stddev = Math.sqrt(score_stddev) / Math.sqrt(score_elements.length);
-        // adding score average to stats
-        const psnine_stats = $('div.min-inner.mt40 div.box.pd10');
-        psnine_stats.append(`<em>&nbsp<span class="alert-success pd5" align="right">均分 ${score_average}</span></em><p/>`);
-        score_axis = [];
-        score_axis_no_gaussian = [];
-        let score_count_min = Number.MAX_SAFE_INTEGER, score_count_max = Number.MIN_SAFE_INTEGER;
-        score_data_barchart_no_gaussian = score_data_barchart.slice(0);
-        // 评分人数最高区间（分数）
-        const max_score_count_index = score_data_barchart.indexOf(Math.max(...score_data_barchart));
-        // 柱状图颜色
-        let score_colors = new Array(10).fill('#3890ff');
-        score_colors[max_score_count_index] = '#da314b';
-        for (var score = 10; score >= 1; score--) {
-            const index = score - 1;
-            const score_count = score_data_barchart[index];
-            if (score_count == 0) {
-                score_data_barchart_no_gaussian.splice(index, 1);
-            } else {
-                if (score_count < score_count_min) {
-                    score_count_min = score_count;
+                score_elements = $('div.min-inner.mt40 div.box div.ml64 p.text-success:contains(评分 ) b');
+                if (score_elements.length > 0) {
+                    score_parser = (element) => { return parseInt(element.text()); };
+                } else {
+                    return;
                 }
-                if (score_count > score_count_max) {
-                    score_count_max = score_count;
-                }
-                score_data_barchart_no_gaussian[index] = { y: score_count, color: score_colors[index] };
-                score_axis_no_gaussian.unshift(score);
             }
-            score_data_barchart[index] = { y: score_count, color: score_colors[index] };
-            score_axis.unshift(score);
+            score_data_gaussian = [];
+            score_elements.each(function () {
+                const score = score_parser($(this));
+                score_data_gaussian.push(score);
+                score_total += score;
+                score_data_barchart[score - 1]++;
+            });
+            var score_average = (score_total / score_elements.length).toFixed(2);
+            var score_stddev = 0;
+            score_data_gaussian.forEach(score => {
+                const dev = score - score_average;
+                score_stddev += dev * dev;
+            });
+            score_stddev = Math.sqrt(score_stddev) / Math.sqrt(score_elements.length);
+            // adding score average to stats
+            const psnine_stats = $('div.min-inner.mt40 div.box.pd10');
+            psnine_stats.append(`<em>&nbsp<span class="alert-success pd5" align="right">均分 ${score_average}</span></em><p/>`);
+            score_axis = [];
+            score_axis_no_gaussian = [];
+            let score_count_min = Number.MAX_SAFE_INTEGER, score_count_max = Number.MIN_SAFE_INTEGER;
+            score_data_barchart_no_gaussian = score_data_barchart.slice(0);
+            // 评分人数最高区间（分数）
+            const max_score_count_index = score_data_barchart.indexOf(Math.max(...score_data_barchart));
+            // 柱状图颜色
+            let score_colors = new Array(10).fill('#3890ff');
+            score_colors[max_score_count_index] = '#da314b';
+            for (var score = 10; score >= 1; score--) {
+                const index = score - 1;
+                const score_count = score_data_barchart[index];
+                if (score_count == 0) {
+                    score_data_barchart_no_gaussian.splice(index, 1);
+                } else {
+                    if (score_count < score_count_min) {
+                        score_count_min = score_count;
+                    }
+                    if (score_count > score_count_max) {
+                        score_count_max = score_count;
+                    }
+                    score_data_barchart_no_gaussian[index] = { y: score_count, color: score_colors[index] };
+                    score_axis_no_gaussian.unshift(score);
+                }
+                score_data_barchart[index] = { y: score_count, color: score_colors[index] };
+                score_axis.unshift(score);
+            }
+            psnine_stats.append('<div id="scoreBarChart" align="center" style="height: 200px;width: 50%;"/>')
+            $('#scoreBarChart').highcharts(createScoreBarChart(score_elements.length, score_count_min, score_count_max));
         }
-        psnine_stats.append('<div id="scoreBarChart" align="center" style="height: 200px;width: 50%;"/>')
-        $('#scoreBarChart').highcharts(createScoreBarChart(score_elements.length, score_count_min, score_count_max));
     }
 
     // 右上角头像下拉框中增加插件设定按钮
