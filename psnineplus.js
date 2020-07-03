@@ -1832,6 +1832,23 @@
         }
     }
 
+    // 游戏评论页面评分筛选
+    const filterCommentBetweenScore = (min = 1, max = 10) => {
+        const score_elements = $('div.min-inner.mt40 div.box ul.list li div.ml64 div.meta.pb10 span.alert-success.pd5:contains(评分 )');
+        if (score_elements.length > 0) {
+            score_elements.map((index, element) => {
+                const score = parseInt($(element).text().replace('评分 ', ''));
+                const comment = $($(element).get(0).parentElement.parentElement.parentElement);
+                if (score < min || score > max) {
+                    comment.hide()
+                } else {
+                    comment.show()
+                }
+            });
+        }
+    }
+    // filterCommentBetweenScore(7, 9);
+
     // 右上角头像下拉框中增加插件设定按钮
     if (window.localStorage) {
         // 如果支持localstorage
