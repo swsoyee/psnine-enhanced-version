@@ -539,7 +539,7 @@
         $('table.list td.pdd15.h-p>a').map((i, el) => {
             var element_href = $(el)[0].href;
             if (userListLowerCase.find(user => element_href.indexOf(`psnid/${user}`) > -1) != undefined) {
-                $(el).parents(parent).hide();
+                $(el).parents('tr').hide();
             }
         });
     }
