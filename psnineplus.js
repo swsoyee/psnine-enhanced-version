@@ -1649,10 +1649,10 @@
     ) {
         // 检查游戏页
         window.onpageshow = (e) => {
-            const backTrigger = e||window.event;
+            const backTrigger = e || window.event;
             // 从cookie中取出psnid
             const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
-            if(!backTrigger.persisted || psnidCookie){
+            if (!backTrigger.persisted || psnidCookie) {
                 window.location.href += `?psnid=${psnidCookie[1]}`;
             }
         }
