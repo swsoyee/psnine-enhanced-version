@@ -531,7 +531,7 @@
         $(psnnode).map((i, el) => {
             var psnid = $(el).html().toLowerCase();
             if (userListLowerCase.find(user => user == psnid) != undefined) {
-                $(el).parents(parent).hide();
+                $(el).parents(parent).remove();
             }
         });
     }
@@ -539,7 +539,7 @@
         $('table.list td.pdd15.h-p>a').map((i, el) => {
             var element_href = $(el)[0].href;
             if (userListLowerCase.find(user => element_href.indexOf(`psnid/${user}`) > -1) != undefined) {
-                $(el).parents('tr').hide();
+                $(el).parents('tr').remove();
             }
         });
     }
