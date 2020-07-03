@@ -528,11 +528,20 @@
 
     // 功能1-6：屏蔽黑名单中的用户发言内容
     const Filter = (psnnode, parent, userListLowerCase, psnInfoGetter, userNameChecker) => {
+        let psnInfo = '';
+        let userNameCheckerFinal = user => userNameChecker(user, psnInfo);
+        let remover = parent.replace(/\s/g, '') == 'ul.sonlist>li' ? el => {
+            let parentElements = el.parents(parent);
+            let sonlistmark = parentElements.parents('div.sonlistmark.ml64.mt10');
+            parentElements.remove();
+            if (sonlistmark[0].querySelector('ul.sonlist>li') == null) {
+                sonlistmark.hide();
+            }
+        } : el => el.parents(parent).remove();
         $(psnnode).map((i, el) => {
-            let psnInfo = psnInfoGetter($(el));
-            let userNameChecker_final = user => userNameChecker(user, psnInfo);
-            if (userListLowerCase.find(userNameChecker_final) != undefined) {
-                $(el).parents(parent).remove();
+            psnInfo = psnInfoGetter($(el));
+            if (userListLowerCase.find(userNameCheckerFinal) != undefined) {
+                remover($(el));
             }
         });
     }
