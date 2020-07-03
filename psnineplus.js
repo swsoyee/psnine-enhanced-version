@@ -1662,11 +1662,17 @@
     * 功能：奖杯心得按“顶”的数量排序功能
     */
     const sortTipsByLikes = () => {
-        $('.list').css({
+        let containerName = '.list';
+        let itemName = 'li';
+        if($('.post').length > 0) {
+            containerName = '.mt20';
+            itemName = '.post';
+        }
+        $(containerName).css({
             display: 'flex',
             flexDirection: 'column-reverse'
         });
-        $('.list>li').each((index, ele) => {
+        $(containerName+'>'+itemName).each((index, ele) => {
             let likeStr = $(ele).find('.text-success')[0].innerHTML;
             likeStr = likeStr.replace(/[^0-9]/ig,"");
             $(ele).css({
