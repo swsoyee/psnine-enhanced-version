@@ -133,6 +133,8 @@
             },
                 500
             );
+        }).css({
+            cursor: 'pointer'
         });
     }
 
@@ -1658,8 +1660,43 @@
         }
     }
 
+    /*
+    * 功能：奖杯心得按“顶”的数量排序功能
+    */
+    const sortTipsByLikes = () => {
+        let containerName = '.list';
+        let itemName = 'li';
+
+        // P9的一些老页面的html结构和新页面不同
+        if($('.post').length > 0) {
+            containerName = '.mt20';
+            itemName = '.post';
+        }
+        $(containerName).css({
+            display: 'flex',
+            flexDirection: 'column-reverse'
+        });
+        $(containerName+'>'+itemName).each((index, ele) => {
+            let likeStr = $(ele).find('.text-success')[0].innerHTML;
+            likeStr = likeStr.replace(/[^0-9]/ig,"");
+            $(ele).css({
+                order: likeStr?likeStr:0
+            });
+        });
+        // 这里强行把提交评论的form写死为最后一个
+        $('form').css({
+            order: -1
+        });
+    }
+
     // 奖杯心得页面输入框可缩放大小
     if (window.location.href.match(/trophy\/\d+$/)) {
+        $('<div class="sidetitle">根据顶数排序</div>').insertBefore('.sidetitle').css({
+            top: 100,
+            cursor: 'pointer'
+        }).click(() => {
+            sortTipsByLikes();
+        });
         $('#comment').css({
             resize: 'vertical',
             minHeight: 200,
