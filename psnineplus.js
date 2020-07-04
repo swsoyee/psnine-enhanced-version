@@ -1675,7 +1675,7 @@
         let itemName = 'li';
 
         // P9的一些老页面的html结构和新页面不同
-        if($('.post').length > 0) {
+        if ($('.post').length > 0) {
             containerName = '.mt20';
             itemName = '.post';
         }
@@ -1683,11 +1683,11 @@
             display: 'flex',
             flexDirection: 'column-reverse'
         });
-        $(containerName+'>'+itemName).each((index, ele) => {
+        $(containerName + '>' + itemName).each((index, ele) => {
             let likeStr = $(ele).find('.text-success')[0].innerHTML;
-            likeStr = likeStr.replace(/[^0-9]/ig,"");
+            likeStr = likeStr.replace(/[^0-9]/ig, "");
             $(ele).css({
-                order: likeStr?likeStr:0
+                order: likeStr ? likeStr : 0
             });
         });
         // 这里强行把提交评论的form写死为最后一个
@@ -1710,36 +1710,54 @@
         });
     }
 
-    // 游戏评论页面计算平均分
+    // P9时间格式转换函数
     function p9TimeTextParser(timestamp_text) { // returns UTC time
         let array = null;
-        const date_string_to_array = date_string => { return date_string.split(/-|\s|:/); };
+        // 1小时
+        const unit_time_hour = 60 * 60 * 1000;
+        const relative_description_to_offset = (prune_pattern, unit_time) => {
+            return -parseInt(timestamp_text.replace(prune_pattern, '')) * unit_time;
+        }
+        const relative_timestamp = (offset, replace_pattern) => {
+            if (replace_pattern) {
+                return (
+                    (new Date((new Date()).getTime() + 8 * unit_time_hour + offset))
+                        .toLocaleDateString('en-CA', { timeZone: "Asia/Shanghai" })
+                        .split('-')
+                        .concat(timestamp_text.replace(replace_pattern, '').split(/:/))
+                );
+            } else {
+                let _array = (new Date((new Date()).getTime() + offset))
+                    .toLocaleString('en-CA', { timeZone: "Asia/Shanghai", hour12: false })
+                    .split(/-|, |:/);
+                _array.pop();
+                return _array;
+            }
+        }
+        const date_string_to_array = date_string => {
+            return date_string.split(/-|\s|:/);
+        };
         if (timestamp_text.match(/[0-9]{4}-[0-9]{2}-[0-9]{2}\s[0-9]{2}:[0-9]{2}/)) {
             array = date_string_to_array(timestamp_text);
         } else if (timestamp_text.match(/[0-9]{2}-[0-9]{2}\s[0-9]{2}:[0-9]{2}/)) {
             array = date_string_to_array(timestamp_text);
             array.unshift((new Date()).getFullYear());
         } else {
-            const unit_time_day = 24 * 60 * 60 * 1000;
-            const relative_description_to_offset = (prune_pattern, unit_time) => { return -parseInt(timestamp_text.replace(prune_pattern, '')) * unit_time; }
-            const relative_timestamp = (offset, replace_pattern) => { return (new Date((new Date()).getTime() + 8 * 60 * 60 * 1000 + offset)).toLocaleDateString('en-CA', { timeZone: "Asia/Shanghai" }).split('-').concat(timestamp_text.replace(replace_pattern, '').split(/:/)); }
-            if (timestamp_text.match(/[0-9]+天前\s[0-9]{2}:[0-9]{2}/)) // if time were not offset by 8 hours, date calculation would be incorrect when description involves '[0-9]+天前'
-                array = relative_timestamp(relative_description_to_offset(/天前.+$/g, unit_time_day), /[0-9]+天前\s/g);
+            // if time were not offset by 8 hours, date calculation would be incorrect when description involves '[0-9]+天前'
+            if (timestamp_text.match(/[0-9]+天前\s[0-9]{2}:[0-9]{2}/))
+                array = relative_timestamp(relative_description_to_offset(/天前.+$/g, unit_time_hour * 24), /[0-9]+天前\s/g);
             else if (timestamp_text.match(/前天\s[0-9]{2}:[0-9]{2}/))
-                array = relative_timestamp(-2 * unit_time_day, /前天\s/g);
+                array = relative_timestamp(-2 * unit_time_hour * 24, /前天\s/g);
             else if (timestamp_text.match(/昨天\s[0-9]{2}:[0-9]{2}/))
-                array = relative_timestamp(-unit_time_day, /昨天\s/g);
+                array = relative_timestamp(-unit_time_hour * 24, /昨天\s/g);
             else if (timestamp_text.match(/今天\s[0-9]{2}:[0-9]{2}/))
                 array = relative_timestamp(0, /今天\s/g);
-            else {
-                const relative_timestamp_within_day = offset => { let _array = (new Date((new Date()).getTime() + offset)).toLocaleString('en-CA', { timeZone: "Asia/Shanghai", hour12: false }).split(/-|, |:/); _array.pop(); return _array; }
-                if (timestamp_text.match(/[0-9]+小时前/))
-                    array = relative_timestamp_within_day(relative_description_to_offset(/小时.+$/g, 60 * 60 * 1000));
-                else if (timestamp_text.match(/[0-9]+分钟前/))
-                    array = relative_timestamp_within_day(relative_description_to_offset(/分钟.+$/g, 60 * 1000));
-                else if (timestamp_text.match(/刚刚/))
-                    array = relative_timestamp_within_day(0);
-            }
+            else if (timestamp_text.match(/[0-9]+小时前/))
+                array = relative_timestamp(relative_description_to_offset(/小时.+$/g, unit_time_hour));
+            else if (timestamp_text.match(/[0-9]+分钟前/))
+                array = relative_timestamp(relative_description_to_offset(/分钟.+$/g, 60 * 1000));
+            else if (timestamp_text.match(/刚刚/))
+                array = relative_timestamp(0);
         }
         if (array) {
             for (let i = array.length - 1; i >= 0; i--) {
@@ -1751,11 +1769,12 @@
                 if (i == 1) // Everything else is normal except month starts from 0
                     array[i]--;
             }
-            return Date.UTC(...array) - 8 * 60 * 60 * 1000;
+            return Date.UTC(...array) - 8 * unit_time_hour;
         }
         console.log('not parsed: ' + timestamp_text);
         return null;
     }
+    // 游戏评论页面计算平均分
     function showCriticAverage() {
         if (window.location.href.match(/psngame\/[1-9][0-9]+\/comment/)) {
             var score_parser, score_elements, score_parent_review;
