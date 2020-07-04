@@ -1684,10 +1684,10 @@
             array.unshift((new Date()).getFullYear());
         } else {
             const unit_time_day = 24 * 60 * 60 * 1000;
-            const relative_description_to_off_set = (prune_pattern, unit_time) => { return -parseInt(timestamp_text.replace(prune_pattern, '')) * unit_time; }
+            const relative_description_to_offset = (prune_pattern, unit_time) => { return -parseInt(timestamp_text.replace(prune_pattern, '')) * unit_time; }
             const relative_timestamp = (offset, replace_pattern) => { return (new Date((new Date()).getTime() + 8 * 60 * 60 * 1000 + offset)).toLocaleDateString('en-CA', { timeZone: "Asia/Shanghai" }).split('-').concat(timestamp_text.replace(replace_pattern, '').split(/:/)); }
             if (timestamp_text.match(/[0-9]+天前\s[0-9]{2}:[0-9]{2}/)) // if time were not offset by 8 hours, date calculation would be incorrect when description involves '[0-9]+天前'
-                array = relative_timestamp(relative_description_to_off_set(/天前.+$/g, unit_time_day), /[0-9]+天前\s/g);
+                array = relative_timestamp(relative_description_to_offset(/天前.+$/g, unit_time_day), /[0-9]+天前\s/g);
             else if (timestamp_text.match(/前天\s[0-9]{2}:[0-9]{2}/))
                 array = relative_timestamp(-2 * unit_time_day, /前天\s/g);
             else if (timestamp_text.match(/昨天\s[0-9]{2}:[0-9]{2}/))
@@ -1697,9 +1697,9 @@
             else {
                 const relative_timestamp_within_day = offset => { let _array = (new Date((new Date()).getTime() + offset)).toLocaleString('en-CA', { timeZone: "Asia/Shanghai", hour12: false }).split(/-|, |:/); _array.pop(); return _array; }
                 if (timestamp_text.match(/[0-9]+小时前/))
-                    array = relative_timestamp_within_day(relative_description_to_off_set(/小时.+$/g, 60 * 60 * 1000));
+                    array = relative_timestamp_within_day(relative_description_to_offset(/小时.+$/g, 60 * 60 * 1000));
                 else if (timestamp_text.match(/[0-9]+分钟前/))
-                    array = relative_timestamp_within_day(relative_description_to_off_set(/分钟.+$/g, 60 * 1000));
+                    array = relative_timestamp_within_day(relative_description_to_offset(/分钟.+$/g, 60 * 1000));
                 else if (timestamp_text.match(/刚刚/))
                     array = relative_timestamp_within_day(0);
             }
