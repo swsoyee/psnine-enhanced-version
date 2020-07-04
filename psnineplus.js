@@ -1868,6 +1868,7 @@
             const createScoreBarChart = (criticsCount, scoreCountMin, scoreCountMax) => {
                 const scoreChart = {
                     type: 'column',
+                    backgroundColor: 'rgba(0,0,0,0)',
                     events: {
                         click: function (event) {
                             gaussian_on = !gaussian_on;
