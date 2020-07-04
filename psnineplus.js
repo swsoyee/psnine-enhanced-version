@@ -1787,7 +1787,7 @@
                 }
                 switch (seriesEntry.color.length) {
                     case 7:// no alpha, score is being shown
-                        seriesEntry.color += '7f';
+                        seriesEntry.color += '1f';
                         hideSpecificScore(score);
                         break;
                     case 9:// has alpha, score is being hidden
@@ -1816,6 +1816,10 @@
                 const scoreTitle = {
                     text: '评论分数分布',
                     style: { color: '#808080' }
+                };
+                const scoreSubtitle = {
+                    text: '点击分数柱或横坐标数字隐藏相应评论',
+                    style: { fontSize: '9px', color: '#808080' }
                 };
                 const scoreXaxis = [{
                     categories: gaussian_on ? score_axis : score_axis_no_gaussian,
@@ -1887,12 +1891,14 @@
                         yAxis: 1,
                         zIndex: 0,
                         baseSeries: 1,
-                        data: score_data_gaussian
+                        data: score_data_gaussian,
+                        enableMouseTracking: false
                     });
                 }
                 const scoreBarChart = {
                     chart: scoreChart,
                     title: scoreTitle,
+                    subtitle: scoreSubtitle,
                     xAxis: scoreXaxis,
                     yAxis: scoreYaxis,
                     tooltip: scoreTooltip,
@@ -1973,7 +1979,7 @@
                 ];
                 // 标题设置
                 const scoreTrendTitle = {
-                    text: '平均分趋势图',
+                    text: '均分走势',
                     style: {
                         color: '#808080',
                     },
