@@ -1943,10 +1943,9 @@
                 createScoreTrendChartData();
                 // 悬浮内容设置
                 const scoreTrendTooltip = {
-                    formatter() {
+                    pointFormatter() {
                         return `<b>${this.y.toFixed(2)}</b>`;
-                    },
-                    pointFormat: '{point.y}',
+                    }
                 };
                 // 日期格式设置
                 const scoreTrendXaxis = {
