@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.9.13
+// @version      0.9.13.1
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404, Nathaniel_Wu
@@ -1675,7 +1675,7 @@
         let itemName = 'li';
 
         // P9的一些老页面的html结构和新页面不同
-        if($('.post').length > 0) {
+        if ($('.post').length > 0) {
             containerName = '.mt20';
             itemName = '.post';
         }
@@ -1683,11 +1683,11 @@
             display: 'flex',
             flexDirection: 'column-reverse'
         });
-        $(containerName+'>'+itemName).each((index, ele) => {
+        $(containerName + '>' + itemName).each((index, ele) => {
             let likeStr = $(ele).find('.text-success')[0].innerHTML;
-            likeStr = likeStr.replace(/[^0-9]/ig,"");
+            likeStr = likeStr.replace(/[^0-9]/ig, "");
             $(ele).css({
-                order: likeStr?likeStr:0
+                order: likeStr ? likeStr : 0
             });
         });
         // 这里强行把提交评论的form写死为最后一个
@@ -1846,6 +1846,15 @@
             var gaussian_on = true, gradient_stops = null;
             var score_data_barchart, score_data_barchart_no_gaussian, score_data_gaussian;
             var score_axis, score_axis_no_gaussian;
+            const scoreBarChartAddLabelOnclick = (chart) => {
+                chart.xAxis[0].labelGroup.element.childNodes.forEach(function (label) {
+                    label.onclick = function () {
+                        var value = parseInt(this.innerHTML);
+                        var pos = chart.series[0].data.find(e => e.category == value).index;
+                        scoreOnclick(chart, chart.series[0].data[pos], value);
+                    }
+                });
+            }
             const createScoreBarChart = (criticsCount, scoreCountMin, scoreCountMax) => {
                 const scoreChart = {
                     type: 'column',
@@ -1855,6 +1864,7 @@
                             var scoreBarChart = $('#scoreBarChart');
                             scoreBarChart.highcharts(createScoreBarChart(criticsCount, scoreCountMin, scoreCountMax));
                             var chart = scoreBarChart.highcharts();
+                            scoreBarChartAddLabelOnclick(chart);
                             hidden_scores.forEach(s => scoreOnclick(chart, chart.series[0].data[chart.xAxis[0].categories.indexOf(s)], s));
                         }
                     }
@@ -2112,8 +2122,9 @@
             }
             psnine_stats.append('<div id="scoreBarChart" align="left" style="height: 200px;width: 50%;display: inline-block"/>');
             psnine_stats.append('<div id="scoreTrendChart" align="right" style="height: 200px;width: 50%;display: inline-block"/>');
-            $('#scoreBarChart').highcharts(createScoreBarChart(score_elements.length, score_count_min, score_count_max));
-            $('#scoreBarChart').highcharts().xAxis[0].labelGroup.element.childNodes.forEach(function (label) { label.onclick = function () { scoreOnclick(this.chart, this.chart.series[0].data[this.pos], parseInt(this.value)); } });
+            let scoreBarChart = $('#scoreBarChart');
+            scoreBarChart.highcharts(createScoreBarChart(score_elements.length, score_count_min, score_count_max));
+            scoreBarChartAddLabelOnclick(scoreBarChart.highcharts());
             $('#scoreTrendChart').highcharts(createScoreTrendChart());
         }
     }
