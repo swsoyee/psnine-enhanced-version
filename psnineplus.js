@@ -10,7 +10,6 @@
 // @require      http://cdn.staticfile.org/jquery/2.1.4/jquery.min.js
 // @require      https://code.highcharts.com/highcharts.js
 // @require      https://code.highcharts.com/modules/histogram-bellcurve.js
-// @require      https://blacklabel.github.io/custom_events/js/customEvents.js
 // @require      https://unpkg.com/tippy.js@3/dist/tippy.all.min.js
 // @license      MIT
 // @supportURL   https://github.com/swsoyee/psnine-night-mode-CSS/issues/new
@@ -1833,8 +1832,7 @@
                 };
                 const scoreXaxis = [{
                     categories: gaussian_on ? score_axis : score_axis_no_gaussian,
-                    crosshair: true,
-                    labels: { events: { click: function () { scoreOnclick(this.chart, this.chart.series[0].data[this.pos], parseInt(this.value)); } } }
+                    crosshair: true
                 }];
                 const scoreYaxis = [{
                     tickInterval: gaussian_on ? 2 : 1,
@@ -2078,6 +2076,7 @@
             psnine_stats.append('<div id="scoreBarChart" align="left" style="height: 200px;width: 50%;display: inline-block"/>');
             psnine_stats.append('<div id="scoreTrendChart" align="right" style="height: 200px;width: 50%;display: inline-block"/>');
             $('#scoreBarChart').highcharts(createScoreBarChart(score_elements.length, score_count_min, score_count_max));
+            $('#scoreBarChart').highcharts().xAxis[0].labelGroup.element.childNodes.forEach(function (label) { label.onclick = function () { scoreOnclick(this.chart, this.chart.series[0].data[this.pos], parseInt(this.value)); } });
             $('#scoreTrendChart').highcharts(createScoreTrendChart());
         }
     }
