@@ -80,8 +80,9 @@
 
 1. 功能由[`mordom0404`](https://psnine.com/psnid/mordom0404)提供。
 2. 功能由[`Nathaniel_Wu`](https://github.com/Nathaniel-Wu)提供。
-3. 由于没有合适的外汇API，汇率为定值，可以自行在脚本中更改。
-4. 如果使用插件内的**黑夜模式**时存在瞬时白转黑的情况，建议关闭插件中的**黑夜模式**，使用`Stylus`或者`Stylish`扩展安装[`CSS`](https://userstyles.org/styles/167244/p9)版`黑夜模式`，或者在[`Greasy Fork`](https://greasyfork.org/zh-CN/scripts/376181-p9%E5%A4%9C%E9%97%B4%E6%A8%A1%E5%BC%8F)上安装独立插件版**黑夜模式**。
+3. 功能由[`JayusTree`](https://github.com/Jiangyu-Wang)提供。
+4. 由于没有合适的外汇API，汇率为定值，可以自行在脚本中更改。
+5. 如果使用插件内的**黑夜模式**时存在瞬时白转黑的情况，建议关闭插件中的**黑夜模式**，使用`Stylus`或者`Stylish`扩展安装[`CSS`](https://userstyles.org/styles/167244/p9)版`黑夜模式`，或者在[`Greasy Fork`](https://greasyfork.org/zh-CN/scripts/376181-p9%E5%A4%9C%E9%97%B4%E6%A8%A1%E5%BC%8F)上安装独立插件版**黑夜模式**。
 
 ## 🌙夜间模式CSS版
 
