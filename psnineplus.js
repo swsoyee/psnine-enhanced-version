@@ -1071,12 +1071,14 @@
     * 增加按键样式
     * @param  id               标签ID
     * @param  backgroundColor  按键背景色
+    * @param  padding          padding
+    * @param  margin           margin
     */
-    const addButtonStyle = (id, backgroundColor) => {
+    const addButtonStyle = (id, backgroundColor, padding = "0px 5px", margin = "0 0 0 10px") => {
         GM_addStyle(
             `#${id} {
-                padding          : 0px 5px;
-                margin-left      : 10px;
+                padding          : ${padding};
+                margin           : ${margin};
                 border-radius    : 2px;
                 display          : inline-block;
                 color            : white;
@@ -1690,36 +1692,27 @@
     }
 
     // 奖杯心得页面输入框可缩放大小
+    addButtonStyle('sortTipsByLikes', '#3498db', "8px 16px", "10px");  // 根据顶数排序Tips
     if (window.location.href.match(/trophy\/\d+$/)) {
         let isSorted = false;
-        $("<a id='sortTipsByLikes'>根据顶数排序Tips</a>").insertAfter('.alert-error').css({
-            "margin": "10px",
-            "width": "110px",
-            "text-align": "center",
-            "background-color": "#3498db",
-            "color": "#FFF",
-            "display": "inline-block",
-            "padding": "8px 16px",
-            "border-radius": "2px",
-            "font-family": "'Trebuchet MS', Arial, Helvetica, sans-serif",
-            "text-decoration": "none",
-            "cursor": "pointer"
-        }).click((event) => {
-            if (isSorted) {
-                sortTipsByLikes(isSorted);
-                $(event.target).text('根据顶数排序Tips').css({
-                    "background-color": "#3498db",
-                    "color": "#FFFFFF"
-                });
-            } else {
-                sortTipsByLikes(isSorted);
-                $(event.target).text('恢复默认排序').css({
-                    "background-color": "#E7EBEE",
-                    "color": "#99A1A7"
-                });;
-            }
-            isSorted = !isSorted;
-        });
+        $("<a id='sortTipsByLikes'>根据顶数排序Tips</a>")
+            .insertAfter('.alert-error')
+            .click((event) => {
+                if (isSorted) {
+                    sortTipsByLikes(isSorted);
+                    $(event.target).text('根据顶数排序Tips').css({
+                        "background-color": "#3498db",
+                        "color": "#FFFFFF"
+                    });
+                } else {
+                    sortTipsByLikes(isSorted);
+                    $(event.target).text('恢复默认排序').css({
+                        "background-color": "#E7EBEE",
+                        "color": "#99A1A7"
+                    });;
+                }
+                isSorted = !isSorted;
+            });
         $('#comment').css({
             resize: 'vertical',
             minHeight: 200,
