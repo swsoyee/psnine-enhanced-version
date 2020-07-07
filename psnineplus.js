@@ -1466,26 +1466,21 @@
         // 追加“未获得”的按钮
         $('.dropmenu').append("<a id='selectUnget'>尚未获得</a>");
         // 点击按钮隐藏或者显示
-        let clickHideShowNum = 0;
+        let ungetIsHidden = false;
         $('#selectUnget').click(() => {
-            $('.lh180.alert-success.pd5.r')
-                .parent()
-                .parent()
-                .toggle('slow', () => {
-                    if (clickHideShowNum++ % 2 == 0) {
-                        $('#selectUnget').text('显示全部');
-                        $('#selectUnget').css({
-                            'background-color': '#E7EBEE',
-                            color: '#99A1A7'
-                        });
-                    } else {
-                        $('#selectUnget').text('尚未获得');
-                        $('#selectUnget').css({
-                            'background-color': '#3498db',
-                            color: '#FFFFFF'
-                        });
-                    }
+            $('.lh180.alert-success.pd5.r').parent().parent().toggle('slow');
+            if (!ungetIsHidden) {
+                $('#selectUnget').text('显示全部').css({
+                    'background-color': '#E7EBEE',
+                    color: '#99A1A7'
                 });
+            } else {
+                $('#selectUnget').text('尚未获得').css({
+                    'background-color': '#3498db',
+                    color: '#FFFFFF'
+                });
+            }
+            ungetIsHidden = !ungetIsHidden;
         });
     }
 
