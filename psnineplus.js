@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.9.13.1
+// @version      0.9.14
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
-// @author       InfinityLoop, mordom0404, Nathaniel_Wu
+// @author       InfinityLoop, mordom0404, Nathaniel_Wu, JayusTree
 // @include      *psnine.com/*
 // @include      *d7vg.com/*
 // @require      http://cdn.staticfile.org/jquery/2.1.4/jquery.min.js
@@ -1466,26 +1466,21 @@
         // 追加“未获得”的按钮
         $('.dropmenu').append("<a id='selectUnget'>尚未获得</a>");
         // 点击按钮隐藏或者显示
-        let clickHideShowNum = 0;
+        let onlyUngetIsShown = false;
         $('#selectUnget').click(() => {
-            $('.lh180.alert-success.pd5.r')
-                .parent()
-                .parent()
-                .toggle('slow', () => {
-                    if (clickHideShowNum++ % 2 == 0) {
-                        $('#selectUnget').text('显示全部');
-                        $('#selectUnget').css({
-                            'background-color': '#E7EBEE',
-                            color: '#99A1A7'
-                        });
-                    } else {
-                        $('#selectUnget').text('尚未获得');
-                        $('#selectUnget').css({
-                            'background-color': '#3498db',
-                            color: '#FFFFFF'
-                        });
-                    }
+            $('.lh180.alert-success.pd5.r').parent().parent().toggle('slow');
+            if (!onlyUngetIsShown) {
+                $('#selectUnget').text('显示全部').css({
+                    'background-color': '#E7EBEE',
+                    color: '#99A1A7'
                 });
+            } else {
+                $('#selectUnget').text('尚未获得').css({
+                    'background-color': '#3498db',
+                    color: '#FFFFFF'
+                });
+            }
+            onlyUngetIsShown = !onlyUngetIsShown;
         });
     }
 
@@ -1670,39 +1665,69 @@
     /*
     * 功能：奖杯心得按“顶”的数量排序功能
     */
-    const sortTipsByLikes = () => {
-        let containerName = '.list';
-        let itemName = 'li';
-
-        // P9的一些老页面的html结构和新页面不同
-        if ($('.post').length > 0) {
-            containerName = '.mt20';
-            itemName = '.post';
-        }
+    const sortTipsByLikes = (isSorted) => {
+        // 检测是否为老页面
+        let containerName = $('.post').length > 0?'.mt20':'.list';
         $(containerName).css({
             display: 'flex',
-            flexDirection: 'column-reverse'
+            flexDirection: 'column'
         });
-        $(containerName + '>' + itemName).each((index, ele) => {
-            let likeStr = $(ele).find('.text-success')[0].innerHTML;
-            likeStr = likeStr.replace(/[^0-9]/ig, "");
-            $(ele).css({
-                order: likeStr ? likeStr : 0
-            });
+        // 遍历tips容器下面的每一个子元素
+        $(containerName + '>*').each((index, ele) => {
+            // 获取顶元素
+            let $likeEle = $(ele).find('.text-success')[0];
+            let likeStr = "";
+            if ($likeEle) {
+                // 获取顶数
+                likeStr = $likeEle.innerHTML;
+                likeStr = likeStr.replace(/[^0-9]/ig, "");
+            }
+            if (!isSorted) {
+                $(ele).css({
+                    order: likeStr ? 99999-likeStr : 99999
+                });
+            } else {
+                $(ele).css({
+                    order: 0
+                });                
+            }
         });
-        // 这里强行把提交评论的form写死为最后一个
-        $('form').css({
-            order: -1
+        // 把警告信息和排序按钮写死为第一位
+        $('.alert-error, #sortTipsByLikes').css({
+            order: 0
         });
     }
 
     // 奖杯心得页面输入框可缩放大小
     if (window.location.href.match(/trophy\/\d+$/)) {
-        $('<div class="sidetitle">根据顶数排序</div>').insertBefore('.sidetitle').css({
-            top: 100,
-            cursor: 'pointer'
-        }).click(() => {
-            sortTipsByLikes();
+        let isSorted = false;
+        $("<a id='sortTipsByLikes'>根据顶数排序Tips</a>").insertAfter('.alert-error').css({
+            "margin": "10px",
+            "width": "110px",
+            "text-align": "center",
+            "background-color": "#3498db",
+            "color": "#FFF",
+            "display": "inline-block",
+            "padding": "8px 16px",
+            "border-radius": "2px",
+            "font-family": "'Trebuchet MS', Arial, Helvetica, sans-serif",
+            "text-decoration": "none", 
+            "cursor": "pointer"
+        }).click((event) => {
+            if (isSorted) {
+                sortTipsByLikes(isSorted);
+                $(event.target).text('根据顶数排序Tips').css({
+                    "background-color": "#3498db",
+                    "color": "#FFFFFF"
+                });
+            } else {
+                sortTipsByLikes(isSorted);
+                $(event.target).text('恢复默认排序').css({
+                    "background-color": "#E7EBEE",
+                    "color": "#99A1A7"
+                });;
+            }
+            isSorted = !isSorted;
         });
         $('#comment').css({
             resize: 'vertical',

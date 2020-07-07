@@ -4,7 +4,7 @@
 ![Last commit](https://img.shields.io/github/last-commit/swsoyee/psnine-enhanced-version.svg)
 ![license](https://img.shields.io/github/license/swsoyee/psnine-enhanced-version.svg)  
 
-作者：[`@InfinityLoop`](https://github.com/swsoyee), [`@mordom0404`](https://github.com/mordom0404), [`@Nathaniel_Wu`](https://github.com/Nathaniel-Wu)
+作者：[`@InfinityLoop`](https://github.com/swsoyee), [`@mordom0404`](https://github.com/mordom0404), [`@Nathaniel_Wu`](https://github.com/Nathaniel-Wu), [`@JayusTree`](https://github.com/Jiangyu-Wang)
 
 ---
 <img src="https://raw.githubusercontent.com/swsoyee/psnine-enhanced-version/master/screenshots/homepage.png" width="300" align="right" style="max-width: 50%">
@@ -59,6 +59,7 @@
 - 📝 `奖杯心得`页面输入框可缩放大小<sup>1</sup>。  
 - 🈚 `奖杯`界面增加`尚未获得`奖杯筛选按钮。  
 - 💯 `测评评分`界面增加`均分`信息<sup>2</sup>。
+- 📈 [`奖杯心得`](https://psnine.com/trophy/12518001)界面增加**根据顶数排序**功能<sup>3</sup>。 
 
 ---
 
@@ -79,8 +80,9 @@
 
 1. 功能由[`mordom0404`](https://psnine.com/psnid/mordom0404)提供。
 2. 功能由[`Nathaniel_Wu`](https://github.com/Nathaniel-Wu)提供。
-3. 由于没有合适的外汇API，汇率为定值，可以自行在脚本中更改。
-4. 如果使用插件内的**黑夜模式**时存在瞬时白转黑的情况，建议关闭插件中的**黑夜模式**，使用`Stylus`或者`Stylish`扩展安装[`CSS`](https://userstyles.org/styles/167244/p9)版`黑夜模式`，或者在[`Greasy Fork`](https://greasyfork.org/zh-CN/scripts/376181-p9%E5%A4%9C%E9%97%B4%E6%A8%A1%E5%BC%8F)上安装独立插件版**黑夜模式**。
+3. 功能由[`JayusTree`](https://github.com/Jiangyu-Wang)提供。
+4. 由于没有合适的外汇API，汇率为定值，可以自行在脚本中更改。
+5. 如果使用插件内的**黑夜模式**时存在瞬时白转黑的情况，建议关闭插件中的**黑夜模式**，使用`Stylus`或者`Stylish`扩展安装[`CSS`](https://userstyles.org/styles/167244/p9)版`黑夜模式`，或者在[`Greasy Fork`](https://greasyfork.org/zh-CN/scripts/376181-p9%E5%A4%9C%E9%97%B4%E6%A8%A1%E5%BC%8F)上安装独立插件版**黑夜模式**。
 
 ## 🌙夜间模式CSS版
 
