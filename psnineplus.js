@@ -1484,33 +1484,17 @@
         });
     }
 
-    // 奖杯系统优化
-    // 功能3-1：游戏奖杯界面可视化
-    if (
-        /psngame\//.test(window.location.href) &&
-        /^(?!.*comment|.*rank|.*battle|.*gamelist|.*topic|.*qa)/.test(
-            window.location.href
-        )
-    ) {
-        // 追加奖杯统计扇形图
-        addTrophyPieChart();
-        // 追加奖杯获得时间线形图
-        addTropyGetTimeLineChart();
-        // 功能3-3：汇总以获得和未获得奖杯
-        var tropyTitleStyle =
-            'border-radius: 2px; padding:5px; background-color:' +
-            $('li.current').css('background-color') +
-            ';';
+    /*
+    * 功能：汇总以获得和未获得奖杯
+    */
+    const addEarnedTrophiesSummary = () => {
+        const tropyTitleStyle = `border-radius: 2px; padding:5px; background-color:${$('li.current').css('background-color')};`;
         // tippy弹出框的样式
-        GM_addStyle(
-            `.tippy-tooltip.psnine-theme {background-color: ` +
-            $('.box').css('background-color') +
-            `}`
-        );
+        GM_addStyle(`.tippy-tooltip.psnine-theme {background-color: ${$('.box').css('background-color')};}`);
         // 奖杯tips颜色
-        var tipColor = '';
+        let tipColor = '';
         // 创建奖杯汇总框架函数
-        function createTropyContainer(object, className, title) {
+        const createTropyContainer = (object, className, title) => {
             // 添加标题框在汇总图下
             $('.box.pd10').append(
                 `<div class='${className}'><p class='tropyCount' style='${tropyTitleStyle}'></p><div class='tropyContainer' style='padding:5px;'></div></div>`
@@ -1527,31 +1511,23 @@
                 }
                 // 添加奖杯图标
                 $(`.${className}> .tropyContainer`).append(
-                    `<span id='${className}Small${i}' style='padding:3px; border-left: 3px solid ${tipColor};'><a href='` +
-                    $(this).parent().attr('href') +
-                    `'><img src='` +
-                    $(this).attr('src') +
-                    `' width='30px'></img><a></span>`
+                    `<span id='${className}Small${i}' style='padding:3px; border-left: 3px solid ${tipColor};'><a href='${$(this).parent().attr('href')}'><img src='${$(this).attr('src')}' width='30px'></img><a></span>`
                 );
                 // 添加鼠标悬浮弹出消息
                 tippy(`#${className}Small${i}`, {
-                    content: '<td>' +
-                        $(this).parent().parent().html() +
-                        '</td><p></p><td>' +
-                        $(this).parent().parent().next().html() +
-                        '</td>',
+                    content: `<td>${$(this).parent().parent().html()}</td><p></p><td>${$(this).parent().parent().next().html()}</td>`,
                     theme: 'psnine',
                     animateFill: false,
                 });
             });
             // 给奖杯汇总标题填充文字
-            var summaryTropyDict = {
+            const summaryTropyDict = {
                 '.t1': ['text-platinum', '白'],
                 '.t2': ['text-gold', '金'],
                 '.t3': ['text-silver', '银'],
                 '.t4': ['text-bronze', '铜'],
             };
-            var tropySubText = ""
+            let tropySubText = ""
             for (var i in summaryTropyDict) {
                 tropySubText += `<span class=${summaryTropyDict[i][0]}> ${summaryTropyDict[i][1]}${object.parent().parent(i).length}</span>`
             }
@@ -1563,9 +1539,8 @@
         createTropyContainer($('.imgbg.earned'), 'earnedTropy', '已获得奖杯');
         // 创建未获得奖杯汇总框
         createTropyContainer($("img[class$='imgbg']"), 'notEarnedTropy', '未获得奖杯');
-        $('span[id^="notEarnedTropySmall"] > a > img').css({
-            filter: 'grayscale(100%)',
-        }); // 变黑白
+        // 未获得奖杯变黑白
+        $('span[id^="notEarnedTropySmall"] > a > img').css({ filter: 'grayscale(100%)' });
         // 折叠奖杯汇总
         // 奖杯图标设置为不可见
         if (settings.foldTropySummary) {
@@ -1575,6 +1550,22 @@
         $('.tropyCount').click(function () {
             $(this).next().slideToggle();
         });
+    }
+
+    // 奖杯系统优化
+    // 功能3-1：游戏奖杯界面可视化
+    if (
+        /psngame\//.test(window.location.href) &&
+        /^(?!.*comment|.*rank|.*battle|.*gamelist|.*topic|.*qa)/.test(
+            window.location.href
+        )
+    ) {
+        // 追加奖杯统计扇形图
+        addTrophyPieChart();
+        // 追加奖杯获得时间线形图
+        addTropyGetTimeLineChart();
+        // 汇总以获得和未获得奖杯
+        addEarnedTrophiesSummary();
         // 追加奖杯筛选功能
         addTropyFilter();
     }
@@ -1667,7 +1658,7 @@
     */
     const sortTipsByLikes = (isSorted) => {
         // 检测是否为老页面
-        let containerName = $('.post').length > 0?'.mt20':'.list';
+        let containerName = $('.post').length > 0 ? '.mt20' : '.list';
         $(containerName).css({
             display: 'flex',
             flexDirection: 'column'
@@ -1684,12 +1675,12 @@
             }
             if (!isSorted) {
                 $(ele).css({
-                    order: likeStr ? 99999-likeStr : 99999
+                    order: likeStr ? 99999 - likeStr : 99999
                 });
             } else {
                 $(ele).css({
                     order: 0
-                });                
+                });
             }
         });
         // 把警告信息和排序按钮写死为第一位
@@ -1711,7 +1702,7 @@
             "padding": "8px 16px",
             "border-radius": "2px",
             "font-family": "'Trebuchet MS', Arial, Helvetica, sans-serif",
-            "text-decoration": "none", 
+            "text-decoration": "none",
             "cursor": "pointer"
         }).click((event) => {
             if (isSorted) {
