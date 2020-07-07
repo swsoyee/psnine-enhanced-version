@@ -4,7 +4,7 @@
 // @version      0.9.14
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
-// @author       InfinityLoop, mordom0404, Nathaniel_Wu
+// @author       InfinityLoop, mordom0404, Nathaniel_Wu, JayusTree
 // @include      *psnine.com/*
 // @include      *d7vg.com/*
 // @require      http://cdn.staticfile.org/jquery/2.1.4/jquery.min.js
@@ -1670,7 +1670,7 @@
     /*
     * 功能：奖杯心得按“顶”的数量排序功能
     */
-    const sortTipsByLikes = () => {
+    const sortTipsByLikes = (isSorted) => {
         // 检测是否为老页面
         let containerName = $('.post').length > 0?'.mt20':'.list';
         $(containerName).css({
@@ -1687,9 +1687,15 @@
                 likeStr = $likeEle.innerHTML;
                 likeStr = likeStr.replace(/[^0-9]/ig, "");
             }
-            $(ele).css({
-                order: likeStr ? 99999-likeStr : 99999
-            });
+            if (!isSorted) {
+                $(ele).css({
+                    order: likeStr ? 99999-likeStr : 99999
+                });
+            } else {
+                $(ele).css({
+                    order: 0
+                });                
+            }
         });
         // 把警告信息和排序按钮写死为第一位
         $('.alert-error, #sortTipsByLikes').css({
@@ -1699,15 +1705,29 @@
 
     // 奖杯心得页面输入框可缩放大小
     if (window.location.href.match(/trophy\/\d+$/)) {
+        let isSorted = false;
         $("<a id='sortTipsByLikes'>根据顶数排序Tips</a>").insertAfter('.alert-error').css({
-            width: 120,
-            marginTop: 10,
-            textAlign: 'center'
-        }).click(() => {
-            sortTipsByLikes();
+            "margin": "10px",
+            "width": "110px",
+            "text-align": "center",
+            "background-color": "#3498db",
+            "color": "#FFF",
+            "display": "inline-block",
+            "padding": "8px 16px",
+            "border-radius": "2px",
+            "font-family": "'Trebuchet MS', Arial, Helvetica, sans-serif",
+            "text-decoration": "none", 
+            "cursor": "pointer"
+        }).click((event) => {
+            if (isSorted) {
+                sortTipsByLikes(isSorted);
+                $(event.target).text('根据顶数排序Tips');
+            } else {
+                sortTipsByLikes(isSorted);
+                $(event.target).text('恢复默认排序');
+            }
+            isSorted = !isSorted;
         });
-        // 统一按钮样式
-        addButtonStyle('sortTipsByLikes', '#3890ff');
         $('#comment').css({
             resize: 'vertical',
             minHeight: 200,
