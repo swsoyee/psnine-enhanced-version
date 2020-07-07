@@ -4,7 +4,7 @@
 ![Last commit](https://img.shields.io/github/last-commit/swsoyee/psnine-enhanced-version.svg)
 ![license](https://img.shields.io/github/license/swsoyee/psnine-enhanced-version.svg)  
 
-作者：[`@InfinityLoop`](https://github.com/swsoyee), [`@mordom0404`](https://github.com/mordom0404), [`@Nathaniel_Wu`](https://github.com/Nathaniel-Wu)
+作者：[`@InfinityLoop`](https://github.com/swsoyee), [`@mordom0404`](https://github.com/mordom0404), [`@Nathaniel_Wu`](https://github.com/Nathaniel-Wu), [`@JayusTree`](https://github.com/Jiangyu-Wang)
 
 ---
 <img src="https://raw.githubusercontent.com/swsoyee/psnine-enhanced-version/master/screenshots/homepage.png" width="300" align="right" style="max-width: 50%">
@@ -59,6 +59,7 @@
 - 📝 `奖杯心得`页面输入框可缩放大小<sup>1</sup>。  
 - 🈚 `奖杯`界面增加`尚未获得`奖杯筛选按钮。  
 - 💯 `测评评分`界面增加`均分`信息<sup>2</sup>。
+- 📈 [`奖杯心得`](https://psnine.com/psngame/15295)界面增加**根据顶数排序**功能。 
 
 ---
 

@@ -1671,39 +1671,43 @@
     * 功能：奖杯心得按“顶”的数量排序功能
     */
     const sortTipsByLikes = () => {
-        let containerName = '.list';
-        let itemName = 'li';
-
-        // P9的一些老页面的html结构和新页面不同
-        if ($('.post').length > 0) {
-            containerName = '.mt20';
-            itemName = '.post';
-        }
+        // 检测是否为老页面
+        let containerName = $('.post').length > 0?'.mt20':'.list';
         $(containerName).css({
             display: 'flex',
-            flexDirection: 'column-reverse'
+            flexDirection: 'column'
         });
-        $(containerName + '>' + itemName).each((index, ele) => {
-            let likeStr = $(ele).find('.text-success')[0].innerHTML;
-            likeStr = likeStr.replace(/[^0-9]/ig, "");
+        // 遍历tips容器下面的每一个子元素
+        $(containerName + '>*').each((index, ele) => {
+            // 获取顶元素
+            let $likeEle = $(ele).find('.text-success')[0];
+            let likeStr = "";
+            if ($likeEle) {
+                // 获取顶数
+                likeStr = $likeEle.innerHTML;
+                likeStr = likeStr.replace(/[^0-9]/ig, "");
+            }
             $(ele).css({
-                order: likeStr ? likeStr : 0
+                order: likeStr ? 99999-likeStr : 99999
             });
         });
-        // 这里强行把提交评论的form写死为最后一个
-        $('form').css({
-            order: -1
+        // 把警告信息和排序按钮写死为第一位
+        $('.alert-error, #sortTipsByLikes').css({
+            order: 0
         });
     }
 
     // 奖杯心得页面输入框可缩放大小
     if (window.location.href.match(/trophy\/\d+$/)) {
-        $('<div class="sidetitle">根据顶数排序</div>').insertBefore('.sidetitle').css({
-            top: 100,
-            cursor: 'pointer'
+        $("<a id='sortTipsByLikes'>根据顶数排序Tips</a>").insertAfter('.alert-error').css({
+            width: 120,
+            marginTop: 10,
+            textAlign: 'center'
         }).click(() => {
             sortTipsByLikes();
         });
+        // 统一按钮样式
+        addButtonStyle('sortTipsByLikes', '#3890ff');
         $('#comment').css({
             resize: 'vertical',
             minHeight: 200,
