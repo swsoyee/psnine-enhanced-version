@@ -1721,10 +1721,16 @@
         }).click((event) => {
             if (isSorted) {
                 sortTipsByLikes(isSorted);
-                $(event.target).text('根据顶数排序Tips');
+                $(event.target).text('根据顶数排序Tips').css({
+                    "background-color": "#3498db",
+                    "color": "#FFFFFF"
+                });
             } else {
                 sortTipsByLikes(isSorted);
-                $(event.target).text('恢复默认排序');
+                $(event.target).text('恢复默认排序').css({
+                    "background-color": "#E7EBEE",
+                    "color": "#99A1A7"
+                });;
             }
             isSorted = !isSorted;
         });
