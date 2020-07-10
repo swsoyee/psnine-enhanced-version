@@ -1696,7 +1696,11 @@
     if (window.location.href.match(/trophy\/\d+$/)) {
         let isSorted = false;
         $("<a id='sortTipsByLikes'>根据顶数排序Tips</a>")
-            .insertAfter($('.alert-error').get(0))
+            .insertAfter($('.alert-error').get(0)).css({
+                width: '111px',
+                textAlign: 'center',
+                textDecoration: 'none',
+            })
             .click((event) => {
                 if (isSorted) {
                     sortTipsByLikes(isSorted);
