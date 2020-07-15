@@ -173,8 +173,8 @@
             let hour = (new Date()).getHours();
             setNightMode(hour > 18 || hour < 8);
         }
-    }
-    toggleNightMode();
+    } else
+        toggleNightMode();
 
     /*
     * 功能：黑条文字鼠标悬浮显示
