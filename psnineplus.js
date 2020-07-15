@@ -2181,6 +2181,7 @@
         }
     }
 
+
     // 右上角头像下拉框中增加插件设定按钮
     if (window.localStorage) {
         // 如果支持localstorage
