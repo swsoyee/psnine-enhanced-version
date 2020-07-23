@@ -1,6 +1,6 @@
 # 🎮 PSN中文网功能增强插件
 
-![install](https://img.shields.io/badge/install-713-orange.svg)
+![install](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/swsoyee/swsoyee/master/public/data.json&label=Installs&query=$.psnine_enhance_install[0]&color=orange)
 ![Last commit](https://img.shields.io/github/last-commit/swsoyee/psnine-enhanced-version.svg)
 ![license](https://img.shields.io/github/license/swsoyee/psnine-enhanced-version.svg)  
 
