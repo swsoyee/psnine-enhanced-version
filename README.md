@@ -4,8 +4,6 @@
 ![Last commit](https://img.shields.io/github/last-commit/swsoyee/psnine-enhanced-version.svg)
 ![license](https://img.shields.io/github/license/swsoyee/psnine-enhanced-version.svg)  
 
-作者：[`@InfinityLoop`](https://github.com/swsoyee), [`@mordom0404`](https://github.com/mordom0404), [`@Nathaniel_Wu`](https://github.com/Nathaniel-Wu), [`@JayusTree`](https://github.com/Jiangyu-Wang)
-
 ---
 <img src="https://raw.githubusercontent.com/swsoyee/psnine-enhanced-version/master/screenshots/homepage.png" width="300" align="right" style="max-width: 50%">
 
@@ -16,7 +14,7 @@
 - 🌙 增加`黑夜模式`主题选择<sup>4</sup>。  
 - ⚙️ `自动黑夜模式`<sup>2</sup>。  
 - 👮 红色高亮特定`用户ID`（默认高亮管理员）<sup>1</sup>。  
-- 🚫 增加`黑名单`功能，屏蔽不想看到的用户的一切发言。  
+- 🚫 增加`黑名单`和`屏蔽词过滤`功能，屏蔽不想看到的一切发言。  
 - ⏬ 增加`回到底部`按钮，快速跳转**回复框**或者**翻页**处。  
 - 🈲 `刮刮条文字`鼠标悬浮显示。  
 - ✅ 每日打开页面即可**自动签到**。  
@@ -78,11 +76,19 @@
 
 ## ❕ 附注
 
-1. 功能由[`mordom0404`](https://psnine.com/psnid/mordom0404)提供。
-2. 功能由[`Nathaniel_Wu`](https://github.com/Nathaniel-Wu)提供。
-3. 功能由[`JayusTree`](https://github.com/Jiangyu-Wang)提供。
+1. 功能由[`@mordom0404`](https://psnine.com/psnid/mordom0404)提供。
+2. 功能由[`@Nathaniel_Wu`](https://github.com/Nathaniel-Wu)提供。
+3. 功能由[`@JayusTree`](https://github.com/Jiangyu-Wang)提供。
 4. 由于没有合适的外汇API，汇率为定值，可以自行在脚本中更改。
 5. 如果使用插件内的**黑夜模式**时存在瞬时白转黑的情况，建议关闭插件中的**黑夜模式**，使用`Stylus`或者`Stylish`扩展安装[`CSS`](https://userstyles.org/styles/167244/p9)版`黑夜模式`，或者在[`Greasy Fork`](https://greasyfork.org/zh-CN/scripts/376181-p9%E5%A4%9C%E9%97%B4%E6%A8%A1%E5%BC%8F)上安装独立插件版**黑夜模式**。
+
+## 👥 项目共享者
+
+<a href="https://github.com/swsoyee/psnine-enhanced-version/graphs/contributors">
+  <img src="https://contributors-img.web.app/image?repo=swsoyee/psnine-enhanced-version" />
+</a>
+
+Made with [contributors-img](https://contributors-img.web.app).
 
 ## 🌙夜间模式CSS版
 
