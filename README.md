@@ -4,7 +4,6 @@
 ![Last commit](https://img.shields.io/github/last-commit/swsoyee/psnine-enhanced-version.svg)
 ![license](https://img.shields.io/github/license/swsoyee/psnine-enhanced-version.svg)  
 
----
 <img src="https://raw.githubusercontent.com/swsoyee/psnine-enhanced-version/master/screenshots/homepage.png" width="300" align="right" style="max-width: 50%">
 
 ## 🔧 功能介绍
@@ -82,7 +81,7 @@
 4. 由于没有合适的外汇API，汇率为定值，可以自行在脚本中更改。
 5. 如果使用插件内的**黑夜模式**时存在瞬时白转黑的情况，建议关闭插件中的**黑夜模式**，使用`Stylus`或者`Stylish`扩展安装[`CSS`](https://userstyles.org/styles/167244/p9)版`黑夜模式`，或者在[`Greasy Fork`](https://greasyfork.org/zh-CN/scripts/376181-p9%E5%A4%9C%E9%97%B4%E6%A8%A1%E5%BC%8F)上安装独立插件版**黑夜模式**。
 
-## 👥 项目共享者
+## 👥 项目贡献者
 
 <a href="https://github.com/swsoyee/psnine-enhanced-version/graphs/contributors">
   <img src="https://contributors-img.web.app/image?repo=swsoyee/psnine-enhanced-version" />
