@@ -1,8 +1,9 @@
 # 🎮 PSN中文网功能增强插件
 
-![install](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/swsoyee/swsoyee/master/public/data.json&label=installs&query=$.psnine_enhance_install[0]&color=orange)
-![Last commit](https://img.shields.io/github/last-commit/swsoyee/psnine-enhanced-version.svg)
-![license](https://img.shields.io/github/license/swsoyee/psnine-enhanced-version.svg)  
+![psnine](https://img.shields.io/badge/-PSNINE-black?style=flat-square&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=&link=https://www.psnine.com/)
+![install](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/swsoyee/swsoyee/master/public/data.json&label=installs&query=$.psnine_enhance_install[0]&color=orange&style=flat-square&logo=)
+![Last commit](https://img.shields.io/github/last-commit/swsoyee/psnine-enhanced-version.svg?style=flat-square)
+![license](https://img.shields.io/github/license/swsoyee/psnine-enhanced-version.svg?style=flat-square)  
 
 <img src="https://raw.githubusercontent.com/swsoyee/psnine-enhanced-version/master/screenshots/homepage.png" width="300" align="right" style="max-width: 50%">
 
