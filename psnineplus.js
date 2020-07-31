@@ -543,7 +543,13 @@
                 && replyCount[replyCount.length - 1].match('评论|答案|回复').index > -1
                 && $(element).children('a#hot').length === 0
             ) {
-                $(element).append('&nbsp;<a class="psnnode" id="hot" style="background-color: rgb(217, 83, 79);color: rgb(255, 255, 255);">🔥热门&nbsp;</a>');
+                const tagBackgroundColor = $('body.bg').css('background-color');
+                $(element)
+                    .append(`&nbsp;<a class="psnnode" id="hot" style="background-color: ${
+                        tagBackgroundColor === "rgb(43, 43, 43)"
+                            ? "rgb(125 69 67)" // 暗红色
+                            : "rgb(217, 83, 79)" // 鲜红色
+                        };color: rgb(255, 255, 255);">🔥热门&nbsp;</a>`);
             }
         })
     }
