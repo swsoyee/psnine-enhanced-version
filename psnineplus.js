@@ -794,18 +794,16 @@
     const changeQaStatus = (isOn) => {
         if (isOn) {
             // 替换文字状态为图标形式
-            $('li').map((i, node) => {
+            $('.list>li').map((i, node) => {
                 const el = $(node).find("div.meta > .r > span:nth-child(2)");
                 const status = $(el).text();
                 // 替换文字状态为图标形式
-                if (status === "已解决") {
-                    $(node).find('div.ml64>p.title.font16>a').append('<div class="fa-check-circle"></div>');
-                } else if (status === "未回答") {
-                    $(node).find('div.ml64>p.title.font16>a').append('<div class="fa-question-circle"></div>');
-                } else if (status === "解决中") {
-                    $(node).find('div.ml64>p.title.font16>a').append('<div class="fa-comments"></div>');
-                } else {
-                    return;
+                const selector = 'div.ml64>p.title.font16>a';
+                switch (status) {
+                    case "已解决": $(node).find(selector).append('<div class="fa-check-circle"></div>'); break;
+                    case "未回答": $(node).find(selector).append('<div class="fa-question-circle"></div>'); break;
+                    case "解决中": $(node).find(selector).append('<div class="fa-comments"></div>'); break;
+                    default: return;
                 }
                 const el_reward = $(node).find("div.meta > .r > span:nth-child(1)");
                 const reward_num = $(el_reward).text();
