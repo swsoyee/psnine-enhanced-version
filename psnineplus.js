@@ -354,6 +354,21 @@
             }
         });
     }
+
+    /*
+    * 异步XHR 
+    * @param  url
+    */
+    const asyncGetPage = (url, callback) => {
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = function() { 
+            if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+                callback(xmlHttp.responseText);
+        }
+        xmlHttp.open("GET", url, true);
+        xmlHttp.send(null);
+    }
+
     if (
         /(gene|trade|topic)\//.test(window.location.href) &
         !/comment/.test(window.location.href)
@@ -361,6 +376,46 @@
         // 获取楼主ID
         const authorId = $('.title2').text();
         addOPBadge(authorId);
+
+        var psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
+        if (psnidCookie && /topic\//.test(window.location.href)) {
+            var referredTrophies = $('.imgbgnb').toArray();
+            var earnedTrophies = new Set();
+
+            var getTrophyId = (trophyUrl) => {
+                return trophyUrl.slice(trophyUrl.lastIndexOf('/') + 1);
+            };
+
+            var markTrophies = (gamePageHtml) => {
+                var gameDoc = 
+                    new DOMParser().parseFromString(gamePageHtml, 'text/html');
+                if (gameDoc) {
+                    gameDoc.querySelectorAll('.imgbg.earned').forEach(e => {
+                        earnedTrophies.add(getTrophyId(e.parentElement.href));
+                    });
+
+                    referredTrophies.forEach(e => {
+                        if (earnedTrophies.has(getTrophyId(e.parentElement.href))) {
+                            e.setAttribute('class', 'imgbg earned');
+                        }
+                    });
+                }
+            };
+
+            var gameIds = new Set();
+            referredTrophies.forEach(e => {
+                // 目前假设P9奖杯编码就是gameIdxxx
+                var a = e.parentElement;
+                var gameId = a.href.slice(a.href.lastIndexOf('/') + 1, -3);
+                if (!gameIds.has(gameId)) {
+                    gameIds.add(gameId);
+                    var gamePageUrl = 
+                        (document.URL.startsWith('https') ? 'https' : 'http') +
+                        '://psnine.com/psngame/' + gameId + '?psnid=' + psnidCookie[1];
+                    asyncGetPage(gamePageUrl, markTrophies);
+                }
+            });
+        } 
     }
 
     /*
