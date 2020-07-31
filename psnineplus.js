@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.9.24.1
+// @version      0.9.24.3
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404, Nathaniel_Wu, JayusTree
@@ -760,21 +760,27 @@
     GM_addStyle(`
         .fa-check-circle {
             width: 15px; height: 15px;
-            float: right;
+            float: left;
+            margin-top: 3px;
+            margin-right: 3px;
             background: url('data:image/svg+xml;utf8,<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="check-circle" class="svg-inline--fa fa-check-circle fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="%23659f13" d="M504 256c0 136.967-111.033 248-248 248S8 392.967 8 256 119.033 8 256 8s248 111.033 248 248zM227.314 387.314l184-184c6.248-6.248 6.248-16.379 0-22.627l-22.627-22.627c-6.248-6.249-16.379-6.249-22.628 0L216 308.118l-70.059-70.059c-6.248-6.248-16.379-6.248-22.628 0l-22.627 22.627c-6.248 6.248-6.248 16.379 0 22.627l104 104c6.249 6.249 16.379 6.249 22.628.001z"></path></svg>') no-repeat center;
         }`
     );
     GM_addStyle(`
         .fa-question-circle {
             width: 15px; height: 15px;
-            float: right;
+            float: left;
+            margin-top: 3px;
+            margin-right: 3px;
             background: url('data:image/svg+xml;utf8,<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="question-circle" class="svg-inline--fa fa-question-circle fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="%23c09853" d="M504 256c0 136.997-111.043 248-248 248S8 392.997 8 256C8 119.083 119.043 8 256 8s248 111.083 248 248zM262.655 90c-54.497 0-89.255 22.957-116.549 63.758-3.536 5.286-2.353 12.415 2.715 16.258l34.699 26.31c5.205 3.947 12.621 3.008 16.665-2.122 17.864-22.658 30.113-35.797 57.303-35.797 20.429 0 45.698 13.148 45.698 32.958 0 14.976-12.363 22.667-32.534 33.976C247.128 238.528 216 254.941 216 296v4c0 6.627 5.373 12 12 12h56c6.627 0 12-5.373 12-12v-1.333c0-28.462 83.186-29.647 83.186-106.667 0-58.002-60.165-102-116.531-102zM256 338c-25.365 0-46 20.635-46 46 0 25.364 20.635 46 46 46s46-20.636 46-46c0-25.365-20.635-46-46-46z"></path></svg>') no-repeat center;
         }`
     );
     GM_addStyle(`
         .fa-comments {
             width: 15px; height: 15px;
-            float: right;
+            float: left;
+            margin-top: 3px;
+            margin-right: 3px;
             background: url('data:image/svg+xml;utf8,<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="comments" class="svg-inline--fa fa-comments fa-w-18" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path fill="%233a87ad" d="M416 192c0-88.4-93.1-160-208-160S0 103.6 0 192c0 34.3 14.1 65.9 38 92-13.4 30.2-35.5 54.2-35.8 54.5-2.2 2.3-2.8 5.7-1.5 8.7S4.8 352 8 352c36.6 0 66.9-12.3 88.7-25 32.2 15.7 70.3 25 111.3 25 114.9 0 208-71.6 208-160zm122 220c23.9-26 38-57.7 38-92 0-66.9-53.5-124.2-129.3-148.1.9 6.6 1.3 13.3 1.3 20.1 0 105.9-107.7 192-240 192-10.8 0-21.3-.8-31.7-1.9C207.8 439.6 281.8 480 368 480c41 0 79.1-9.2 111.3-25 21.8 12.7 52.1 25 88.7 25 3.2 0 6.1-1.9 7.3-4.8 1.3-2.9.7-6.3-1.5-8.7-.3-.3-22.4-24.2-35.8-54.5z"></path></svg>') no-repeat center;
         }`
     );
@@ -788,22 +794,24 @@
     const changeQaStatus = (isOn) => {
         if (isOn) {
             // 替换文字状态为图标形式
-            $('div.meta > .r > span').map((i, el) => {
+            $('.list>li').map((i, node) => {
+                const el = $(node).find("div.meta > .r > span:nth-child(2)");
                 const status = $(el).text();
                 // 替换文字状态为图标形式
-                if (status === "已解决") {
-                    $(el).replaceWith('<div class="fa-check-circle"></div>');
-                } else if (status === "未回答") {
-                    $(el).replaceWith('<div class="fa-question-circle"></div>');
-                } else if (status === "解决中") {
-                    $(el).replaceWith('<div class="fa-comments"></div>');
-                } else {
-                    // 替换文字状态为图标形式
-                    const reward = status.match(/悬赏(\d+)铜/);
-                    if (reward && reward.length > 0) {
-                        const number = Number(reward[1]);
-                        $(el).replaceWith(`<div class="fa-coins"></div>&nbsp;<span class="${number > 30 ? 'text-gold' : (number === 10 ? 'text-bronze' : 'text-silver')}" style="font-weight:bold;"}">${number}</span>`);
-                    }
+                const selector = 'div.ml64>p.title.font16>a';
+                switch (status) {
+                    case "已解决": $(node).find(selector).append('<div class="fa-check-circle"></div>'); break;
+                    case "未回答": $(node).find(selector).append('<div class="fa-question-circle"></div>'); break;
+                    case "解决中": $(node).find(selector).append('<div class="fa-comments"></div>'); break;
+                    default: return;
+                }
+                const el_reward = $(node).find("div.meta > .r > span:nth-child(1)");
+                const reward_num = $(el_reward).text();
+                // 替换文字状态为图标形式
+                const reward = reward_num.match(/悬赏(\d+)铜/);
+                if (reward && reward.length > 0) {
+                    const number = Number(reward[1]);
+                    $(el_reward).replaceWith(`<div class="fa-coins"></div>&nbsp;<span class="${number > 30 ? 'text-gold' : (number === 10 ? 'text-bronze' : 'text-silver')}" style="font-weight:bold;"}">${number}</span>`);
                 }
             });
         } else {
