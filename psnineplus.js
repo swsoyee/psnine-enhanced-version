@@ -138,6 +138,41 @@
         const sheet = style.sheet;
         sheet.insertRule(css, (sheet.rules || sheet.cssRules || []).length);
     }
+    // 增加图标
+    GM_addStyle(`
+        .fa-check-circle {
+            width: 15px; height: 15px;
+            float: left;
+            margin-top: 3px;
+            margin-right: 3px;
+            background: url('data:image/svg+xml;utf8,<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="check-circle" class="svg-inline--fa fa-check-circle fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="%23659f13" d="M504 256c0 136.967-111.033 248-248 248S8 392.967 8 256 119.033 8 256 8s248 111.033 248 248zM227.314 387.314l184-184c6.248-6.248 6.248-16.379 0-22.627l-22.627-22.627c-6.248-6.249-16.379-6.249-22.628 0L216 308.118l-70.059-70.059c-6.248-6.248-16.379-6.248-22.628 0l-22.627 22.627c-6.248 6.248-6.248 16.379 0 22.627l104 104c6.249 6.249 16.379 6.249 22.628.001z"></path></svg>') no-repeat center;
+        }`
+    );
+    GM_addStyle(`
+        .fa-question-circle {
+            width: 15px; height: 15px;
+            float: left;
+            margin-top: 3px;
+            margin-right: 3px;
+            background: url('data:image/svg+xml;utf8,<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="question-circle" class="svg-inline--fa fa-question-circle fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="%23c09853" d="M504 256c0 136.997-111.043 248-248 248S8 392.997 8 256C8 119.083 119.043 8 256 8s248 111.083 248 248zM262.655 90c-54.497 0-89.255 22.957-116.549 63.758-3.536 5.286-2.353 12.415 2.715 16.258l34.699 26.31c5.205 3.947 12.621 3.008 16.665-2.122 17.864-22.658 30.113-35.797 57.303-35.797 20.429 0 45.698 13.148 45.698 32.958 0 14.976-12.363 22.667-32.534 33.976C247.128 238.528 216 254.941 216 296v4c0 6.627 5.373 12 12 12h56c6.627 0 12-5.373 12-12v-1.333c0-28.462 83.186-29.647 83.186-106.667 0-58.002-60.165-102-116.531-102zM256 338c-25.365 0-46 20.635-46 46 0 25.364 20.635 46 46 46s46-20.636 46-46c0-25.365-20.635-46-46-46z"></path></svg>') no-repeat center;
+        }`
+    );
+    GM_addStyle(`
+        .fa-comments {
+            width: 15px; height: 15px;
+            float: left;
+            margin-top: 3px;
+            margin-right: 3px;
+            background: url('data:image/svg+xml;utf8,<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="comments" class="svg-inline--fa fa-comments fa-w-18" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path fill="%233a87ad" d="M416 192c0-88.4-93.1-160-208-160S0 103.6 0 192c0 34.3 14.1 65.9 38 92-13.4 30.2-35.5 54.2-35.8 54.5-2.2 2.3-2.8 5.7-1.5 8.7S4.8 352 8 352c36.6 0 66.9-12.3 88.7-25 32.2 15.7 70.3 25 111.3 25 114.9 0 208-71.6 208-160zm122 220c23.9-26 38-57.7 38-92 0-66.9-53.5-124.2-129.3-148.1.9 6.6 1.3 13.3 1.3 20.1 0 105.9-107.7 192-240 192-10.8 0-21.3-.8-31.7-1.9C207.8 439.6 281.8 480 368 480c41 0 79.1-9.2 111.3-25 21.8 12.7 52.1 25 88.7 25 3.2 0 6.1-1.9 7.3-4.8 1.3-2.9.7-6.3-1.5-8.7-.3-.3-22.4-24.2-35.8-54.5z"></path></svg>') no-repeat center;
+        }`
+    );
+    GM_addStyle(`
+        .fa-coins {
+            width: 15px; height: 15px;
+            float: left;
+            background: url('data:image/svg+xml;utf8,<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="coins" class="svg-inline--fa fa-coins fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="%23bf6a3a" d="M0 405.3V448c0 35.3 86 64 192 64s192-28.7 192-64v-42.7C342.7 434.4 267.2 448 192 448S41.3 434.4 0 405.3zM320 128c106 0 192-28.7 192-64S426 0 320 0 128 28.7 128 64s86 64 192 64zM0 300.4V352c0 35.3 86 64 192 64s192-28.7 192-64v-51.6c-41.3 34-116.9 51.6-192 51.6S41.3 334.4 0 300.4zm416 11c57.3-11.1 96-31.7 96-55.4v-42.7c-23.2 16.4-57.3 27.6-96 34.5v63.6zM192 160C86 160 0 195.8 0 240s86 80 192 80 192-35.8 192-80-86-80-192-80zm219.3 56.3c60-10.8 100.7-32 100.7-56.3v-42.7c-35.5 25.1-96.5 38.6-160.7 41.8 29.5 14.3 51.2 33.5 60 57.2z"></path></svg>') no-repeat center;
+        }`
+    );
 
     // 全局优化
     /*
@@ -356,17 +391,63 @@
     }
 
     /*
-    * 异步XHR 
-    * @param  url
+    * AJAX获取页面
     */
-    const asyncGetPage = (url, callback) => {
-        var xmlHttp = new XMLHttpRequest();
-        xmlHttp.onreadystatechange = function() { 
-            if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
-                callback(xmlHttp.responseText);
-        }
-        xmlHttp.open("GET", url, true);
-        xmlHttp.send(null);
+    const fetchOtherPage = (url, successFunction) => {
+        let resultSet;
+        $.ajax({
+            type: 'GET',
+            url: url,
+            dataType: 'html',
+            async: false,
+            success: function (data, status) {
+                if (status == "success") {
+                    resultSet = successFunction(data);
+                }
+            },
+            error: () => {
+                console.log('无法获取页面信息');
+            },
+        })
+        return resultSet;
+    }
+
+    const getEarnedTrophiesInfo = (data) => {
+        const reg = /[\s\S]*<\/body>/g;
+        const html = reg.exec(data)[0];
+        let resultSet = [];
+        $(html).find('tbody>tr[id]').find('.imgbg.earned').parent().parent().parent().map((index, el) => {
+            const earnedTime = $(el).find('em.lh180.alert-success.pd5.r');
+            const earnedTimeCopy = earnedTime.clone();
+            earnedTimeCopy.find("br").replaceWith(" ");
+            resultSet.push({
+                trophy: $(el).find('a').attr('href'),
+                earned: earnedTime.attr('tips').trim() + ' ' + earnedTimeCopy.text().trim(),
+            });
+        })
+        return resultSet;
+    };
+
+    // 在攻略页面增加自己奖杯的获得状况
+    if (/topic\//.test(window.location.href)) {
+        let games = {};
+        $('.imgbgnb').parent().map((index, el) => {
+            const href = $(el).attr('href');
+            const gameId = href.slice(href.lastIndexOf('/') + 1, -3);
+            // 根据具体游戏获取对应自己页面的信息
+            if (!games.hasOwnProperty(gameId)) {
+                const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
+                const gamePageUrl = (document.URL.startsWith('https') ? 'https' : 'http') +
+                    '://www.psnine.com/psngame/' + gameId + '?psnid=' + psnidCookie[1];
+                const resultSet = fetchOtherPage(gamePageUrl, getEarnedTrophiesInfo);
+                games[gameId] = resultSet;
+            }
+            games[gameId].map(element => {
+                if (element.trophy === $(el).attr('href')) {
+                    $(el).next().find('a').append(`<div class="fa-check-circle"></div>&nbsp;<em class="alert-success pd5" style="border-radius: 3px;">${element.earned}</em>`);
+                }
+            })
+        })
     }
 
     if (
@@ -376,46 +457,6 @@
         // 获取楼主ID
         const authorId = $('.title2').text();
         addOPBadge(authorId);
-
-        const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
-        if (psnidCookie && /topic\//.test(window.location.href)) {
-            var referredTrophies = $('.imgbgnb').toArray();
-            let earnedTrophies = new Set();
-
-            const getTrophyId = (trophyUrl) => {
-                return trophyUrl.slice(trophyUrl.lastIndexOf('/') + 1);
-            };
-
-            var markTrophies = (gamePageHtml) => {
-                let gameDoc = 
-                    new DOMParser().parseFromString(gamePageHtml, 'text/html');
-                if (gameDoc) {
-                    gameDoc.querySelectorAll('.imgbg.earned').forEach(e => {
-                        earnedTrophies.add(getTrophyId(e.parentElement.href));
-                    });
-
-                    referredTrophies.forEach(e => {
-                        if (earnedTrophies.has(getTrophyId(e.parentElement.href))) {
-                            e.setAttribute('class', 'imgbg earned');
-                        }
-                    });
-                }
-            };
-
-            let gameIds = new Set();
-            referredTrophies.forEach(e => {
-                // 目前假设P9奖杯编码就是gameIdxxx
-                var a = e.parentElement;
-                var gameId = a.href.slice(a.href.lastIndexOf('/') + 1, -3);
-                if (!gameIds.has(gameId)) {
-                    gameIds.add(gameId);
-                    var gamePageUrl = 
-                        (document.URL.startsWith('https') ? 'https' : 'http') +
-                        '://psnine.com/psngame/' + gameId + '?psnid=' + psnidCookie[1];
-                    asyncGetPage(gamePageUrl, markTrophies);
-                }
-            });
-        } 
     }
 
     /*
@@ -819,41 +860,6 @@
      * 问答标题根据回答状况着色
      * @param  isOn  是否开启功能
      */
-
-    GM_addStyle(`
-        .fa-check-circle {
-            width: 15px; height: 15px;
-            float: left;
-            margin-top: 3px;
-            margin-right: 3px;
-            background: url('data:image/svg+xml;utf8,<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="check-circle" class="svg-inline--fa fa-check-circle fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="%23659f13" d="M504 256c0 136.967-111.033 248-248 248S8 392.967 8 256 119.033 8 256 8s248 111.033 248 248zM227.314 387.314l184-184c6.248-6.248 6.248-16.379 0-22.627l-22.627-22.627c-6.248-6.249-16.379-6.249-22.628 0L216 308.118l-70.059-70.059c-6.248-6.248-16.379-6.248-22.628 0l-22.627 22.627c-6.248 6.248-6.248 16.379 0 22.627l104 104c6.249 6.249 16.379 6.249 22.628.001z"></path></svg>') no-repeat center;
-        }`
-    );
-    GM_addStyle(`
-        .fa-question-circle {
-            width: 15px; height: 15px;
-            float: left;
-            margin-top: 3px;
-            margin-right: 3px;
-            background: url('data:image/svg+xml;utf8,<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="question-circle" class="svg-inline--fa fa-question-circle fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="%23c09853" d="M504 256c0 136.997-111.043 248-248 248S8 392.997 8 256C8 119.083 119.043 8 256 8s248 111.083 248 248zM262.655 90c-54.497 0-89.255 22.957-116.549 63.758-3.536 5.286-2.353 12.415 2.715 16.258l34.699 26.31c5.205 3.947 12.621 3.008 16.665-2.122 17.864-22.658 30.113-35.797 57.303-35.797 20.429 0 45.698 13.148 45.698 32.958 0 14.976-12.363 22.667-32.534 33.976C247.128 238.528 216 254.941 216 296v4c0 6.627 5.373 12 12 12h56c6.627 0 12-5.373 12-12v-1.333c0-28.462 83.186-29.647 83.186-106.667 0-58.002-60.165-102-116.531-102zM256 338c-25.365 0-46 20.635-46 46 0 25.364 20.635 46 46 46s46-20.636 46-46c0-25.365-20.635-46-46-46z"></path></svg>') no-repeat center;
-        }`
-    );
-    GM_addStyle(`
-        .fa-comments {
-            width: 15px; height: 15px;
-            float: left;
-            margin-top: 3px;
-            margin-right: 3px;
-            background: url('data:image/svg+xml;utf8,<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="comments" class="svg-inline--fa fa-comments fa-w-18" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path fill="%233a87ad" d="M416 192c0-88.4-93.1-160-208-160S0 103.6 0 192c0 34.3 14.1 65.9 38 92-13.4 30.2-35.5 54.2-35.8 54.5-2.2 2.3-2.8 5.7-1.5 8.7S4.8 352 8 352c36.6 0 66.9-12.3 88.7-25 32.2 15.7 70.3 25 111.3 25 114.9 0 208-71.6 208-160zm122 220c23.9-26 38-57.7 38-92 0-66.9-53.5-124.2-129.3-148.1.9 6.6 1.3 13.3 1.3 20.1 0 105.9-107.7 192-240 192-10.8 0-21.3-.8-31.7-1.9C207.8 439.6 281.8 480 368 480c41 0 79.1-9.2 111.3-25 21.8 12.7 52.1 25 88.7 25 3.2 0 6.1-1.9 7.3-4.8 1.3-2.9.7-6.3-1.5-8.7-.3-.3-22.4-24.2-35.8-54.5z"></path></svg>') no-repeat center;
-        }`
-    );
-    GM_addStyle(`
-        .fa-coins {
-            width: 15px; height: 15px;
-            float: left;
-            background: url('data:image/svg+xml;utf8,<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="coins" class="svg-inline--fa fa-coins fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="%23bf6a3a" d="M0 405.3V448c0 35.3 86 64 192 64s192-28.7 192-64v-42.7C342.7 434.4 267.2 448 192 448S41.3 434.4 0 405.3zM320 128c106 0 192-28.7 192-64S426 0 320 0 128 28.7 128 64s86 64 192 64zM0 300.4V352c0 35.3 86 64 192 64s192-28.7 192-64v-51.6c-41.3 34-116.9 51.6-192 51.6S41.3 334.4 0 300.4zm416 11c57.3-11.1 96-31.7 96-55.4v-42.7c-23.2 16.4-57.3 27.6-96 34.5v63.6zM192 160C86 160 0 195.8 0 240s86 80 192 80 192-35.8 192-80-86-80-192-80zm219.3 56.3c60-10.8 100.7-32 100.7-56.3v-42.7c-35.5 25.1-96.5 38.6-160.7 41.8 29.5 14.3 51.2 33.5 60 57.2z"></path></svg>') no-repeat center;
-        }`
-    );
     const changeQaStatus = (isOn) => {
         if (isOn) {
             // 替换文字状态为图标形式
