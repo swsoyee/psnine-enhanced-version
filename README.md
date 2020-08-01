@@ -34,6 +34,7 @@
 - 📝 发表主题帖时`BBCode`转换结果**实时预览**（仅支持部分），所见即所得。  
 - 🙋‍♂️ [`问答`](https://psnine.com/qa)中根据解决状态使用**图标**表示以便快速识别。
 - 🔍 鼠标**悬浮头像**显示用户**个人主页**主要信息。  
+- 🏆 攻略贴中显示自己的奖杯获得情况。
 
 ---
 <img src="https://raw.githubusercontent.com/swsoyee/psnine-enhanced-version/master/screenshots/foreignCurrency.png" width="250" align="right" style="max-width: 50%">
