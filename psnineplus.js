@@ -377,17 +377,17 @@
         const authorId = $('.title2').text();
         addOPBadge(authorId);
 
-        var psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
+        const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
         if (psnidCookie && /topic\//.test(window.location.href)) {
             var referredTrophies = $('.imgbgnb').toArray();
-            var earnedTrophies = new Set();
+            let earnedTrophies = new Set();
 
-            var getTrophyId = (trophyUrl) => {
+            const getTrophyId = (trophyUrl) => {
                 return trophyUrl.slice(trophyUrl.lastIndexOf('/') + 1);
             };
 
             var markTrophies = (gamePageHtml) => {
-                var gameDoc = 
+                let gameDoc = 
                     new DOMParser().parseFromString(gamePageHtml, 'text/html');
                 if (gameDoc) {
                     gameDoc.querySelectorAll('.imgbg.earned').forEach(e => {
@@ -402,7 +402,7 @@
                 }
             };
 
-            var gameIds = new Set();
+            let gameIds = new Set();
             referredTrophies.forEach(e => {
                 // 目前假设P9奖杯编码就是gameIdxxx
                 var a = e.parentElement;
