@@ -429,14 +429,14 @@
     };
 
     // 在攻略页面增加自己奖杯的获得状况
-    if (/topic\//.test(window.location.href)) {
+    const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
+    if (/topic\//.test(window.location.href) && psnidCookie) {
         let games = {};
         $('.imgbgnb').parent().map((index, el) => {
             const href = $(el).attr('href');
             const gameId = href.slice(href.lastIndexOf('/') + 1, -3);
             // 根据具体游戏获取对应自己页面的信息
             if (!games.hasOwnProperty(gameId)) {
-                const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
                 const gamePageUrl = (document.URL.startsWith('https') ? 'https' : 'http') +
                     '://www.psnine.com/psngame/' + gameId + '?psnid=' + psnidCookie[1];
                 const resultSet = fetchOtherPage(gamePageUrl, getEarnedTrophiesInfo);
