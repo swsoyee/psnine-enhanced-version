@@ -457,7 +457,7 @@
             }
             games[gameId].map(element => {
                 if (element.trophy === $(el).attr('href')) {
-                    $(el).next().find('a').append(`<div class="fa-check-circle"></div>&nbsp;<em class="alert-success pd5" style="border-radius: 3px;">${element.earned}</em>`);
+                    $(el).next().find('a').slice(0, 1).append(`<div class="fa-check-circle"></div>&nbsp;<em class="alert-success pd5" style="border-radius: 3px;">${element.earned}</em>`);
                 }
             })
         })
