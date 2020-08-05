@@ -1872,7 +1872,7 @@
                 const backTrigger = e || window.event;
                 // 从cookie中取出psnid
                 const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
-                if (!backTrigger.persisted || psnidCookie) {
+                if (!backTrigger.persisted && psnidCookie) {
                     if (window.location.href.match(/psngame\/\d+#\d+/))
                         window.location.href = window.location.href.replace(/#(\d+)($|\/$)/, `?psnid=${psnidCookie[1]}#$1`);
                     else
