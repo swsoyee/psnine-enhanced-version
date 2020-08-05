@@ -245,7 +245,9 @@
         }
 
         // 功能0-2：夜间模式
-        document.head.appendChild(document.getElementById('nightModeStyle'));// ensures that night mode css is after native psnine css
+        let nightModeStyle = document.getElementById('nightModeStyle');
+        if (nightModeStyle)
+            document.head.appendChild(document.getElementById('nightModeStyle'));// ensures that night mode css is after native psnine css
 
         /*
          * 功能：黑条文字鼠标悬浮显示
