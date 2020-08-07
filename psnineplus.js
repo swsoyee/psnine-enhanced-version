@@ -247,7 +247,7 @@
         // 功能0-2：夜间模式
         let nightModeStyle = document.getElementById('nightModeStyle');
         if (nightModeStyle)
-            document.head.appendChild(document.getElementById('nightModeStyle'));// ensures that night mode css is after native psnine css
+            document.head.appendChild(nightModeStyle);// ensures that night mode css is after native psnine css
 
         /*
          * 功能：黑条文字鼠标悬浮显示
@@ -2226,7 +2226,7 @@
                     return scoreBarChart;
                 };
                 const createScoreTrendChart = () => {
-                    var score_trend = [], min_score = Number.MAX_SAFE_INTEGER, max_score = Number.MIN_SAFE_INTEGER;
+                    var score_trend = [], comment_trend = [], min_score = Number.MAX_SAFE_INTEGER, max_score = Number.MIN_SAFE_INTEGER;
                     const createScoreTrendChartData = () => {
                         const scoreElementTime = (score_element) => {//must be single element
                             let timestamp_element = $(score_element).parents('div.ml64').find('div.meta:not(.pb10) > span:nth-child(2)');
@@ -2245,10 +2245,53 @@
                             }
                             return null;
                         }
+                        const weekOfYear = (date) => { // https://stackoverflow.com/a/6117889
+                            let start_of_day = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+                            let day_of_week = start_of_day.getUTCDay() || 7;
+                            start_of_day.setUTCDate(start_of_day.getUTCDate() + 4 - day_of_week);
+                            let start_of_year = new Date(Date.UTC(start_of_day.getUTCFullYear(), 0, 1));
+                            return Math.ceil((((start_of_day - start_of_year) / 86400000/* milliseconds of a day */) + 1) / 7);
+                        };
+                        const weeksOfYearCache = {};
+                        const weeksOfYear = (year) => {
+                            let weeks = weeksOfYearCache[year];
+                            if (weeks == undefined) {
+                                let last_week = weekOfYear(new Date(year, 11, 31));
+                                if (last_week == 1)
+                                    weeks = weekOfYear(new Date(year, 11, 24));
+                                else
+                                    weeks = last_week;
+                                weeksOfYearCache[year] = weeks;
+                            }
+                            return weeks;
+                        };
+                        const yearOfWeek = (date, week = null) => {
+                            let real_year = date.getUTCFullYear();
+                            if (week == null)
+                                week = weekOfYear(date);
+                            if (date.getMonth() == 0) {
+                                if (week > 5)
+                                    return real_year - 1;
+                            } else {
+                                if (week == 1)
+                                    return real_year + 1;
+                            }
+                            return real_year;
+                        };
+                        const weekToTimestamp = (year, week, day = 4) => {
+                            let start_of_year = new Date(Date.UTC(year, 0, 1));
+                            if (weekOfYear(start_of_year) > 1)
+                                start_of_year = new Date(Date.UTC(year, 0, 8));
+                            return start_of_year.getTime() + (-((start_of_year.getUTCDay() || 7) - 1) + (7 * (week - 1) + (day - 1))) * 86400000/* milliseconds of a day */;
+                        }
                         score_elements.each(function () {
                             let timestamp = scoreElementTime($(this));
-                            if (timestamp != null)
-                                score_trend.push([timestamp, score_parser($(this))]);
+                            if (timestamp != null) {
+                                let score_date = new Date(timestamp);
+                                let week_of_year = weekOfYear(score_date);
+                                let year_of_week = yearOfWeek(score_date, week_of_year);
+                                score_trend.push([timestamp, score_parser($(this)), year_of_week, week_of_year]);
+                            }
                         });
                         score_trend.sort((e1, e2) => (e1[0] - e2[0]));
                         let accumulated_score = 0;
@@ -2260,6 +2303,25 @@
                                 min_score = updated_average_score;
                             if (updated_average_score > max_score)
                                 max_score = updated_average_score;
+                        }
+                        let comment_count_by_week = {};
+                        let first_score = score_trend[0], last_score = score_trend[score_trend.length - 1];
+                        let first_week = [first_score[2], first_score[3]], last_week = [last_score[2], last_score[3]];
+                        score_trend.forEach(score => {
+                            let week = `${score[2]}/${score[3]}`;
+                            if (comment_count_by_week[week] == undefined)
+                                comment_count_by_week[week] = 1;
+                            else
+                                comment_count_by_week[week]++;
+                            score.splice(2, 2);
+                        });
+                        for (let year = first_week[0]; year <= last_week[0]; year++) {
+                            let first = year == first_week[0] ? first_week[1] : 1;
+                            let last = year == last_week[0] ? last_week[1] : weeksOfYear(year);
+                            for (let week = first; week <= last; week++) {
+                                let count = comment_count_by_week[`${year}/${week}`];
+                                comment_trend.push([weekToTimestamp(year, week, 7), count == undefined ? 0 : count]);
+                            }
                         }
                     };
                     createScoreTrendChartData();
@@ -2313,7 +2375,7 @@
                     // 绘图设置
                     const scoreTrendChart = {
                         backgroundColor: 'rgba(0,0,0,0)',
-                        type: 'area',
+                        type: 'line',
                     };
                     // 图形设置
                     const scoreTrendPlotOptions = {
