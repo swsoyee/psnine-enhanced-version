@@ -2366,7 +2366,7 @@
                                 }
                             }
                         }, {
-                            name: '周评分数',
+                            name: '周增评分次数',
                             yAxis: 1,
                             data: comment_trend,
                             showInLegend: false,
@@ -2384,12 +2384,7 @@
                                     } else {
                                         week_str = `<span>第${weekDifference(new Date(this.x), first_week_date) + 1}周</span><br/>`;
                                     }
-                                    let count_str;
-                                    if (this.y > 0)
-                                        count_str = `<b>${this.y}</b>`;
-                                    else
-                                        count_str = `<b>无评论</b>`;
-                                    return week_str + count_str;
+                                    return week_str + (this.y > 0 ? `<b>${this.y}</b>` : `<b>无评论</b>`);
                                 }
                             }
                         }
@@ -2408,13 +2403,6 @@
                             }
                         }
                     ];
-                    let comment_min_count = Number.MAX_SAFE_INTEGER, comment_max_count = Number.MIN_SAFE_INTEGER;
-                    comment_trend.forEach((comment_count) => {
-                        if (comment_count[1] > comment_max_count)
-                            comment_max_count = comment_count[1];
-                        if (comment_count[1] < comment_min_count)
-                            comment_min_count = comment_count[1];
-                    });
                     // Y轴设置
                     const scoreTrendYAxis = [
                         {
@@ -2431,13 +2419,13 @@
                             opposite: false
                         }, {
                             title: {
-                                text: '周评分数',
+                                text: '周增评分次数',
                                 style: {
                                     color: '#F28D8F',
                                 }
                             },
-                            min: comment_min_count,
-                            max: comment_max_count,
+                            min: Math.min.apply(Math, comment_trend.map((i) => { return i[1]; })),
+                            max: Math.max.apply(Math, comment_trend.map((i) => { return i[1]; })),
                             endOnTick: true,
                             tickInterval: 1,
                             opposite: true
