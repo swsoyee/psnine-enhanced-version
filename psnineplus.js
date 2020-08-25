@@ -870,7 +870,7 @@
          */
         const addInputPreview = (tag) => {
             $(tag).after(
-                "<div class='content' style='padding: 0px 10px;' id='preview' />"
+                "<div class='content' style='padding: 0px 10px; word-wrap: break-word; word-break:break-all;' id='preview' />"
             );
             $(tag).keyup(() => {
                 $('#preview').html(replaceAll($(tag).val(), bbcode));
