@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.9.34
+// @version      0.9.35
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404, Nathaniel_Wu, JayusTree
@@ -1226,7 +1226,7 @@
             const priceLinePlot = createPriceLinePlot(normalData, plusData, region);
             // 插入页面
             $('.dd_ul').before(`<div id="container"></div>`);
-            $('#container').highcharts(priceLinePlot);
+            Highcharts.chart('container',priceLinePlot)
         }
         /*
          * 增加单个价格或文字展示标签
@@ -1550,7 +1550,7 @@
             $('.box.pd10').append(
                 `<p></p><div id="trophyRatioChart" align="left"></div>`
             );
-            $('#trophyRatioChart').highcharts(trophyRatio);
+            Highcharts.chart('trophyRatioChart',trophyRatio)
         }
         /*
          * 增加绘图框架样式
@@ -1700,7 +1700,7 @@
             $('.box.pd10').append(
                 `<div id="trophyGetTimeChart" align="left"></div>`
             );
-            $('#trophyGetTimeChart').highcharts(trophyGetTime);
+            Highcharts.chart('trophyGetTimeChart',trophyGetTime)
         }
 
         /*
@@ -2140,9 +2140,7 @@
                         events: {
                             click: function (event) {
                                 gaussian_on = !gaussian_on;
-                                var scoreBarChart = $('#scoreBarChart');
-                                scoreBarChart.highcharts(createScoreBarChart(criticsCount, scoreCountMin, scoreCountMax));
-                                var chart = scoreBarChart.highcharts();
+                                var chart = Highcharts.chart('scoreBarChart',createScoreBarChart(criticsCount, scoreCountMin, scoreCountMax))
                                 scoreBarChartAddLabelOnclick(chart);
                                 hidden_scores.forEach(s => scoreOnclick(chart, chart.series[0].data[chart.xAxis[0].categories.indexOf(s)], s));
                             }
@@ -2522,10 +2520,9 @@
                 }
                 psnine_stats.append('<div id="scoreBarChart" align="left" style="height: 200px;width: 50%;display: inline-block"/>');
                 psnine_stats.append('<div id="scoreTrendChart" align="right" style="height: 200px;width: 50%;display: inline-block"/>');
-                let scoreBarChart = $('#scoreBarChart');
-                scoreBarChart.highcharts(createScoreBarChart(score_elements.length, score_count_min, score_count_max));
-                scoreBarChartAddLabelOnclick(scoreBarChart.highcharts());
-                $('#scoreTrendChart').highcharts(createScoreTrendChart());
+                var charts = Highcharts.chart('scoreBarChart',createScoreBarChart(score_elements.length, score_count_min, score_count_max))
+                scoreBarChartAddLabelOnclick(charts);
+                Highcharts.chart('scoreTrendChart',createScoreTrendChart())
             }
         }
 
