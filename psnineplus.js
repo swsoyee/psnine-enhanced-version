@@ -1226,7 +1226,7 @@
             const priceLinePlot = createPriceLinePlot(normalData, plusData, region);
             // 插入页面
             $('.dd_ul').before(`<div id="container"></div>`);
-            $('#container').highcharts(priceLinePlot);
+            Highcharts.chart('container',priceLinePlot)
         }
         /*
          * 增加单个价格或文字展示标签
@@ -1550,7 +1550,7 @@
             $('.box.pd10').append(
                 `<p></p><div id="trophyRatioChart" align="left"></div>`
             );
-            $('#trophyRatioChart').highcharts(trophyRatio);
+            Highcharts.chart('trophyRatioChart',trophyRatio)
         }
         /*
          * 增加绘图框架样式
@@ -1700,7 +1700,7 @@
             $('.box.pd10').append(
                 `<div id="trophyGetTimeChart" align="left"></div>`
             );
-            $('#trophyGetTimeChart').highcharts(trophyGetTime);
+            Highcharts.chart('trophyGetTimeChart',trophyGetTime)
         }
 
         /*
@@ -2140,9 +2140,7 @@
                         events: {
                             click: function (event) {
                                 gaussian_on = !gaussian_on;
-                                var scoreBarChart = $('#scoreBarChart');
-                                scoreBarChart.highcharts(createScoreBarChart(criticsCount, scoreCountMin, scoreCountMax));
-                                var chart = scoreBarChart.highcharts();
+                                var chart = Highcharts.chart('scoreBarChart',createScoreBarChart(criticsCount, scoreCountMin, scoreCountMax))
                                 scoreBarChartAddLabelOnclick(chart);
                                 hidden_scores.forEach(s => scoreOnclick(chart, chart.series[0].data[chart.xAxis[0].categories.indexOf(s)], s));
                             }
@@ -2522,10 +2520,9 @@
                 }
                 psnine_stats.append('<div id="scoreBarChart" align="left" style="height: 200px;width: 50%;display: inline-block"/>');
                 psnine_stats.append('<div id="scoreTrendChart" align="right" style="height: 200px;width: 50%;display: inline-block"/>');
-                let scoreBarChart = $('#scoreBarChart');
-                scoreBarChart.highcharts(createScoreBarChart(score_elements.length, score_count_min, score_count_max));
-                scoreBarChartAddLabelOnclick(scoreBarChart.highcharts());
-                $('#scoreTrendChart').highcharts(createScoreTrendChart());
+                var charts = Highcharts.chart('scoreBarChart',createScoreBarChart(score_elements.length, score_count_min, score_count_max))
+                scoreBarChartAddLabelOnclick(charts);
+                Highcharts.chart('scoreTrendChart',createScoreTrendChart())
             }
         }
 
