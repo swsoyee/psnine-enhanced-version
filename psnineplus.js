@@ -1322,18 +1322,20 @@
             };
             // 着色
             $('.dd_box').map((i, el) => {
-                const offPercent = Number(
-                    $(el).find('.dd_pic > div[class^="dd_tag"] ').text()
-                        .match('省(.+)%')[1]
-                );
-                for (var key in priceTitleColorDict) {
-                    if (offPercent < key) {
-                        $('.dd_title.mb10>a').eq(i).css({
-                            color: priceTitleColorDict[key]
-                        });
-                        break;
+                try {
+                    const offPercent = Number(
+                        $(el).find('.dd_pic > div[class^="dd_tag"] ').text()
+                            .match('省(.+)%')[1]
+                    );
+                    for (var key in priceTitleColorDict) {
+                        if (offPercent < key) {
+                            $('.dd_title.mb10>a').eq(i).css({
+                                color: priceTitleColorDict[key]
+                            });
+                            break;
+                        }
                     }
-                }
+                } catch (e) { }
             });
         }
 
