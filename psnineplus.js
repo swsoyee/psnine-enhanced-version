@@ -1249,26 +1249,27 @@
             let exchangeRate = { HKD: 0.8796572978575602, USD: 6.817381644163391, GBP: 8.770269230346404, JPY: 0.06453927675754388 };//latest exchange rate as of 2020/09/30/00:00 AM (GMT+8)
             const insertConvertedPriceTags = () => {
                 $('.dd_price').map((i, el) => {
+                    // 一览页面和单商品页面不同位置偏移
+                    const offset = /dd\//.test(window.location.href) ? 2 : 3;
+                    const region = $(`.dd_info p:nth-child(${offset})`).eq(i).text();
+                    if (region == '国服')
+                        return;
                     const price = [
                         $(el).children().eq(0).text(), // 原始价格
                         $(el).children().eq(1).text(), // 优惠价格
                         $(el).children().eq(2).text(), // 会员优惠价格
                     ];
-                    // 一览页面和单商品页面不同位置偏移
-                    const offset = /dd\//.test(window.location.href) ? 2 : 3;
                     // 根据地区转换原始价格
-                    const district = $(`.dd_info p:nth-child(${offset})`).eq(i).text();
-                    const districtCurrency = {
+                    const regionCurrency = {
                         港服: ['HK$', exchangeRate.HKD],
                         美服: ['$', exchangeRate.USD],
                         日服: ['¥', exchangeRate.JPY],
-                        英服: ['£', exchangeRate.GBP],
-                        国服: ['¥', 1],
+                        英服: ['£', exchangeRate.GBP]
                     };
                     const CNY = price.map(item => {
                         return (
-                            Number(item.replace(districtCurrency[district][0], '')) *
-                            districtCurrency[district][1]
+                            Number(item.replace(regionCurrency[region][0], '')) *
+                            regionCurrency[region][1]
                         );
                     });
                     // 整块增加的价格表示
