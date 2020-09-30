@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.9.37
+// @version      0.9.38
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404, Nathaniel_Wu, JayusTree
@@ -1244,10 +1244,39 @@
         /*
          * 功能：在当前页面上添加外币转人民币的价格展示
          */
-        const foreignCurrencyConversion = () => {
+        const retrieveRealTimeExchangeRate = (callback_success, callback_failure) => {
             // 默认汇率
             let exchangeRate = { HKD: 0.8796572978575602, USD: 6.817381644163391, GBP: 8.770269230346404, JPY: 0.06453927675754388 };//latest exchange rate as of 2020/09/30/00:00 AM (GMT+8)
-            const insertConvertedPriceTags = () => {
+            try {// 获取实时汇率
+                let httpReq = new XMLHttpRequest();
+                httpReq.open("GET", 'https://api.exchangeratesapi.io/latest', false);
+                httpReq.send(null);
+                let startTime = Date.now();
+                const repeatUntilSuccessful = (function_ptr, interval) => {
+                    if (!function_ptr())
+                        setTimeout(() => {
+                            repeatUntilSuccessful(function_ptr, interval);
+                        }, interval);
+                }
+                repeatUntilSuccessful(() => {
+                    // Wait until HTTP GET SUCCESSFULL or TIMEOUT
+                    if ((httpReq.status !== 200) && (httpReq.readyState !== XMLHttpRequest.DONE) && (Date.now() - startTime) < 3000)
+                        return false;
+                    let rawExchangeRate = null;
+                    if ((httpReq.status == 200) && (httpReq.readyState == XMLHttpRequest.DONE))
+                        rawExchangeRate = JSON.parse(httpReq.response);
+                    if (Boolean(rawExchangeRate))// HTTP GET SUCCESSFULL
+                        ['HKD', 'USD', 'GBP', 'JPY'].forEach(currency => exchangeRate[currency] = rawExchangeRate.rates.CNY / rawExchangeRate.rates[currency]);
+                    callback_success(exchangeRate);
+                    return true;
+                }, 50);
+            } catch (e) {
+                console.log('实时汇率获取失败，使用默认汇率');
+                callback_failure(exchangeRate);
+            }
+        }
+        const foreignCurrencyConversion = () => {
+            const insertConvertedPriceTags = (exchangeRate) => {
                 $('.dd_price').map((i, el) => {
                     // 一览页面和单商品页面不同位置偏移
                     const offset = /dd\//.test(window.location.href) ? 2 : 3;
@@ -1283,33 +1312,30 @@
                     $('.dd_price span:last-child').eq(i).after(addCNYPriceBlock);
                 });
             }
-            try {// 获取实时汇率
-                let httpReq = new XMLHttpRequest();
-                httpReq.open("GET", 'https://api.exchangeratesapi.io/latest', false);
-                httpReq.send(null);
-                let startTime = Date.now();
-                const repeatUntilSuccessful = (function_ptr, interval) => {
-                    if (!function_ptr())
-                        setTimeout(() => {
-                            repeatUntilSuccessful(function_ptr, interval);
-                        }, interval);
-                }
-                repeatUntilSuccessful(() => {
-                    // Wait until HTTP GET SUCCESSFULL or TIMEOUT
-                    if ((httpReq.status !== 200) && (httpReq.readyState !== XMLHttpRequest.DONE) && (Date.now() - startTime) < 3000)
-                        return false;
-                    let rawExchangeRate = null;
-                    if ((httpReq.status == 200) && (httpReq.readyState == XMLHttpRequest.DONE))
-                        rawExchangeRate = JSON.parse(httpReq.response);
-                    if (Boolean(rawExchangeRate))// HTTP GET SUCCESSFULL
-                        ['HKD', 'USD', 'GBP', 'JPY'].forEach(currency => exchangeRate[currency] = rawExchangeRate.rates.CNY / rawExchangeRate.rates[currency]);
-                    insertConvertedPriceTags();
-                    return true;
-                }, 50);
-            } catch (e) {
-                console.log('实时汇率获取失败，使用默认汇率');
-                insertConvertedPriceTags();
+            retrieveRealTimeExchangeRate(insertConvertedPriceTags, insertConvertedPriceTags);
+        }
+        const foreignCurrencyConversionSalesPage = () => {
+            const changeToConvertedPriceTags = (exchangeRate) => {
+                $('.store_box>.store_price').map((i, el) => {
+                    // 一览页面和单商品页面不同位置偏移
+                    const region = window.location.href.match(/region=.+?(&|$)/)[0].replace(/(region=|&)/, '').toLowerCase();
+                    if (region == 'cn')
+                        return;
+                    // 根据地区转换原始价格
+                    const regionCurrency = {
+                        hk: ['HK$', exchangeRate.HKD],
+                        us: ['$', exchangeRate.USD],
+                        jp: ['¥', exchangeRate.JPY],
+                        gb: ['£', exchangeRate.GBP]
+                    };
+                    $(el).children().each((j, price_tag) => {
+                        $(price_tag).attr('original-price', $(price_tag).text());
+                        $(price_tag).attr('converted-price', `CN¥${(Number($(price_tag).text().replace(regionCurrency[region][0], '')) * regionCurrency[region][1]).toFixed(2)}`);
+                        $(price_tag).text($(price_tag).attr('converted-price'));
+                    });
+                });
             }
+            retrieveRealTimeExchangeRate(changeToConvertedPriceTags, changeToConvertedPriceTags);
         }
         /*
          * 功能：根据降价幅度变更标题颜色
@@ -1362,8 +1388,11 @@
                 }`
             );
         }
-        addButtonStyle('selectLowest', '#d9534f'); // 只看史低
+        const color_AddedButtonReady = '#d9534f';
+        const color_AddedButtonClicked = '#f78784';
+        addButtonStyle('selectLowest', color_AddedButtonReady); // 只看史低
         addButtonStyle('selectUnget', '#3498db');  // 未获得
+        addButtonStyle('selectOriginalPrice', color_AddedButtonReady); // 原币种价格
         /*
          * 功能：页面上追加“只看史低”功能按键，点击显示史低，再次点击恢复显示所有游戏（数折页面）
          */
@@ -1380,12 +1409,12 @@
                         }
                     });
                     $('#selectLowest').text('显示全部').css({
-                        'background-color': '#f78784'
+                        'background-color': color_AddedButtonClicked
                     });
                 } else {
                     $('li.dd_box').show();
                     $('#selectLowest').text('只看史低').css({
-                        'background-color': '#d9534f'
+                        'background-color': color_AddedButtonReady
                     });
                 }
             });
@@ -1393,9 +1422,9 @@
         /*
          * 功能：页面上追加“只看史低”功能按键，点击显示史低，再次点击恢复显示所有游戏（活动页面）
          */
-        const onlyLowestSell = () => {
+        const onlyLowestSalesPage = () => {
             // 追加只看史低按键
-            $('.disabled.h-p').after("<li><a id='selectLowest'>只看史低</a></li>")
+            $('.disabled.h-p').eq(0).after("<li><a id='selectLowest'>只看史低</a></li>")
             // 隐藏游戏box函数
             const hideOrShowGameBox = ({ status, text, background }) => {
                 $(document.querySelectorAll('li.store_box')).map((i, el) => {
@@ -1411,8 +1440,34 @@
             let clickHideShowNumLowest2 = 0;
             $('#selectLowest').click(() => {
                 hideOrShowGameBox(clickHideShowNumLowest2++ % 2 === 0
-                    ? { status: 'none', text: '显示全部', background: '#f78784' }
-                    : { status: 'block', text: '只看史低', background: '#d9534f' });
+                    ? { status: 'none', text: '显示全部', background: color_AddedButtonClicked }
+                    : { status: 'block', text: '只看史低', background: color_AddedButtonReady });
+            })
+        }
+        /*
+         * 功能：页面上追加“原币种价格/人民币价格”功能按键（活动页面）
+         */
+        const showOriginalPrice = () => {
+            if (window.location.href.match(/region=.+?(&|$)/)[0].replace(/(region=|&)/, '').toLowerCase() == 'cn')
+                return;
+            $('.disabled.h-p').eq(0).after("<li><a id='selectOriginalPrice'>原币种价格</a></li>")
+            let button = $('#selectOriginalPrice');
+            button.click(() => {
+                if (button.text() != '原币种价格') {
+                    button.text('原币种价格').css({
+                        'background-color': color_AddedButtonReady
+                    });
+                    $('.store_box>.store_price').children().each((i, price_tag) => {
+                        $(price_tag).text($(price_tag).attr('converted-price'));
+                    });
+                } else {
+                    button.text('人民币价格').css({
+                        'background-color': color_AddedButtonClicked
+                    });
+                    $('.store_box>.store_price').children().each((i, price_tag) => {
+                        $(price_tag).text($(price_tag).attr('original-price'));
+                    });
+                }
             })
         }
 
@@ -1455,8 +1510,12 @@
         }
         // 页面：活动
         if (/huodong/.test(window.location.href)) {
+            // 外币转人民币
+            foreignCurrencyConversionSalesPage();
             // 只看史低
-            onlyLowestSell();
+            onlyLowestSalesPage();
+            // 原币种价格
+            showOriginalPrice();
         }
         // 页面：全局
         // 跳转至底部按钮
