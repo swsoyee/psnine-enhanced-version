@@ -1,19 +1,26 @@
 {
-  "name": "psnine-enhanced-version",
-  "version": "0.9.37",
-  "description": "数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验",
-  "main": "night-mode-css.js",
+  "name": "webpack-tampermonkey",
+  "version": "0.0.1",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "gulp build --color",
+    "dev": "gulp --color",
+    "format": "gulp --color format"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/swsoyee/psnine-night-mode-CSS.git"
-  },
-  "author": "InfinityLoop",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/swsoyee/psnine-night-mode-CSS/issues"
-  },
-  "homepage": "https://github.com/swsoyee/psnine-night-mode-CSS#readme"
+  "devDependencies": {
+    "autoprefixer": "^9.7.5",
+    "colors": "^1.4.0",
+    "css-loader": "^3.4.2",
+    "cssnano": "^4.1.10",
+    "gulp": "^4.0.2",
+    "gulp-prettier": "^3.0.0",
+    "moment": "^2.24.0",
+    "postcss-loader": "^3.0.0",
+    "prettier": "^2.0.2",
+    "terser-webpack-plugin": "^2.3.5",
+    "to-string-loader": "^1.1.6",
+    "url-loader": "^4.0.0",
+    "webpack": "^4.42.0",
+    "webpack-cli": "^3.3.11"
+  }
 }

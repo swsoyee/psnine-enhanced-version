@@ -1,0 +1,8 @@
+body {
+  font-size: 2rem;
+  display: flex;
+}
+
+div {
+  background-color: #fff;
+}

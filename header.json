@@ -1,0 +1,11 @@
+{
+  "name": "Good Monkey",
+  "version": "0.0.1",
+  "description": "This is a good monkey",
+  "author": "SettingDust",
+  "include": ["http*://tampermonkey.net/*"],
+  "require": ["https://cdn.bootcss.com/jquery/3.3.1/jquery.js"],
+  "grant": [
+    "GM_addStyle"
+  ]
+}
