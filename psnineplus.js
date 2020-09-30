@@ -1318,7 +1318,7 @@
             const changeToConvertedPriceTags = (exchangeRate) => {
                 $('.store_box>.store_price').map((i, el) => {
                     // 一览页面和单商品页面不同位置偏移
-                    const region = window.location.href.match(/region=.+?(&|$)/)[0].replace(/(region=|&)/, '').toLowerCase();
+                    const region = window.location.href.match(/region=.+?(&|$)/)[0].replace(/(region=|&)/g, '').toLowerCase();
                     if (region == 'cn')
                         return;
                     // 根据地区转换原始价格
