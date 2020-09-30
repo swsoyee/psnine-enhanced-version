@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.9.36
+// @version      0.9.37
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404, Nathaniel_Wu, JayusTree
@@ -1303,12 +1303,13 @@
                         rawExchangeRate = JSON.parse(httpReq.response);
                     if (Boolean(rawExchangeRate))// HTTP GET SUCCESSFULL
                         ['HKD', 'USD', 'GBP', 'JPY'].forEach(currency => exchangeRate[currency] = rawExchangeRate.rates.CNY / rawExchangeRate.rates[currency]);
+                    insertConvertedPriceTags();
                     return true;
                 }, 50);
             } catch (e) {
                 console.log('实时汇率获取失败，使用默认汇率');
+                insertConvertedPriceTags();
             }
-            insertConvertedPriceTags();
         }
         /*
          * 功能：根据降价幅度变更标题颜色
