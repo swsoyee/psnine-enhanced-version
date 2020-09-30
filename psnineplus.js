@@ -1303,12 +1303,13 @@
                         rawExchangeRate = JSON.parse(httpReq.response);
                     if (Boolean(rawExchangeRate))// HTTP GET SUCCESSFULL
                         ['HKD', 'USD', 'GBP', 'JPY'].forEach(currency => exchangeRate[currency] = rawExchangeRate.rates.CNY / rawExchangeRate.rates[currency]);
+                    insertConvertedPriceTags();
                     return true;
                 }, 50);
             } catch (e) {
                 console.log('实时汇率获取失败，使用默认汇率');
+                insertConvertedPriceTags();
             }
-            insertConvertedPriceTags();
         }
         /*
          * 功能：根据降价幅度变更标题颜色
