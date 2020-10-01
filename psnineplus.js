@@ -1422,27 +1422,87 @@
         /*
          * 功能：页面上追加“只看史低”功能按键，点击显示史低，再次点击恢复显示所有游戏（活动页面）
          */
+        GM_addStyle(`
+            .switch {
+                position: relative;
+                display: inline-block;
+                margin-left: 10px;
+                width: 40px;
+                height: 18px;
+            }`
+        );
+        GM_addStyle(`
+            .switch input {
+                opacity: 0;
+                width: 0;
+                height: 0;
+            }`
+        );
+        GM_addStyle(`
+            .slider {
+                position: absolute;
+                cursor: pointer;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: #ccc;
+                -webkit-transition: .4s;
+                transition: .4s;
+            }`
+        );
+        GM_addStyle(`
+            .slider:before {
+                position: absolute;
+                content: "";
+                height: 16px;
+                width: 16px;
+                left: 2px;
+                bottom: 1px;
+                background-color: white;
+                -webkit-transition: .4s;
+                transition: .4s;
+            }`
+        );
+        GM_addStyle(`
+            input:checked + .slider {
+                background-color: #2196F3;
+            }`
+        );
+        GM_addStyle(`
+            input:focus + .slider {
+                box-shadow: 0 0 1px #2196F3;
+            }`
+        );
+        GM_addStyle(`
+            input:checked + .slider:before {
+                -webkit-transform: translateX(20px);
+                -ms-transform: translateX(20px);
+                transform: translateX(20px);
+            }`
+        );
+        GM_addStyle(`
+            .slider.round {
+                border-radius: 34px;
+            }`
+        );
+        GM_addStyle(`
+            .slider.round:before {
+                border-radius: 50%;
+            }
+        `);
         const onlyLowestSalesPage = () => {
             // 追加只看史低按键
-            $('.disabled.h-p').eq(0).after("<li><a id='selectLowest'>只看史低</a></li>")
-            // 隐藏游戏box函数
-            const hideOrShowGameBox = ({ status, text, background }) => {
+            $('.disabled.h-p').eq(0).after('<li style="color:white;padding: 2px 5px;">只看史低<label class="switch"><input id="hideGamebox" type="checkbox"><span class="slider round"></span></label></li>');
+            let hideGameboxToggle = $('#hideGamebox');
+            hideGameboxToggle[0].checked = false;
+            hideGameboxToggle.change(() => {
                 $(document.querySelectorAll('li.store_box')).map((i, el) => {
                     if ((el).querySelector('.store_tag_best') === null) {
-                        (el).style.display = status;
+                        $(el).css('display', hideGameboxToggle[0].checked === true ? 'none' : 'block');
                     }
                 })
-                $('#selectLowest').text(text).css({
-                    'background-color': background,
-                });
-            }
-            // 点击按钮隐藏或者显示
-            let clickHideShowNumLowest2 = 0;
-            $('#selectLowest').click(() => {
-                hideOrShowGameBox(clickHideShowNumLowest2++ % 2 === 0
-                    ? { status: 'none', text: '显示全部', background: color_AddedButtonClicked }
-                    : { status: 'block', text: '只看史低', background: color_AddedButtonReady });
-            })
+            });
         }
         /*
          * 功能：页面上追加“原币种价格/人民币价格”功能按键（活动页面）
@@ -1451,75 +1511,6 @@
             if (window.location.href.match(/region=.+?(&|$)/)[0].replace(/(region=|&)/g, '').toLowerCase() == 'cn')
                 return;
             $('.disabled.h-p').eq(0).after('<li style="color:white;padding: 2px 5px;">显示人民币<label class="switch"><input id="selectOriginalPrice" type="checkbox"><span class="slider round"></span></label></li>');
-            GM_addStyle(`
-                .switch {
-                    position: relative;
-                    display: inline-block;
-                    margin-left: 10px;
-                    width: 40px;
-                    height: 18px;
-                }`
-            );
-            GM_addStyle(`
-                .switch input {
-                    opacity: 0;
-                    width: 0;
-                    height: 0;
-                }`
-            );
-            GM_addStyle(`
-                .slider {
-                    position: absolute;
-                    cursor: pointer;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
-                    background-color: #ccc;
-                    -webkit-transition: .4s;
-                    transition: .4s;
-                }`
-            );
-            GM_addStyle(`
-                .slider:before {
-                    position: absolute;
-                    content: "";
-                    height: 16px;
-                    width: 16px;
-                    left: 2px;
-                    bottom: 1px;
-                    background-color: white;
-                    -webkit-transition: .4s;
-                    transition: .4s;
-                }`
-            );
-            GM_addStyle(`
-                input:checked + .slider {
-                    background-color: #2196F3;
-                }`
-            );
-            GM_addStyle(`
-                input:focus + .slider {
-                    box-shadow: 0 0 1px #2196F3;
-                }`
-            );
-            GM_addStyle(`
-                input:checked + .slider:before {
-                    -webkit-transform: translateX(20px);
-                    -ms-transform: translateX(20px);
-                    transform: translateX(20px);
-                }`
-            );
-            GM_addStyle(`
-                .slider.round {
-                    border-radius: 34px;
-                }`
-            );
-            GM_addStyle(`
-                .slider.round:before {
-                    border-radius: 50%;
-                }
-            `);
             let originalPriceToggle = $('#selectOriginalPrice');
             originalPriceToggle[0].checked = true;
             originalPriceToggle.change(() => {
