@@ -1389,34 +1389,23 @@
             );
         }
         const color_AddedButtonReady = '#d9534f';
-        const color_AddedButtonClicked = '#f78784';
-        addButtonStyle('selectLowest', color_AddedButtonReady); // 只看史低
         addButtonStyle('selectUnget', '#3498db');  // 未获得
         addButtonStyle('selectOriginalPrice', color_AddedButtonReady); // 原币种价格
         /*
          * 功能：页面上追加“只看史低”功能按键，点击显示史低，再次点击恢复显示所有游戏（数折页面）
          */
-        const onlyLowest = () => {
+        const showBest = () => {
             // 追加只看史低按键
-            $('.dropmenu').append("<li><a id='selectLowest'>只看史低</a></li>");
+            $('.dropmenu').append('<li style="color:#B8C4CE;padding: 0px 0px 0px 10px;">只看史低</li><label class="switch" style="margin-top:8px;"><input id="showBest" type="checkbox"><span class="slider round"></span></label>');
             // 点击按钮隐藏或者显示
-            let clickHideShowNumLowest = 0;
-            $('#selectLowest').click(() => {
-                if (clickHideShowNumLowest++ % 2 === 0) {
-                    $('li.dd_box').map((i, el) => {
-                        if ($(el).children('.dd_status.dd_status_best').length === 0) {
-                            $(el).hide();
-                        }
-                    });
-                    $('#selectLowest').text('显示全部').css({
-                        'background-color': color_AddedButtonClicked
-                    });
-                } else {
-                    $('li.dd_box').show();
-                    $('#selectLowest').text('只看史低').css({
-                        'background-color': color_AddedButtonReady
-                    });
-                }
+            let toggle = $('#showBest');
+            toggle[0].checked = false;
+            toggle.change(() => {
+                $('li.dd_box').map((i, el) => {
+                    if ($(el).children('.dd_status.dd_status_best').length === 0) {
+                        toggle[0].checked === true ? $(el).hide() : $(el).show();
+                    }
+                });
             });
         }
         /*
@@ -1554,7 +1543,7 @@
             // 根据降价幅度变更标题颜色
             changeGameTitleColor();
             // 只看史低
-            onlyLowest();
+            showBest();
         }
         // 页面：数折 > 商品页
         if (
