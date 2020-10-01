@@ -1391,26 +1391,7 @@
         const color_AddedButtonReady = '#d9534f';
         addButtonStyle('selectUnget', '#3498db');  // 未获得
         addButtonStyle('selectOriginalPrice', color_AddedButtonReady); // 原币种价格
-        /*
-         * 功能：页面上追加“只看史低”功能按键，点击显示史低，再次点击恢复显示所有游戏（数折页面）
-         */
-        const showBest = () => {
-            // 追加只看史低按键
-            $('.dropmenu').append('<li style="color:#B8C4CE;padding: 0px 0px 0px 10px;">只看史低</li><label class="switch" style="margin-top:8px;"><input id="showBest" type="checkbox"><span class="slider round"></span></label>');
-            // 点击按钮隐藏或者显示
-            let toggle = $('#showBest');
-            toggle[0].checked = false;
-            toggle.change(() => {
-                $('li.dd_box').map((i, el) => {
-                    if ($(el).children('.dd_status.dd_status_best').length === 0) {
-                        toggle[0].checked === true ? $(el).hide() : $(el).show();
-                    }
-                });
-            });
-        }
-        /*
-         * 功能：页面上追加“只看史低”功能按键，点击显示史低，再次点击恢复显示所有游戏（活动页面）
-         */
+
         GM_addStyle(`
             .switch {
                 position: relative;
@@ -1480,38 +1461,52 @@
                 border-radius: 50%;
             }
         `);
+        /*
+        * 功能：页面上追加“只看史低”功能按键，点击显示史低，再次点击恢复显示所有游戏（数折页面）
+        */
+        const showBest = () => {
+            // 追加只看史低按键
+            $('.dropmenu').append('<li style="color:#B8C4CE;padding: 0px 0px 0px 10px;">只看史低</li><label class="switch" style="margin-top:8px;"><input id="showBest" type="checkbox"><span class="slider round"></span></label>');
+            // 点击按钮隐藏或者显示
+            let toggle = $('#showBest');
+            toggle[0].checked = false;
+            toggle.change(() => {
+                $('li.dd_box').map((i, el) => {
+                    if ($(el).children('.dd_status.dd_status_best').length === 0) {
+                        toggle[0].checked === true ? $(el).hide() : $(el).show();
+                    }
+                });
+            });
+        }
+        /*
+        * 功能：页面上追加“只看史低”功能按键，点击显示史低，再次点击恢复显示所有游戏（活动页面）
+        */
         const onlyLowestSalesPage = () => {
             // 追加只看史低按键
             $('.disabled.h-p').eq(0).after('<li style="color:white;padding: 2px 5px;">只看史低<label class="switch"><input id="hideGamebox" type="checkbox"><span class="slider round"></span></label></li>');
-            let hideGameboxToggle = $('#hideGamebox');
-            hideGameboxToggle[0].checked = false;
-            hideGameboxToggle.change(() => {
+            let toggle = $('#hideGamebox');
+            toggle[0].checked = false;
+            toggle.change(() => {
                 $(document.querySelectorAll('li.store_box')).map((i, el) => {
                     if ((el).querySelector('.store_tag_best') === null) {
-                        $(el).css('display', hideGameboxToggle[0].checked === true ? 'none' : 'block');
+                        $(el).css('display', toggle[0].checked === true ? 'none' : 'block');
                     }
                 })
             });
         }
         /*
-         * 功能：页面上追加“原币种价格/人民币价格”功能按键（活动页面）
+         * 功能：页面上追加“显示人民币”功能按键（活动页面）
          */
         const showOriginalPrice = () => {
             if (window.location.href.match(/region=.+?(&|$)/)[0].replace(/(region=|&)/g, '').toLowerCase() == 'cn')
                 return;
             $('.disabled.h-p').eq(0).after('<li style="color:white;padding: 2px 5px;">显示人民币<label class="switch"><input id="selectOriginalPrice" type="checkbox"><span class="slider round"></span></label></li>');
-            let originalPriceToggle = $('#selectOriginalPrice');
-            originalPriceToggle[0].checked = true;
-            originalPriceToggle.change(() => {
-                if (originalPriceToggle[0].checked) {
-                    $('.store_box>.store_price').children().each((i, price_tag) => {
-                        $(price_tag).text($(price_tag).attr('converted-price'));
-                    });
-                } else {
-                    $('.store_box>.store_price').children().each((i, price_tag) => {
-                        $(price_tag).text($(price_tag).attr('original-price'));
-                    });
-                }
+            let toggle = $('#selectOriginalPrice');
+            toggle[0].checked = true;
+            toggle.change(() => {
+                $('.store_box>.store_price').children().each((i, price_tag) => {
+                    $(price_tag).text($(price_tag).attr(toggle[0].checked === true ? 'converted-price' : 'original-price'));
+                });
             })
         }
 
