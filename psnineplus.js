@@ -1450,22 +1450,85 @@
         const showOriginalPrice = () => {
             if (window.location.href.match(/region=.+?(&|$)/)[0].replace(/(region=|&)/g, '').toLowerCase() == 'cn')
                 return;
-            $('.disabled.h-p').eq(0).after("<li><a id='selectOriginalPrice'>原币种价格</a></li>")
-            let button = $('#selectOriginalPrice');
-            button.click(() => {
-                if (button.text() != '原币种价格') {
-                    button.text('原币种价格').css({
-                        'background-color': color_AddedButtonReady
-                    });
-                    $('.store_box>.store_price').children().each((i, price_tag) => {
-                        $(price_tag).text($(price_tag).attr('converted-price'));
-                    });
-                } else {
-                    button.text('人民币价格').css({
-                        'background-color': color_AddedButtonClicked
-                    });
+            $('.disabled.h-p').eq(0).after('<label class="switch"><input id="selectOriginalPrice" type="checkbox"><span class="slider round"></span></label>');
+            GM_addStyle(`
+                .switch {
+                    position: relative;
+                    display: inline-block;
+                    width: 60px;
+                    height: 34px;
+                }`
+            );
+            GM_addStyle(`
+                .switch input {
+                    opacity: 0;
+                    width: 0;
+                    height: 0;
+                }`
+            );
+            GM_addStyle(`
+                .slider {
+                    position: absolute;
+                    cursor: pointer;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background-color: #ccc;
+                    -webkit-transition: .4s;
+                    transition: .4s;
+                }`
+            );
+            GM_addStyle(`
+                .slider:before {
+                    position: absolute;
+                    content: "";
+                    height: 26px;
+                    width: 26px;
+                    left: 4px;
+                    bottom: 4px;
+                    background-color: white;
+                    -webkit-transition: .4s;
+                    transition: .4s;
+                }`
+            );
+            GM_addStyle(`
+                input:checked + .slider {
+                    background-color: #2196F3;
+                }`
+            );
+            GM_addStyle(`
+                input:focus + .slider {
+                    box-shadow: 0 0 1px #2196F3;
+                }`
+            );
+            GM_addStyle(`
+                input:checked + .slider:before {
+                    -webkit-transform: translateX(26px);
+                    -ms-transform: translateX(26px);
+                    transform: translateX(26px);
+                }`
+            );
+            GM_addStyle(`
+                .slider.round {
+                    border-radius: 34px;
+                }`
+            );
+            GM_addStyle(`
+                .slider.round:before {
+                    border-radius: 50%;
+                }
+            `);
+            let originalPriceToggle = $('#selectOriginalPrice');
+            originalPriceToggle[0].checked = false;
+            originalPriceToggle.change(() => {
+                if (originalPriceToggle[0].checked) {
                     $('.store_box>.store_price').children().each((i, price_tag) => {
                         $(price_tag).text($(price_tag).attr('original-price'));
+                    });
+                } else {
+                    $('.store_box>.store_price').children().each((i, price_tag) => {
+                        $(price_tag).text($(price_tag).attr('converted-price'));
                     });
                 }
             })
