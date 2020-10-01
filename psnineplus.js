@@ -1448,7 +1448,7 @@
          * 功能：页面上追加“原币种价格/人民币价格”功能按键（活动页面）
          */
         const showOriginalPrice = () => {
-            if (window.location.href.match(/region=.+?(&|$)/)[0].replace(/(region=|&)/, '').toLowerCase() == 'cn')
+            if (window.location.href.match(/region=.+?(&|$)/)[0].replace(/(region=|&)/g, '').toLowerCase() == 'cn')
                 return;
             $('.disabled.h-p').eq(0).after("<li><a id='selectOriginalPrice'>原币种价格</a></li>")
             let button = $('#selectOriginalPrice');
@@ -1842,6 +1842,7 @@
             $('#sortTrophiesByTimestamp').click(() => {
                 sortTrophiesByTimestamp();
                 $('#sortTrophiesByTimestamp').remove();
+                $('div.main ul.dropmenu > li.dropdown').removeClass('hover');
             });
         }
 
