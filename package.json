@@ -1,6 +1,6 @@
 {
   "name": "psnine-enhanced-version",
-  "version": "0.9.39",
+  "version": "0.9.39.1",
   "description": "数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验",
   "main": "night-mode-css.js",
   "scripts": {
