@@ -1546,6 +1546,8 @@
             /game\/[0-9]+\/dd$/.test(window.location.href)
         ) {
             addPriceLinePlot();
+            // 外币转人民币
+            foreignCurrencyConversion();
         }
         // 页面：活动
         if (/huodong/.test(window.location.href)) {
