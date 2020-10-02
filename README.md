@@ -93,7 +93,7 @@ Made with [contributors-img](https://contributors-img.web.app).
 
 ## 🗣 交流反馈
 
-<img src="../psnine-enhanced-version/screenshots/qqGroup.jpg" width="35%" />
+<img src="https://raw.githubusercontent.com/swsoyee/psnine-enhanced-version/master/screenshots/qqGroup.JPG" width="35%" />
 
 ## 🌙夜间模式CSS版
 
