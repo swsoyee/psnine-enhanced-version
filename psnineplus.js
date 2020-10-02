@@ -1854,25 +1854,11 @@
          * 功能：奖杯筛选功能
          */
         const addTrophyFilter = () => {
-            $('.dropmenu').append('<li><em>筛选</em></li>'); // 追加“筛选”字样
-            // 追加“未获得”的按钮
-            $('.dropmenu').append("<a id='selectUnget'>尚未获得</a>");
-            // 点击按钮隐藏或者显示
-            let onlyUngetIsShown = false;
-            $('#selectUnget').click(() => {
+            $('.dropmenu').append('<li style="color:#B8C4CE;"></em>显示已获得</em><label class="switch" style="line-height:1.3;"><input id="filterEarned" type="checkbox"><span class="slider round"></span></label></li>');
+            let toggle = $('#filterEarned');
+            toggle[0].checked = false;
+            toggle.change(() => {
                 $('.lh180.alert-success.pd5.r').parent().parent().toggle('slow');
-                if (!onlyUngetIsShown) {
-                    $('#selectUnget').text('显示全部').css({
-                        'background-color': '#E7EBEE',
-                        color: '#99A1A7'
-                    });
-                } else {
-                    $('#selectUnget').text('尚未获得').css({
-                        'background-color': '#3498db',
-                        color: '#FFFFFF'
-                    });
-                }
-                onlyUngetIsShown = !onlyUngetIsShown;
             });
         }
 
