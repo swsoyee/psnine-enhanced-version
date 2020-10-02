@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.9.38
+// @version      0.9.39
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404, Nathaniel_Wu, JayusTree
@@ -1389,39 +1389,9 @@
             );
         }
         const color_AddedButtonReady = '#d9534f';
-        const color_AddedButtonClicked = '#f78784';
-        addButtonStyle('selectLowest', color_AddedButtonReady); // 只看史低
         addButtonStyle('selectUnget', '#3498db');  // 未获得
         addButtonStyle('selectOriginalPrice', color_AddedButtonReady); // 原币种价格
-        /*
-         * 功能：页面上追加“只看史低”功能按键，点击显示史低，再次点击恢复显示所有游戏（数折页面）
-         */
-        const onlyLowest = () => {
-            // 追加只看史低按键
-            $('.dropmenu').append("<li><a id='selectLowest'>只看史低</a></li>");
-            // 点击按钮隐藏或者显示
-            let clickHideShowNumLowest = 0;
-            $('#selectLowest').click(() => {
-                if (clickHideShowNumLowest++ % 2 === 0) {
-                    $('li.dd_box').map((i, el) => {
-                        if ($(el).children('.dd_status.dd_status_best').length === 0) {
-                            $(el).hide();
-                        }
-                    });
-                    $('#selectLowest').text('显示全部').css({
-                        'background-color': color_AddedButtonClicked
-                    });
-                } else {
-                    $('li.dd_box').show();
-                    $('#selectLowest').text('只看史低').css({
-                        'background-color': color_AddedButtonReady
-                    });
-                }
-            });
-        }
-        /*
-         * 功能：页面上追加“只看史低”功能按键，点击显示史低，再次点击恢复显示所有游戏（活动页面）
-         */
+
         GM_addStyle(`
             .switch {
                 position: relative;
@@ -1491,38 +1461,52 @@
                 border-radius: 50%;
             }
         `);
+        /*
+        * 功能：页面上追加“只看史低”功能按键，点击显示史低，再次点击恢复显示所有游戏（数折页面）
+        */
+        const showBest = () => {
+            // 追加只看史低按键
+            $('.dropmenu').append('<li style="color:#B8C4CE;padding: 0px 0px 0px 10px;">只看史低</li><label class="switch" style="line-height:1.3;"><input id="showBest" type="checkbox"><span class="slider round"></span></label>');
+            // 点击按钮隐藏或者显示
+            let toggle = $('#showBest');
+            toggle[0].checked = false;
+            toggle.change(() => {
+                $('li.dd_box').map((i, el) => {
+                    if ($(el).children('.dd_status.dd_status_best').length === 0) {
+                        toggle[0].checked === true ? $(el).hide() : $(el).show();
+                    }
+                });
+            });
+        }
+        /*
+        * 功能：页面上追加“只看史低”功能按键，点击显示史低，再次点击恢复显示所有游戏（活动页面）
+        */
         const onlyLowestSalesPage = () => {
             // 追加只看史低按键
             $('.disabled.h-p').eq(0).after('<li style="color:white;padding: 2px 5px;">只看史低<label class="switch"><input id="hideGamebox" type="checkbox"><span class="slider round"></span></label></li>');
-            let hideGameboxToggle = $('#hideGamebox');
-            hideGameboxToggle[0].checked = false;
-            hideGameboxToggle.change(() => {
+            let toggle = $('#hideGamebox');
+            toggle[0].checked = false;
+            toggle.change(() => {
                 $(document.querySelectorAll('li.store_box')).map((i, el) => {
                     if ((el).querySelector('.store_tag_best') === null) {
-                        $(el).css('display', hideGameboxToggle[0].checked === true ? 'none' : 'block');
+                        $(el).css('display', toggle[0].checked === true ? 'none' : 'block');
                     }
                 })
             });
         }
         /*
-         * 功能：页面上追加“原币种价格/人民币价格”功能按键（活动页面）
+         * 功能：页面上追加“显示人民币”功能按键（活动页面）
          */
         const showOriginalPrice = () => {
             if (window.location.href.match(/region=.+?(&|$)/)[0].replace(/(region=|&)/g, '').toLowerCase() == 'cn')
                 return;
             $('.disabled.h-p').eq(0).after('<li style="color:white;padding: 2px 5px;">显示人民币<label class="switch"><input id="selectOriginalPrice" type="checkbox"><span class="slider round"></span></label></li>');
-            let originalPriceToggle = $('#selectOriginalPrice');
-            originalPriceToggle[0].checked = true;
-            originalPriceToggle.change(() => {
-                if (originalPriceToggle[0].checked) {
-                    $('.store_box>.store_price').children().each((i, price_tag) => {
-                        $(price_tag).text($(price_tag).attr('converted-price'));
-                    });
-                } else {
-                    $('.store_box>.store_price').children().each((i, price_tag) => {
-                        $(price_tag).text($(price_tag).attr('original-price'));
-                    });
-                }
+            let toggle = $('#selectOriginalPrice');
+            toggle[0].checked = true;
+            toggle.change(() => {
+                $('.store_box>.store_price').children().each((i, price_tag) => {
+                    $(price_tag).text($(price_tag).attr(toggle[0].checked === true ? 'converted-price' : 'original-price'));
+                });
             })
         }
 
@@ -1554,7 +1538,7 @@
             // 根据降价幅度变更标题颜色
             changeGameTitleColor();
             // 只看史低
-            onlyLowest();
+            showBest();
         }
         // 页面：数折 > 商品页
         if (
@@ -1870,25 +1854,11 @@
          * 功能：奖杯筛选功能
          */
         const addTrophyFilter = () => {
-            $('.dropmenu').append('<li><em>筛选</em></li>'); // 追加“筛选”字样
-            // 追加“未获得”的按钮
-            $('.dropmenu').append("<a id='selectUnget'>尚未获得</a>");
-            // 点击按钮隐藏或者显示
-            let onlyUngetIsShown = false;
-            $('#selectUnget').click(() => {
+            $('.dropmenu').append('<li style="color:#B8C4CE;"></em>显示已获得</em><label class="switch" style="line-height:1.3;"><input id="filterEarned" type="checkbox"><span class="slider round"></span></label></li>');
+            let toggle = $('#filterEarned');
+            toggle[0].checked = false;
+            toggle.change(() => {
                 $('.lh180.alert-success.pd5.r').parent().parent().toggle('slow');
-                if (!onlyUngetIsShown) {
-                    $('#selectUnget').text('显示全部').css({
-                        'background-color': '#E7EBEE',
-                        color: '#99A1A7'
-                    });
-                } else {
-                    $('#selectUnget').text('尚未获得').css({
-                        'background-color': '#3498db',
-                        color: '#FFFFFF'
-                    });
-                }
-                onlyUngetIsShown = !onlyUngetIsShown;
             });
         }
 
