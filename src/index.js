@@ -13,8 +13,10 @@ import sortTipsByLikes from './components/SortTipsByLikes';
 import showTrophyNotEarned from './components/ShowTrophyNotEarned';
 import trophyPieChart from './components/TrophyPieChart';
 import trophyEarnedLineChart from './components/TrophyEarnedLineChart';
+import earnedStatusInGuide from './components/EarnedStatusInGuide';
 
 const page = window.location.href;
+const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
 
 // 全局
 pageBottom();
@@ -52,4 +54,9 @@ if (/psngame\//.test(page) && /^(?!.*comment|.*rank|.*battle|.*gamelist|.*topic|
     trophyEarnedLineChart();
     // 只显示为获得
     showTrophyNotEarned();
+}
+
+if (/topic\//.test(page) && psnidCookie) {
+    // 在攻略页面增加自己奖杯的获得状况
+    earnedStatusInGuide(psnidCookie);
 }
