@@ -71,9 +71,10 @@ const p9TimeTextParser = (timestamp_text) => { // returns UTC time
     return null;
 }
 
-/* 日期转换函数，将（XX年XX月XX日）形式切割成UTC时间
- *  @param   value     XX年XX月XX日 形式的字符串
- *  @return  {object}  UTC时间对象
+/* 
+ * 日期转换函数，将（XX年XX月XX日）形式切割成UTC时间
+ * @param   value     XX年XX月XX日 形式的字符串
+ * @return  {object}  UTC时间对象
  */
 const converntTime = (value) => {
     const time = value.replace(/年|月|日/g, '-').split('-');
