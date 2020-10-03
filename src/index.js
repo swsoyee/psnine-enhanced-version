@@ -1,2 +1,3 @@
-$('body').css('background', '#212121');
-GM_addStyle(require('./resource/style/style.css').toString());
+import PageBottom from './components/PageBottomButton/PageBottomButton';
+
+PageBottom();
