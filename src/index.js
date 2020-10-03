@@ -22,6 +22,7 @@ import autoPaging from './components/AutoPaging';
 import floorIndex from './components/FloorIndex';
 import priceLinePlot from './components/PriceLinePlot';
 import hoverShowReply from './components/HoverShowReply';
+import discountTitleColor from './components/DiscountTitleColor';
 
 const page = window.location.href;
 const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
@@ -131,6 +132,12 @@ if (/psnid\/[A-Za-z0-9_-]+$/.test(page) && $('tbody').length > 2) {
 // 综合页面：一览
 if (/((gene|qa|topic|trade)($|\?))/.test(page)) {
     autoPaging(3); // TODO 设置面板
+}
+
+// 页面：数折 一览
+if (/\/dd($|\?)/.test(page)) {
+    // 根据降价幅度变更标题颜色
+    discountTitleColor();
 }
 
 // 页面：数折 > 商品页

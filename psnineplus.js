@@ -141,7 +141,6 @@
                 contextButtonTitle: '图表导出菜单',
                 decimalPoint: '.',
                 downloadJPEG: '下载JPEG图片',
-                downloadPDF: '下载PDF文件',
                 downloadPNG: '下载PNG文件',
                 downloadSVG: '下载SVG文件',
                 drillUpText: '返回 {series.name}',
