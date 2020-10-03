@@ -25,6 +25,7 @@ import hoverShowReply from './components/HoverShowReply';
 import discountTitleColor from './components/DiscountTitleColor';
 import { bestOnly, bestOnlySalesPage } from './components/BestOnly';
 import { currencyConversion, currencyConversionSalesPage, showOriginalPrice } from './components/CurrencyConversion';
+import earnedTrophiesSummary from './components/EarnedTrophiesSummary';
 
 const page = window.location.href;
 const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
@@ -110,6 +111,8 @@ if (/psngame\//.test(page) && /^(?!.*comment|.*rank|.*battle|.*gamelist|.*topic|
     trophyEarnedLineChart();
     // 只显示为获得
     showTrophyNotEarned();
+    // 汇总已获得和未获得奖杯
+    earnedTrophiesSummary(false); // TODO 设置面板
 }
 
 if (/topic\//.test(page) && psnidCookie) {
