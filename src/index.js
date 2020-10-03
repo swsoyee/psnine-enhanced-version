@@ -16,6 +16,7 @@ import trophyPieChart from './components/TrophyPieChart';
 import trophyEarnedLineChart from './components/TrophyEarnedLineChart';
 import earnedStatusInGuide from './components/EarnedStatusInGuide';
 import gameCompletion from './components/GameCompletion';
+import replyContent from './components/ReplyContent';
 
 const page = window.location.href;
 const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
@@ -64,7 +65,12 @@ if (/topic\//.test(page) && psnidCookie) {
     earnedStatusInGuide(psnidCookie);
 }
 
-if (/psngame/.test(window.location.href) & !/psnid/.test(window.location.href)) {
+if (/psngame/.test(page) & !/psnid/.test(page)) {
     // 悬浮图标显示自己的游戏的完成度
     gameCompletion(psnidCookie);
+}
+
+// 页面：机因、主题
+if (/(gene|topic|trade|battle)\//.test(page)) {
+    replyContent(true); // TODO 设置面板
 }
