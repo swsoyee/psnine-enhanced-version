@@ -5,6 +5,7 @@ import hotTag from './components/HotTag';
 import beautifyQaIndex from './components/BeautifyQaIndex';
 import showMarkMessage from './components/ShowMarkMessage';
 import OpBadge from './components/OpBadge';
+import inputCounter from './components/InputCounter';
 
 const page = window.location.href;
 
@@ -23,3 +24,8 @@ if (/\/qa/.test(page)) {
     beautifyQaIndex(true); // TODO 设置面板
 }
 
+// 导航 > 机因 > 发机因
+if (/set\/gene/.test(page)) {
+    // 实时统计创建机因时候的文字数
+    inputCounter();
+}
