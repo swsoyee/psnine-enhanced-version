@@ -6,6 +6,7 @@ import beautifyQaIndex from './components/BeautifyQaIndex';
 import showMarkMessage from './components/ShowMarkMessage';
 import opBadge from './components/OpBadge';
 import inputCounter from './components/InputCounter';
+import inputPreview from './components/InputPreview';
 
 const page = window.location.href;
 
@@ -28,4 +29,6 @@ if (/\/qa/.test(page)) {
 if (/set\/gene/.test(page)) {
     // 实时统计创建机因时候的文字数
     inputCounter();
+    // 发基因时可实时预览结果内容
+    inputPreview();
 }
