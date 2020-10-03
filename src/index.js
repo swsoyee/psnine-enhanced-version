@@ -18,6 +18,7 @@ import earnedStatusInGuide from './components/EarnedStatusInGuide';
 import gameCompletion from './components/GameCompletion';
 import replyContent from './components/ReplyContent';
 import allGame from './components/AllGame';
+import autoPaging from './components/AutoPaging';
 
 const page = window.location.href;
 const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
@@ -78,4 +79,9 @@ if (/(gene|topic|trade|battle)\//.test(page)) {
 
 if (/psnid\/[A-Za-z0-9_-]+$/.test(page) && $('tbody').length > 2) {
     allGame(true); // TODO 设置面板
+}
+
+// 综合页面：一览
+if (/((gene|qa|topic|trade)($|\?))/.test(page)) {
+    autoPaging(3); // TODO 设置面板
 }
