@@ -23,6 +23,48 @@ import autoPaging from './components/AutoPaging';
 const page = window.location.href;
 const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
 
+Highcharts.setOptions({
+    lang: {
+        decimalPoint: '.',
+        drillUpText: '返回 {series.name}',
+        loading: '加载中',
+        months: [
+            '一月',
+            '二月',
+            '三月',
+            '四月',
+            '五月',
+            '六月',
+            '七月',
+            '八月',
+            '九月',
+            '十月',
+            '十一月',
+            '十二月',
+        ],
+        noData: '没有数据',
+        numericSymbols: ['千', '兆', 'G', 'T', 'P', 'E'],
+        resetZoom: '恢复缩放',
+        resetZoomTitle: '恢复图表',
+        shortMonths: [
+            '1月',
+            '2月',
+            '3月',
+            '4月',
+            '5月',
+            '6月',
+            '7月',
+            '8月',
+            '9月',
+            '10月',
+            '11月',
+            '12月',
+        ],
+        thousandsSep: ',',
+        weekdays: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+    },
+});
+
 // 全局
 autoCheckIn(true); // TODO 设置面板
 pageBottom();
