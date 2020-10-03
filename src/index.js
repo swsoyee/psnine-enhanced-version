@@ -10,6 +10,7 @@ import inputCounter from './components/InputCounter';
 import inputPreview from './components/InputPreview';
 import sortTipsByLikes from './components/SortTipsByLikes';
 import showTrophyNotEarned from './components/ShowTrophyNotEarned';
+import trophyPieChart from './components/TrophyPieChart';
 
 const page = window.location.href;
 
@@ -42,6 +43,8 @@ if (/trophy\/\d+($|\/$)/.test(page)) {
 
 // TODO Router refactor
 if (/psngame\//.test(page) && /^(?!.*comment|.*rank|.*battle|.*gamelist|.*topic|.*qa)/.test(page)) {
+    // 奖杯统计扇形图
+    trophyPieChart();
     // 只显示为获得
     showTrophyNotEarned();
 }
