@@ -7,6 +7,7 @@ import showMarkMessage from './components/ShowMarkMessage';
 import opBadge from './components/OpBadge';
 import inputCounter from './components/InputCounter';
 import inputPreview from './components/InputPreview';
+import sortTipsByLikes from './components/SortTipsByLikes';
 
 const page = window.location.href;
 
@@ -31,4 +32,8 @@ if (/set\/gene/.test(page)) {
     inputCounter();
     // 发基因时可实时预览结果内容
     inputPreview();
+}
+
+if (/trophy\/\d+($|\/$)/.test(page)) {
+    sortTipsByLikes();
 }
