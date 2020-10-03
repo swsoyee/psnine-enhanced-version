@@ -57,3 +57,12 @@ input:checked+.slider:before {
 .slider.round:before {
   border-radius: 50%;
 }
+
+#loadingMessage {
+  position: absolute;
+  bottom: 0px;
+  position: fixed;
+  right: 1px !important;
+  display: none;
+  color: white;
+}

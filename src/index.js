@@ -17,6 +17,7 @@ import trophyEarnedLineChart from './components/TrophyEarnedLineChart';
 import earnedStatusInGuide from './components/EarnedStatusInGuide';
 import gameCompletion from './components/GameCompletion';
 import replyContent from './components/ReplyContent';
+import allGame from './components/AllGame';
 
 const page = window.location.href;
 const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
@@ -73,4 +74,8 @@ if (/psngame/.test(page) & !/psnid/.test(page)) {
 // 页面：机因、主题
 if (/(gene|topic|trade|battle)\//.test(page)) {
     replyContent(true); // TODO 设置面板
+}
+
+if (/psnid\/[A-Za-z0-9_-]+$/.test(page) && $('tbody').length > 2) {
+    allGame(true); // TODO 设置面板
 }
