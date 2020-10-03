@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.9.37
+// @version      0.9.40
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404, Nathaniel_Wu, JayusTree
@@ -53,7 +53,7 @@
         // 功能1-11设置：鼠标悬浮于头像显示个人奖杯卡
         hoverHomepage: true,
         // 功能4-3设置：汇总以获得和未获得奖杯是否默认折叠
-        foldTropySummary: false, // true则默认折叠，false则默认展开
+        foldTrophySummary: false, // true则默认折叠，false则默认展开
         // 功能5-1设置：是否在`游戏`页面启用降低无白金游戏的图标透明度
         filterNonePlatinumAlpha: 0.2, // 透密 [0, 1] 不透明，如果设置为1则关闭该功能
         // 设置热门标签阈值
@@ -939,7 +939,7 @@
          * @param  data  Ajax获取的数据
          * @param  tip   Tippy对象
          */
-        const getTropyContentByAjax = (data, tip) => {
+        const getTrophyContentByAjax = (data, tip) => {
             const reg = /[\s\S]*<\/body>/g;
             const html = reg.exec(data)[0];
             const inner = $(html).find('td>em>.text-strong');
@@ -1244,10 +1244,39 @@
         /*
          * 功能：在当前页面上添加外币转人民币的价格展示
          */
-        const foreignCurrencyConversion = () => {
+        const retrieveRealTimeExchangeRate = (callback_success, callback_failure) => {
             // 默认汇率
             let exchangeRate = { HKD: 0.8796572978575602, USD: 6.817381644163391, GBP: 8.770269230346404, JPY: 0.06453927675754388 };//latest exchange rate as of 2020/09/30/00:00 AM (GMT+8)
-            const insertConvertedPriceTags = () => {
+            try {// 获取实时汇率
+                let httpReq = new XMLHttpRequest();
+                httpReq.open("GET", 'https://api.exchangeratesapi.io/latest', false);
+                httpReq.send(null);
+                let startTime = Date.now();
+                const repeatUntilSuccessful = (function_ptr, interval) => {
+                    if (!function_ptr())
+                        setTimeout(() => {
+                            repeatUntilSuccessful(function_ptr, interval);
+                        }, interval);
+                }
+                repeatUntilSuccessful(() => {
+                    // Wait until HTTP GET SUCCESSFULL or TIMEOUT
+                    if ((httpReq.status !== 200) && (httpReq.readyState !== XMLHttpRequest.DONE) && (Date.now() - startTime) < 3000)
+                        return false;
+                    let rawExchangeRate = null;
+                    if ((httpReq.status == 200) && (httpReq.readyState == XMLHttpRequest.DONE))
+                        rawExchangeRate = JSON.parse(httpReq.response);
+                    if (Boolean(rawExchangeRate))// HTTP GET SUCCESSFULL
+                        ['HKD', 'USD', 'GBP', 'JPY'].forEach(currency => exchangeRate[currency] = rawExchangeRate.rates.CNY / rawExchangeRate.rates[currency]);
+                    callback_success(exchangeRate);
+                    return true;
+                }, 50);
+            } catch (e) {
+                console.log('实时汇率获取失败，使用默认汇率');
+                callback_failure(exchangeRate);
+            }
+        }
+        const foreignCurrencyConversion = () => {
+            const insertConvertedPriceTags = (exchangeRate) => {
                 $('.dd_price').map((i, el) => {
                     // 一览页面和单商品页面不同位置偏移
                     const offset = /dd\//.test(window.location.href) ? 2 : 3;
@@ -1283,33 +1312,30 @@
                     $('.dd_price span:last-child').eq(i).after(addCNYPriceBlock);
                 });
             }
-            try {// 获取实时汇率
-                let httpReq = new XMLHttpRequest();
-                httpReq.open("GET", 'https://api.exchangeratesapi.io/latest', false);
-                httpReq.send(null);
-                let startTime = Date.now();
-                const repeatUntilSuccessful = (function_ptr, interval) => {
-                    if (!function_ptr())
-                        setTimeout(() => {
-                            repeatUntilSuccessful(function_ptr, interval);
-                        }, interval);
-                }
-                repeatUntilSuccessful(() => {
-                    // Wait until HTTP GET SUCCESSFULL or TIMEOUT
-                    if ((httpReq.status !== 200) && (httpReq.readyState !== XMLHttpRequest.DONE) && (Date.now() - startTime) < 3000)
-                        return false;
-                    let rawExchangeRate = null;
-                    if ((httpReq.status == 200) && (httpReq.readyState == XMLHttpRequest.DONE))
-                        rawExchangeRate = JSON.parse(httpReq.response);
-                    if (Boolean(rawExchangeRate))// HTTP GET SUCCESSFULL
-                        ['HKD', 'USD', 'GBP', 'JPY'].forEach(currency => exchangeRate[currency] = rawExchangeRate.rates.CNY / rawExchangeRate.rates[currency]);
-                    insertConvertedPriceTags();
-                    return true;
-                }, 50);
-            } catch (e) {
-                console.log('实时汇率获取失败，使用默认汇率');
-                insertConvertedPriceTags();
+            retrieveRealTimeExchangeRate(insertConvertedPriceTags, insertConvertedPriceTags);
+        }
+        const foreignCurrencyConversionSalesPage = () => {
+            const changeToConvertedPriceTags = (exchangeRate) => {
+                $('.store_box>.store_price').map((i, el) => {
+                    // 一览页面和单商品页面不同位置偏移
+                    const region = window.location.href.match(/region=.+?(&|$)/)[0].replace(/(region=|&)/g, '').toLowerCase();
+                    if (region == 'cn')
+                        return;
+                    // 根据地区转换原始价格
+                    const regionCurrency = {
+                        hk: ['HK$', exchangeRate.HKD],
+                        us: ['$', exchangeRate.USD],
+                        jp: ['¥', exchangeRate.JPY],
+                        gb: ['£', exchangeRate.GBP]
+                    };
+                    $(el).children().each((j, price_tag) => {
+                        $(price_tag).attr('original-price', $(price_tag).text());
+                        $(price_tag).attr('converted-price', `CN¥${(Number($(price_tag).text().replace(regionCurrency[region][0], '')) * regionCurrency[region][1]).toFixed(2)}`);
+                        $(price_tag).text($(price_tag).attr('converted-price'));
+                    });
+                });
             }
+            retrieveRealTimeExchangeRate(changeToConvertedPriceTags, changeToConvertedPriceTags);
         }
         /*
          * 功能：根据降价幅度变更标题颜色
@@ -1362,57 +1388,125 @@
                 }`
             );
         }
-        addButtonStyle('selectLowest', '#d9534f'); // 只看史低
+        const color_AddedButtonReady = '#d9534f';
         addButtonStyle('selectUnget', '#3498db');  // 未获得
+        addButtonStyle('selectOriginalPrice', color_AddedButtonReady); // 原币种价格
+
+        GM_addStyle(`
+            .switch {
+                position: relative;
+                display: inline-block;
+                margin-left: 10px;
+                width: 40px;
+                height: 18px;
+            }`
+        );
+        GM_addStyle(`
+            .switch input {
+                opacity: 0;
+                width: 0;
+                height: 0;
+            }`
+        );
+        GM_addStyle(`
+            .slider {
+                position: absolute;
+                cursor: pointer;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: #ccc;
+                -webkit-transition: .4s;
+                transition: .4s;
+            }`
+        );
+        GM_addStyle(`
+            .slider:before {
+                position: absolute;
+                content: "";
+                height: 16px;
+                width: 16px;
+                left: 2px;
+                bottom: 1px;
+                background-color: white;
+                -webkit-transition: .4s;
+                transition: .4s;
+            }`
+        );
+        GM_addStyle(`
+            input:checked + .slider {
+                background-color: #2196F3;
+            }`
+        );
+        GM_addStyle(`
+            input:focus + .slider {
+                box-shadow: 0 0 1px #2196F3;
+            }`
+        );
+        GM_addStyle(`
+            input:checked + .slider:before {
+                -webkit-transform: translateX(20px);
+                -ms-transform: translateX(20px);
+                transform: translateX(20px);
+            }`
+        );
+        GM_addStyle(`
+            .slider.round {
+                border-radius: 34px;
+            }`
+        );
+        GM_addStyle(`
+            .slider.round:before {
+                border-radius: 50%;
+            }
+        `);
         /*
-         * 功能：页面上追加“只看史低”功能按键，点击显示史低，再次点击恢复显示所有游戏（数折页面）
-         */
-        const onlyLowest = () => {
+        * 功能：页面上追加“只看史低”功能按键，点击显示史低，再次点击恢复显示所有游戏（数折页面）
+        */
+        const showBest = () => {
             // 追加只看史低按键
-            $('.dropmenu').append("<li><a id='selectLowest'>只看史低</a></li>");
+            $('.dropmenu').append('<li style="color:#B8C4CE;padding: 0px 0px 0px 10px;">只看史低</li><label class="switch" style="line-height:1.3;"><input id="showBest" type="checkbox"><span class="slider round"></span></label>');
             // 点击按钮隐藏或者显示
-            let clickHideShowNumLowest = 0;
-            $('#selectLowest').click(() => {
-                if (clickHideShowNumLowest++ % 2 === 0) {
-                    $('li.dd_box').map((i, el) => {
-                        if ($(el).children('.dd_status.dd_status_best').length === 0) {
-                            $(el).hide();
-                        }
-                    });
-                    $('#selectLowest').text('显示全部').css({
-                        'background-color': '#f78784'
-                    });
-                } else {
-                    $('li.dd_box').show();
-                    $('#selectLowest').text('只看史低').css({
-                        'background-color': '#d9534f'
-                    });
-                }
+            let toggle = $('#showBest');
+            toggle[0].checked = false;
+            toggle.change(() => {
+                $('li.dd_box').map((i, el) => {
+                    if ($(el).children('.dd_status.dd_status_best').length === 0) {
+                        toggle[0].checked === true ? $(el).hide() : $(el).show();
+                    }
+                });
             });
         }
         /*
-         * 功能：页面上追加“只看史低”功能按键，点击显示史低，再次点击恢复显示所有游戏（活动页面）
-         */
-        const onlyLowestSell = () => {
+        * 功能：页面上追加“只看史低”功能按键，点击显示史低，再次点击恢复显示所有游戏（活动页面）
+        */
+        const onlyLowestSalesPage = () => {
             // 追加只看史低按键
-            $('.disabled.h-p').after("<li><a id='selectLowest'>只看史低</a></li>")
-            // 隐藏游戏box函数
-            const hideOrShowGameBox = ({ status, text, background }) => {
+            $('.disabled.h-p').eq(0).after('<li style="color:white;padding: 2px 5px;">只看史低<label class="switch"><input id="hideGamebox" type="checkbox"><span class="slider round"></span></label></li>');
+            let toggle = $('#hideGamebox');
+            toggle[0].checked = false;
+            toggle.change(() => {
                 $(document.querySelectorAll('li.store_box')).map((i, el) => {
                     if ((el).querySelector('.store_tag_best') === null) {
-                        (el).style.display = status;
+                        $(el).css('display', toggle[0].checked === true ? 'none' : 'block');
                     }
                 })
-                $('#selectLowest').text(text).css({
-                    'background-color': background,
+            });
+        }
+        /*
+         * 功能：页面上追加“显示人民币”功能按键（活动页面）
+         */
+        const showOriginalPrice = () => {
+            if (window.location.href.match(/region=.+?(&|$)/)[0].replace(/(region=|&)/g, '').toLowerCase() == 'cn')
+                return;
+            $('.disabled.h-p').eq(0).after('<li style="color:white;padding: 2px 5px;">显示人民币<label class="switch"><input id="selectOriginalPrice" type="checkbox"><span class="slider round"></span></label></li>');
+            let toggle = $('#selectOriginalPrice');
+            toggle[0].checked = true;
+            toggle.change(() => {
+                $('.store_box>.store_price').children().each((i, price_tag) => {
+                    $(price_tag).text($(price_tag).attr(toggle[0].checked === true ? 'converted-price' : 'original-price'));
                 });
-            }
-            // 点击按钮隐藏或者显示
-            let clickHideShowNumLowest2 = 0;
-            $('#selectLowest').click(() => {
-                hideOrShowGameBox(clickHideShowNumLowest2++ % 2 === 0
-                    ? { status: 'none', text: '显示全部', background: '#f78784' }
-                    : { status: 'block', text: '只看史低', background: '#d9534f' });
             })
         }
 
@@ -1438,13 +1532,13 @@
             changeQaStatus(settings.newQaStatus);
         }
         // 页面：数折
-        if (/\/dd/.test(window.location.href)) {
+        if (/\/dd($|\?)/.test(window.location.href)) {
             // 外币转人民币
             foreignCurrencyConversion();
             // 根据降价幅度变更标题颜色
             changeGameTitleColor();
             // 只看史低
-            onlyLowest();
+            showBest();
         }
         // 页面：数折 > 商品页
         if (
@@ -1452,11 +1546,17 @@
             /game\/[0-9]+\/dd$/.test(window.location.href)
         ) {
             addPriceLinePlot();
+            // 外币转人民币
+            foreignCurrencyConversion();
         }
         // 页面：活动
         if (/huodong/.test(window.location.href)) {
+            // 外币转人民币
+            foreignCurrencyConversionSalesPage();
             // 只看史低
-            onlyLowestSell();
+            onlyLowestSalesPage();
+            // 原币种价格
+            showOriginalPrice();
         }
         // 页面：全局
         // 跳转至底部按钮
@@ -1471,8 +1571,8 @@
          * @return {object}   用于绘扇形图的单个数据块
          */
         const getTrophyCategory = (className, name, color) => {
-            const tropyCount = $(className).eq(0).text().replace(name, '');
-            return { name: name, y: Number(tropyCount), color: color };
+            const trophyCount = $(className).eq(0).text().replace(name, '');
+            return { name: name, y: Number(trophyCount), color: color };
         }
 
         /*
@@ -1605,44 +1705,55 @@
          *
          * @return {object}   用于绘线形图的数据集
          */
-        const createTropyGetTimeData = (className) => {
+        const trophyGetTimeElementParser = (timeElement) => {
+            // 奖杯时间丢失部分处理
+            const dayTime = $(timeElement).text().trim();
+            if (dayTime === '时间丢失')
+                return 0;
+            // 从页面上获取奖杯时间，生成时间对象并且放入数组中保存
+            const timeArray = [
+                $(timeElement).attr('tips').replace('年', ''), // 年
+                Number(dayTime.substr(0, 2)) - 1, // 月
+                dayTime.substr(3, 2), // 日
+                dayTime.substr(5, 2), // 时
+                dayTime.substr(8, 2), // 分
+            ].map((x) => Number(x));
+            return Date.UTC(...timeArray);
+        };
+        const createTrophyGetTimeData = (className) => {
             const timeElements = $(className);
             const getTimeArray = [];
             timeElements.map((i, el) => {
-                // 奖杯时间丢失部分处理
-                const currentValue = $(el).text().trim();
-                const index = currentValue === '时间丢失' ? 0 : i;
-                // 从页面上获取奖杯时间，生成时间对象并且放入数组中保存
-                const dayTime = timeElements.eq(index).text().trim();
-                const timeArray = [
-                    timeElements.eq(index).attr('tips').replace('年', ''), // 年
-                    Number(dayTime.substr(0, 2)) - 1, // 月
-                    dayTime.substr(3, 2), // 日
-                    dayTime.substr(5, 2), // 时
-                    dayTime.substr(8, 2), // 分
-                ].map((x) => Number(x));
-                const xTime = Date.UTC(...timeArray);
-                getTimeArray.push(xTime);
+                const xTime = trophyGetTimeElementParser(el);
+                getTimeArray.push([xTime, el.parentElement.parentElement]);
             })
-            // getTimeArray.push(Date.now());
-            getTimeArray.sort();
-            const data = getTimeArray.map((x, y) => {
-                return [x, y + 1];
-            })
+            getTimeArray.sort((t1, t2) => t1[0] - t2[0]);
+            let earliestValidTimeIndex = getTimeArray.findIndex(t => t[0] != 0);
+            if (earliestValidTimeIndex >= 0)
+                getTimeArray.forEach(t => {
+                    if (t[0] == 0)
+                        t[0] = getTimeArray[earliestValidTimeIndex][0]
+                });
+            else
+                getTimeArray.forEach(t => t[0] = Number.NaN);
+            const data = getTimeArray.map((x, y) => [x[0], y + 1]);
             // 调整最终数据点
             // data[data.length - 1][1] -= 1;
-            return data;
+            const trophyElements = getTimeArray.map((x) => x[1]);
+            return { 'data': data, 'trophyElements': trophyElements };
         }
 
         /*
          * 功能：在单独游戏页面上方追加奖杯获得时间线形图
          */
-        const addTropyGetTimeLineChart = () => {
+        let trophyGetTimeData;
+        const addTrophyGetTimeLineChart = () => {
             // 奖杯获得时间年月统计
-            const data = createTropyGetTimeData('em.lh180.alert-success.pd5.r');
-            const totalTropyCount = Number($('div.main>.box.pd10>em>.text-strong')
+            trophyGetTimeData = createTrophyGetTimeData('em.lh180.alert-success.pd5.r');
+            const data = trophyGetTimeData.data;
+            const totalTrophyCount = Number($('div.main>.box.pd10>em>.text-strong')
                 .text().replace('总', ''));
-            const receivedTropyCount = data.length;
+            const receivedTrophyCount = data.length;
 
             // 悬浮内容设置
             const trophyGetTimeTooltip = {
@@ -1673,7 +1784,7 @@
                 },
             ];
             // 标题设置
-            const trophyGetRatio = ((receivedTropyCount / totalTropyCount) * 100).toFixed(2);
+            const trophyGetRatio = ((receivedTrophyCount / totalTrophyCount) * 100).toFixed(2);
             const trophyGetTimeTitleText = `奖杯获得时间（完成率：${trophyGetRatio}%）`;
             const trophyGetTimeTitle = {
                 text: trophyGetTimeTitleText,
@@ -1690,9 +1801,9 @@
                     text: '获得个数',
                 },
                 min: 0,
-                max: totalTropyCount,
+                max: totalTrophyCount,
                 endOnTick: false,
-                tickInterval: Math.floor(totalTropyCount / 4),
+                tickInterval: Math.floor(totalTrophyCount / 4),
             };
             // 绘图设置
             const trophyGetTimeChart = {
@@ -1729,32 +1840,36 @@
             $('.box.pd10').append(
                 `<div id="trophyGetTimeChart" align="left"></div>`
             );
-            Highcharts.chart('trophyGetTimeChart', trophyGetTime)
+            Highcharts.chart('trophyGetTimeChart', trophyGetTime);
+        }
+
+        const sortTrophiesByTimestamp = () => {
+            const trophyTableEntries = $('table.list').eq(0).children().find('tr');
+            const trophies = trophyTableEntries.filter((i, e) => e.id != "");
+            if (trophies.eq(0).hasClass('t1'))//Platinum
+                trophyTableEntries.filter((i, e) => e.id == "").eq(0).after(trophyGetTimeData.trophyElements);
+            else
+                trophies.eq(0).after(trophyGetTimeData.trophyElements);
         }
 
         /*
          * 功能：奖杯筛选功能
          */
-        const addTropyFilter = () => {
-            $('.dropmenu').append('<li><em>筛选</em></li>'); // 追加“筛选”字样
-            // 追加“未获得”的按钮
-            $('.dropmenu').append("<a id='selectUnget'>尚未获得</a>");
-            // 点击按钮隐藏或者显示
-            let onlyUngetIsShown = false;
-            $('#selectUnget').click(() => {
+        const addTrophyFilter = () => {
+            $('.dropmenu').append('<li style="color:#B8C4CE;"></em>只显示未获得</em><label class="switch" style="line-height:1.3;"><input id="filterEarned" type="checkbox"><span class="slider round"></span></label></li>');
+            let toggle = $('#filterEarned');
+            toggle[0].checked = false;
+            toggle.change(() => {
                 $('.lh180.alert-success.pd5.r').parent().parent().toggle('slow');
-                if (!onlyUngetIsShown) {
-                    $('#selectUnget').text('显示全部').css({
-                        'background-color': '#E7EBEE',
-                        color: '#99A1A7'
-                    });
-                } else {
-                    $('#selectUnget').text('尚未获得').css({
-                        'background-color': '#3498db',
-                        color: '#FFFFFF'
-                    });
-                }
-                onlyUngetIsShown = !onlyUngetIsShown;
+            });
+        }
+
+        const addTrophySortByTimestamp = () => {
+            $('div.main ul.dropmenu > li.dropdown > ul').eq(0).append('<li id="sortTrophiesByTimestamp"><a>获得时间</a></li>');
+            $('#sortTrophiesByTimestamp').click(() => {
+                sortTrophiesByTimestamp();
+                $('#sortTrophiesByTimestamp').remove();
+                $('div.main ul.dropmenu > li.dropdown').removeClass('hover');
             });
         }
 
@@ -1762,16 +1877,16 @@
          * 功能：汇总以获得和未获得奖杯
          */
         const addEarnedTrophiesSummary = () => {
-            const tropyTitleStyle = `border-radius: 2px; padding:5px; background-color:${$('li.current').css('background-color')};`;
+            const trophyTitleStyle = `border-radius: 2px; padding:5px; background-color:${$('li.current').css('background-color')};`;
             // tippy弹出框的样式
             GM_addStyle(`.tippy-tooltip.psnine-theme {background-color: ${$('.box').css('background-color')};}`);
             // 奖杯tips颜色
             let tipColor = '';
             // 创建奖杯汇总框架函数
-            const createTropyContainer = (object, className, title) => {
+            const createTrophyContainer = (object, className, title) => {
                 // 添加标题框在汇总图下
                 $('.box.pd10').append(
-                    `<div class='${className}'><p class='tropyCount' style='${tropyTitleStyle}'></p><div class='tropyContainer' style='padding:5px;'></div></div>`
+                    `<div class='${className}'><p class='trophyCount' style='${trophyTitleStyle}'></p><div class='trophyContainer' style='padding:5px;'></div></div>`
                 );
                 object.map(function (i, v) {
                     // 如果这个奖杯有Tips，就设置左边框为绿色，否则就为底色（边框颜色和底色一致）
@@ -1784,7 +1899,7 @@
                         tipColor = $('.box').css('background-color');
                     }
                     // 添加奖杯图标
-                    $(`.${className}> .tropyContainer`).append(
+                    $(`.${className}> .trophyContainer`).append(
                         `<span id='${className}Small${i}' style='padding:3px; border-left: 3px solid ${tipColor};'><a href='${$(this).parent().attr('href')}'><img src='${$(this).attr('src')}' width='30px'></img><a></span>`
                     );
                     // 添加鼠标悬浮弹出消息
@@ -1795,33 +1910,33 @@
                     });
                 });
                 // 给奖杯汇总标题填充文字
-                const summaryTropyDict = {
+                const summaryTrophyDict = {
                     '.t1': ['text-platinum', '白'],
                     '.t2': ['text-gold', '金'],
                     '.t3': ['text-silver', '银'],
                     '.t4': ['text-bronze', '铜'],
                 };
-                let tropySubText = ""
-                for (var i in summaryTropyDict) {
-                    tropySubText += `<span class=${summaryTropyDict[i][0]}> ${summaryTropyDict[i][1]}${object.parent().parent(i).length}</span>`
+                let trophySubText = ""
+                for (var i in summaryTrophyDict) {
+                    trophySubText += `<span class=${summaryTrophyDict[i][0]}> ${summaryTrophyDict[i][1]}${object.parent().parent(i).length}</span>`
                 }
-                $(`.${className}> .tropyCount`).append(
-                    `<span style='color:#808080;'>${title}：${tropySubText}<span class='text-strong'> 总${object.length}</span></span>`
+                $(`.${className}> .trophyCount`).append(
+                    `<span style='color:#808080;'>${title}：${trophySubText}<span class='text-strong'> 总${object.length}</span></span>`
                 );
             }
             // 创建已获得奖杯汇总框
-            createTropyContainer($('.imgbg.earned'), 'earnedTropy', '已获得奖杯');
+            createTrophyContainer($('.imgbg.earned'), 'earnedTrophy', '已获得奖杯');
             // 创建未获得奖杯汇总框
-            createTropyContainer($("img[class$='imgbg']"), 'notEarnedTropy', '未获得奖杯');
+            createTrophyContainer($("img[class$='imgbg']"), 'notEarnedTrophy', '未获得奖杯');
             // 未获得奖杯变黑白
-            $('span[id^="notEarnedTropySmall"] > a > img').css({ filter: 'grayscale(100%)' });
+            $('span[id^="notEarnedTrophySmall"] > a > img').css({ filter: 'grayscale(100%)' });
             // 折叠奖杯汇总
             // 奖杯图标设置为不可见
-            if (settings.foldTropySummary) {
-                $('.tropyContainer').css('display', 'none');
+            if (settings.foldTrophySummary) {
+                $('.trophyContainer').css('display', 'none');
             }
             // 单击奖杯汇总标题后展开奖杯图标
-            $('.tropyCount').click(function () {
+            $('.trophyCount').click(function () {
                 $(this).next().slideToggle();
             });
         }
@@ -1837,11 +1952,13 @@
             // 追加奖杯统计扇形图
             addTrophyPieChart();
             // 追加奖杯获得时间线形图
-            addTropyGetTimeLineChart();
+            addTrophyGetTimeLineChart();
+            // 追加奖杯获得时间排序
+            addTrophySortByTimestamp();
             // 汇总以获得和未获得奖杯
             addEarnedTrophiesSummary();
             // 追加奖杯筛选功能
-            addTropyFilter();
+            addTrophyFilter();
         }
 
         /*
@@ -1882,7 +1999,7 @@
                             placement: 'left',
                             delay: 500,
                             async onShow(tip) {
-                                tippyOnShow(myGameUrl, tip, getTropyContentByAjax);
+                                tippyOnShow(myGameUrl, tip, getTrophyContentByAjax);
                             },
                             onHidden(tip) {
                                 tip.state.ajax.canFetch = true;
@@ -2566,7 +2683,7 @@
                 'replyTraceback',
                 'nightMode',
                 'autoNightMode',
-                'foldTropySummary',
+                'foldTrophySummary',
                 'newQaStatus',
                 'hoverHomepage',
                 'autoPagingInHomepage',
@@ -2578,7 +2695,7 @@
             );
             $('body').append(`
                 <style>.setting-panel-box{z-index:9999;background-color:#fff;transition:all .4s ease;position:fixed;left:50%;transform:translateX(-50%);top:-5000px;width:500px;box-shadow:0 0 20px rgba(0,0,0,0.3);padding:10px 0;box-sizing:border-box;border-radius:4px;max-height:700px;overflow-y:scroll;scrollbar-color:#dcdcdc #fff;scrollbar-width:thin}.setting-panel-box::-webkit-scrollbar{width:4px;background-color:#fff}.setting-panel-box::-webkit-scrollbar-button{display:none}.setting-panel-box::-webkit-scrollbar-thumb{background-color:#dcdcdc}.setting-panel-box.show{top:20px}.setting-panel-box h2{margin-bottom:10px;padding-left:20px}.setting-panel-box h4{margin-bottom:10px;padding-left:20px;font-weight:400;color:#1f2f3d;font-size:22px}.setting-panel-box .row{display:flex;align-items:center;justify-content:flex-start;width:100%;margin-bottom:5px;padding-left:20px;box-sizing:border-box}.setting-panel-box .row label{line-height:32px;text-align:left;font-size:14px;color:#606266;width:190px}.setting-panel-box .row .mini{line-height:26px;text-align:left;font-size:14px;color:#606266;margin:0 10px 0 0;width:50px}.setting-panel-box .row .normal{line-height:26px;text-align:left;font-size:14px;color:#606266;margin:0 10px 0 0;width:205px}.setting-panel-box .row textarea{resize:vertical;min-height:30px;border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;line-height:26px;box-sizing:border-box;width:227px;padding:0 10px}.setting-panel-box .row input{border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;height:26px;line-height:26px;display:inline-block;width:227px;padding:0 10px}.setting-panel-box .row input.slider{height:6px;background-color:#e4e7ed;margin:16px 0;border-radius:3px;position:relative;cursor:pointer;vertical-align:middle;outline:none;padding:0}.setting-panel-box .row input.slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border:2px solid #409eff;background-color:#fff;border-radius:50%;transition:.2s;user-select:none}.setting-panel-box .row input.slider::-moz-range-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border:2px solid #409eff;background-color:#fff;border-radius:50%;transition:.2s;user-select:none}.setting-panel-box .row .sliderValue{margin-left:5px}.setting-panel-box .row select{border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;height:26px;line-height:26px;display:inline-block;width:227px;padding:0 10px}.setting-panel-box .row span{line-height:32px;text-align:left;font-size:14px;color:#606266;margin-right:10px}.setting-panel-box .btnbox{display:flex;align-items:center;justify-content:center}.setting-panel-box button{-webkit-appearance:button;padding:9px 15px;font-size:12px;border-radius:3px;display:inline-block;line-height:1;white-space:nowrap;cursor:pointer;background:#fff;border:1px solid #dcdfe6;color:#606266;text-align:center;box-sizing:border-box;outline:0;margin:0;transition:.1s;font-weight:500;margin:0 10px}.setting-panel-box button:hover{color:#409eff;border-color:#c6e2ff;background-color:#ecf5ff}.setting-panel-box button.confirm{color:#fff;background-color:#3890ff}.setting-panel-box button.confirm:hover{background-color:#9ec9ff}</style>
-                <div class=setting-panel-box><h2>PSN中文网功能增强插件设置</h2><div class=row><a href=https://github.com/swsoyee/psnine-enhanced-version><img src=https://img.shields.io/github/stars/swsoyee/psnine-enhanced-version.svg?style=social></img></a></div><div class=row><label>夜间模式</label><select id=nightMode><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动夜间模式</label><select id=autoNightMode><option value="&quot;SYSTEM&quot;">跟随系统<option value="&quot;TIME&quot;">跟据时间<option value="&quot;OFF&quot;">关闭</select></div><div class=row><label>高亮用户ID</label><textarea name="" id="highlightSpecificID" cols="30" rows="2"></textarea></div><div class=row><label>黑名单ID</label><textarea name="" id="blockList" cols="30" rows="2"></textarea></div><div class=row><label>关键词屏蔽</label><textarea name="" id="blockWordsList" cols="30" rows="2"></textarea></div><div class=row><label>机因中显示被@的内容</label><select id=replyTraceback><option value=true>启用<option value=false>关闭</select></div><div class=row><label>悬浮显示刮刮卡内容</label><select id=hoverUnmark><option value=true>启用<option value=false>关闭</select></div><div class=row><label>插图显示方式</label><select id=showImagesInPosts><option value=true>直接显示<option value=false>悬浮预览</select></div><div class=row><label>个人主页下显示所有游戏</label><select id=autoPagingInHomepage><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动签到</label><select id=autoCheckIn><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动向后翻页数</label><input type=number class=normal id=autoPaging></div><div class=row><label>问答区状态优化</label><select id=newQaStatus><option value=true>启用<option value=false>关闭</select></div><div class=row><label>悬浮头像显示个人信息</label><select id=hoverHomepage><option value=true>启用<option value=false>关闭</select></div><div class=row><label>奖杯默认折叠</label><select id=foldTropySummary><option value=true>启用<option value=false>关闭</select></div><div class=row><label>约战页面去掉发起人头像</label><select id=removeHeaderInBattle><option value=true>启用<option value=false>关闭</select></div><div class=row><label>无白金游戏图标透明度</label><input id=filterNonePlatinum class=slider type=range min=0 max=1 step=0.1><span id=filterNonePlatinumValue class=sliderValue></span></div><div class=row><label>热门标签回复数阈值</label><input id=hotTagThreshold class=slider type=range min=10 max=100 step=5><span id=hotTagThresholdValue class=sliderValue></span></div><div class=btnbox><button class=confirm>确定</button><button class=cancel>取消</button></div></div>`
+                <div class=setting-panel-box><h2>PSN中文网功能增强插件设置</h2><div class=row><a href=https://github.com/swsoyee/psnine-enhanced-version><img src=https://img.shields.io/github/stars/swsoyee/psnine-enhanced-version.svg?style=social></img></a></div><div class=row><label>夜间模式</label><select id=nightMode><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动夜间模式</label><select id=autoNightMode><option value="&quot;SYSTEM&quot;">跟随系统<option value="&quot;TIME&quot;">跟据时间<option value="&quot;OFF&quot;">关闭</select></div><div class=row><label>高亮用户ID</label><textarea name="" id="highlightSpecificID" cols="30" rows="2"></textarea></div><div class=row><label>黑名单ID</label><textarea name="" id="blockList" cols="30" rows="2"></textarea></div><div class=row><label>关键词屏蔽</label><textarea name="" id="blockWordsList" cols="30" rows="2"></textarea></div><div class=row><label>机因中显示被@的内容</label><select id=replyTraceback><option value=true>启用<option value=false>关闭</select></div><div class=row><label>悬浮显示刮刮卡内容</label><select id=hoverUnmark><option value=true>启用<option value=false>关闭</select></div><div class=row><label>插图显示方式</label><select id=showImagesInPosts><option value=true>直接显示<option value=false>悬浮预览</select></div><div class=row><label>个人主页下显示所有游戏</label><select id=autoPagingInHomepage><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动签到</label><select id=autoCheckIn><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动向后翻页数</label><input type=number class=normal id=autoPaging></div><div class=row><label>问答区状态优化</label><select id=newQaStatus><option value=true>启用<option value=false>关闭</select></div><div class=row><label>悬浮头像显示个人信息</label><select id=hoverHomepage><option value=true>启用<option value=false>关闭</select></div><div class=row><label>奖杯默认折叠</label><select id=foldTrophySummary><option value=true>启用<option value=false>关闭</select></div><div class=row><label>约战页面去掉发起人头像</label><select id=removeHeaderInBattle><option value=true>启用<option value=false>关闭</select></div><div class=row><label>无白金游戏图标透明度</label><input id=filterNonePlatinum class=slider type=range min=0 max=1 step=0.1><span id=filterNonePlatinumValue class=sliderValue></span></div><div class=row><label>热门标签回复数阈值</label><input id=hotTagThreshold class=slider type=range min=10 max=100 step=5><span id=hotTagThresholdValue class=sliderValue></span></div><div class=btnbox><button class=confirm>确定</button><button class=cancel>取消</button></div></div>`
             );
             // 点击打开设置面板
             $('#psnine-enhanced-version-opensetting').on('click', () => {
