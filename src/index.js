@@ -24,6 +24,7 @@ import priceLinePlot from './components/PriceLinePlot';
 import hoverShowReply from './components/HoverShowReply';
 import discountTitleColor from './components/DiscountTitleColor';
 import { bestOnly, bestOnlySalesPage } from './components/BestOnly';
+import { currencyConversion, currencyConversionSalesPage, showOriginalPrice } from './components/CurrencyConversion';
 
 const page = window.location.href;
 const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
@@ -141,17 +142,26 @@ if (/\/dd($|\?)/.test(page)) {
     discountTitleColor();
     // 只看史低
     bestOnly();
+    // 外币转人民币
+    currencyConversion();
 }
 
 // 页面：数折 > 商品页
 if (/\/dd\//.test(page) || /game\/[0-9]+\/dd$/.test(page)) {
+    // 价格走势图
     priceLinePlot();
+    // 外币转人民币
+    currencyConversion();
 }
 
 // 页面：活动
 if (/huodong/.test(page)) {
     // 只看史低
     bestOnlySalesPage();
+    // 外币转人民币
+    currencyConversionSalesPage();
+    // 原币种价格
+    showOriginalPrice();
 }
 
 if (/^(?!.*trade|.*qa(\?(ob|title)=.*)?$)/.test(page)) {
