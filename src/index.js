@@ -14,6 +14,7 @@ import showTrophyNotEarned from './components/ShowTrophyNotEarned';
 import trophyPieChart from './components/TrophyPieChart';
 import trophyEarnedLineChart from './components/TrophyEarnedLineChart';
 import earnedStatusInGuide from './components/EarnedStatusInGuide';
+import gameCompletion from './components/GameCompletion';
 
 const page = window.location.href;
 const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
@@ -59,4 +60,9 @@ if (/psngame\//.test(page) && /^(?!.*comment|.*rank|.*battle|.*gamelist|.*topic|
 if (/topic\//.test(page) && psnidCookie) {
     // 在攻略页面增加自己奖杯的获得状况
     earnedStatusInGuide(psnidCookie);
+}
+
+if (/psngame/.test(window.location.href) & !/psnid/.test(window.location.href)) {
+    // 悬浮图标显示自己的游戏的完成度
+    gameCompletion(psnidCookie);
 }
