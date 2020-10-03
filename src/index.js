@@ -23,6 +23,7 @@ import floorIndex from './components/FloorIndex';
 import priceLinePlot from './components/PriceLinePlot';
 import hoverShowReply from './components/HoverShowReply';
 import discountTitleColor from './components/DiscountTitleColor';
+import { bestOnly, bestOnlySalesPage } from './components/BestOnly';
 
 const page = window.location.href;
 const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
@@ -138,11 +139,19 @@ if (/((gene|qa|topic|trade)($|\?))/.test(page)) {
 if (/\/dd($|\?)/.test(page)) {
     // 根据降价幅度变更标题颜色
     discountTitleColor();
+    // 只看史低
+    bestOnly();
 }
 
 // 页面：数折 > 商品页
 if (/\/dd\//.test(page) || /game\/[0-9]+\/dd$/.test(page)) {
     priceLinePlot();
+}
+
+// 页面：活动
+if (/huodong/.test(page)) {
+    // 只看史低
+    bestOnlySalesPage();
 }
 
 if (/^(?!.*trade|.*qa(\?(ob|title)=.*)?$)/.test(page)) {
