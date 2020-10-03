@@ -20,6 +20,7 @@ import replyContent from './components/ReplyContent';
 import allGame from './components/AllGame';
 import autoPaging from './components/AutoPaging';
 import floorIndex from './components/FloorIndex';
+import priceLinePlot from './components/PriceLinePlot'
 
 const page = window.location.href;
 const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
@@ -128,4 +129,9 @@ if (/psnid\/[A-Za-z0-9_-]+$/.test(page) && $('tbody').length > 2) {
 // 综合页面：一览
 if (/((gene|qa|topic|trade)($|\?))/.test(page)) {
     autoPaging(3); // TODO 设置面板
+}
+
+// 页面：数折 > 商品页
+if (/\/dd\//.test(page) || /game\/[0-9]+\/dd$/.test(page)) {
+    priceLinePlot();
 }
