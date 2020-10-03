@@ -2,7 +2,7 @@ GM_addStyle(require('./resource/style/icon.css').toString());
 
 import pageBottom from './components/PageBottomButton';
 import beautifyQaIndex from './components/BeautifyQaIndex';
-import showMarkMessage from './components/showMarkMessage';
+import showMarkMessage from './components/ShowMarkMessage';
 import OpBadge from './components/OpBadge';
 
 const page = window.location.href;
