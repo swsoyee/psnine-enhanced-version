@@ -1,7 +1,7 @@
 /*
  * 功能：对发帖楼主增加“楼主”标志
  */
-const OpBadge = () => {
+const opBadge = () => {
     const userId = document.querySelector('.psnnode').text;
     $('.psnnode').map((index, node) => {
         // 匹配楼主ID，变更CSS
@@ -11,4 +11,4 @@ const OpBadge = () => {
     });
 }
 
-export default OpBadge;
+export default opBadge;

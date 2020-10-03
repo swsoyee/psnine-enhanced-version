@@ -4,7 +4,7 @@ import pageBottom from './components/PageBottomButton';
 import hotTag from './components/HotTag';
 import beautifyQaIndex from './components/BeautifyQaIndex';
 import showMarkMessage from './components/ShowMarkMessage';
-import OpBadge from './components/OpBadge';
+import opBadge from './components/OpBadge';
 import inputCounter from './components/InputCounter';
 
 const page = window.location.href;
@@ -16,7 +16,7 @@ showMarkMessage(true); // TODO 设置面板
 
 // TODO Router refactor
 if (/(gene|trade|topic)\//.test(page) & !/comment/.test(page)) {
-    OpBadge();
+    opBadge();
 }
 
 // 导航 > 问答
