@@ -19,6 +19,7 @@ import gameCompletion from './components/GameCompletion';
 import replyContent from './components/ReplyContent';
 import allGame from './components/AllGame';
 import autoPaging from './components/AutoPaging';
+import floorIndex from './components/FloorIndex';
 
 const page = window.location.href;
 const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
@@ -71,6 +72,7 @@ pageBottom();
 hotTag(30); // TODO 设置面板
 showMarkMessage(true); // TODO 设置面板
 hoverProfile(true); // TODO 设置面板
+floorIndex(); // TODO Router
 
 // TODO Router refactor
 if (/(gene|trade|topic)\//.test(page) & !/comment/.test(page)) {
