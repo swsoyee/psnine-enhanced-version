@@ -20,7 +20,8 @@ import replyContent from './components/ReplyContent';
 import allGame from './components/AllGame';
 import autoPaging from './components/AutoPaging';
 import floorIndex from './components/FloorIndex';
-import priceLinePlot from './components/PriceLinePlot'
+import priceLinePlot from './components/PriceLinePlot';
+import hoverShowReply from './components/HoverShowReply';
 
 const page = window.location.href;
 const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
@@ -74,6 +75,7 @@ hotTag(30); // TODO 设置面板
 showMarkMessage(true); // TODO 设置面板
 hoverProfile(true); // TODO 设置面板
 floorIndex(); // TODO Router
+hoverShowReply('.post');
 
 // TODO Router refactor
 if (/(gene|trade|topic)\//.test(page) & !/comment/.test(page)) {
@@ -134,4 +136,9 @@ if (/((gene|qa|topic|trade)($|\?))/.test(page)) {
 // 页面：数折 > 商品页
 if (/\/dd\//.test(page) || /game\/[0-9]+\/dd$/.test(page)) {
     priceLinePlot();
+}
+
+if (/^(?!.*trade|.*qa(\?(ob|title)=.*)?$)/.test(page)) {
+    // 回复按钮悬浮触发显示
+    hoverShowReply("div[class$='ml64']");
 }
