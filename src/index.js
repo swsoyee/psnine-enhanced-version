@@ -1,4 +1,5 @@
 GM_addStyle(require('./resource/style/icon.css').toString());
+GM_addStyle(require('./resource/style/style.css').toString());
 
 import pageBottom from './components/PageBottomButton';
 import hotTag from './components/HotTag';
