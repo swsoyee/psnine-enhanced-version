@@ -2,6 +2,7 @@ GM_addStyle(require('./resource/style/icon.css').toString());
 GM_addStyle(require('./resource/style/style.css').toString());
 
 import pageBottom from './components/PageBottomButton';
+import hoverProfile from './components/HoverProfile';
 import hotTag from './components/HotTag';
 import beautifyQaIndex from './components/BeautifyQaIndex';
 import showMarkMessage from './components/ShowMarkMessage';
@@ -19,6 +20,7 @@ const page = window.location.href;
 pageBottom();
 hotTag(30); // TODO 设置面板
 showMarkMessage(true); // TODO 设置面板
+hoverProfile(true); // TODO 设置面板
 
 // TODO Router refactor
 if (/(gene|trade|topic)\//.test(page) & !/comment/.test(page)) {
