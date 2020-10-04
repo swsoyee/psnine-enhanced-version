@@ -28,6 +28,7 @@ import { currencyConversion, currencyConversionSalesPage, showOriginalPrice } fr
 import earnedTrophiesSummary from './components/EarnedTrophiesSummary';
 import revertSubReply from './components/RevertSubReply';
 import trophySortByTimestamp from './components/TrophySort';
+import criticAverage from './components/CriticAverage';
 
 const page = window.location.href;
 const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
@@ -83,6 +84,7 @@ hoverProfile(true); // TODO 设置面板
 revertSubReply(true); // TODO 设置面板
 floorIndex(); // TODO Router
 hoverShowReply('.post');
+criticAverage(); // TODO Refactor
 
 // TODO Router refactor
 if (/(gene|trade|topic|qa|battle)\//.test(page) & !/comment/.test(page)) {
