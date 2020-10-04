@@ -73,7 +73,7 @@ Highcharts.setOptions({
 });
 
 // 全局
-autoCheckIn(true); // TODO 设置面板
+// autoCheckIn(true); // TODO Webpack打包后无法获得全局函数
 pageBottom();
 hotTag(30); // TODO 设置面板
 showMarkMessage(true); // TODO 设置面板
