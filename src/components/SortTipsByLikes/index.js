@@ -29,36 +29,18 @@ const sortTips = (isSorted) => {
 * 功能：奖杯心得按“顶”的数量排序功能
 */
 const sortTipsByLikes = () => {
-    GM_addStyle(
-        `#sortTipsByLikes {
-            padding          : 8px 16px;
-            margin           : 10px;
-            border-radius    : 2px;
-            display          : inline-block;
-            color            : white;
-            background-color : #3498db;
-            cursor           : pointer;
-            line-height      : 24px;
-        }`
-    );
     let isSorted = false;
-    $("<a id='sortTipsByLikes'>根据顶数排序Tips</a>")
-        .insertAfter($('div.box.mt20>div.pd10.alert-error').get(0)).css({
-            width: '111px',
-            textAlign: 'center',
-            textDecoration: 'none',
-        })
+    $("<div id='sortTipsByLikes' class='page''><li class='current' style='cursor: pointer;'><a>根据顶数排序Tips</a></li></a>")
+        .insertAfter($('div.box.mt20>div.pd10.alert-error').get(0))
         .click((event) => {
             sortTips(isSorted);
-            isSorted
-                ? $(event.target).text('根据顶数排序Tips').css({
-                    "background-color": "#3498db",
-                    "color": "#FFFFFF"
-                })
-                : $(event.target).text('恢复默认排序').css({
-                    "background-color": "#E7EBEE",
-                    "color": "#99A1A7"
-                });
+            if (isSorted) {
+                $(event.target).text('根据顶数排序Tips');
+                $(event.target).parent().addClass('current');
+            } else {
+                $(event.target).text('恢复默认排序');
+                $(event.target).parent().removeClass('current');
+            }
             isSorted = !isSorted;
         });
 }
