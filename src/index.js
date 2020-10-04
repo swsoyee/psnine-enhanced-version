@@ -85,7 +85,7 @@ floorIndex(); // TODO Router
 hoverShowReply('.post');
 
 // TODO Router refactor
-if (/(gene|trade|topic)\//.test(page) & !/comment/.test(page)) {
+if (/(gene|trade|topic|qa|battle)\//.test(page) & !/comment/.test(page)) {
     opBadge();
 }
 

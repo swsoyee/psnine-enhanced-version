@@ -2,7 +2,7 @@
  * 功能：对发帖楼主增加“楼主”标志
  */
 const opBadge = () => {
-    const userId = document.querySelector('.title2').text;
+    const userId = $('.psnnode').get(0).text;
     $('.psnnode').map((index, node) => {
         // 匹配楼主ID，变更CSS
         if ($(node).text() == userId) {
