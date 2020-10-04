@@ -26,6 +26,7 @@ import discountTitleColor from './components/DiscountTitleColor';
 import { bestOnly, bestOnlySalesPage } from './components/BestOnly';
 import { currencyConversion, currencyConversionSalesPage, showOriginalPrice } from './components/CurrencyConversion';
 import earnedTrophiesSummary from './components/EarnedTrophiesSummary';
+import revertSubReply from './components/RevertSubReply';
 
 const page = window.location.href;
 const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
@@ -78,6 +79,7 @@ pageBottom();
 hotTag(30); // TODO 设置面板
 showMarkMessage(true); // TODO 设置面板
 hoverProfile(true); // TODO 设置面板
+revertSubReply(true); // TODO 设置面板
 floorIndex(); // TODO Router
 hoverShowReply('.post');
 
