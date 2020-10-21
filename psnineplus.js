@@ -614,7 +614,7 @@
                                 if (outputID !== -1) {
                                     const replyContentHtml = allSource.eq(outputID).clone();
                                     replyContentHtml.find('.mark').text(function(index, text) {
-                                        return text.replace(/./g,'█');
+                                        return `<span class="mark">${text}</span>`;
                                     });
                                     const replyContentsText = replyContentHtml.text();
                                     const replyContents = replyContentsText.length > 45
