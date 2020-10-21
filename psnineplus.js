@@ -612,7 +612,11 @@
                                 }
                                 // 输出
                                 if (outputID !== -1) {
-                                    const replyContentsText = allSource.eq(outputID).text();
+                                    const replyContentHtml = allSource.eq(outputID).clone();
+                                    replyContentHtml.find('.mark').text(function(index, text) {
+                                        return text.replace(/./g,'█');
+                                    });
+                                    const replyContentsText = replyContentHtml.text();
                                     const replyContents = replyContentsText.length > 45
                                         ? `${replyContentsText.substring(0, 45)}......`
                                         : replyContentsText;
