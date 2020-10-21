@@ -613,13 +613,30 @@
                                 // 输出
                                 if (outputID !== -1) {
                                     const replyContentHtml = allSource.eq(outputID).clone();
-                                    replyContentHtml.find('.mark').text(function(index, text) {
+                                    replyContentHtml.find('.mark').text(function (index, text) {
                                         return `<span class="mark">${text}</span>`;
                                     });
-                                    const replyContentsText = replyContentHtml.text();
-                                    const replyContents = replyContentsText.length > 45
-                                        ? `${replyContentsText.substring(0, 45)}......`
-                                        : replyContentsText;
+                                    const replyContentsText = replyContentHtml.text().split('');
+                                    let contentsLength = 0;
+                                    let isCount = true;
+                                    let replyContents = [];
+                                    for (let i = 0; i < replyContentsText.length; i++) {
+                                        if (replyContentsText[i] === '<') {
+                                            isCount = false;
+                                        }
+                                        if (replyContentsText[i] === '>') {
+                                            isCount = true;
+                                            contentsLength -= 1;
+                                        }
+                                        if (isCount) {
+                                            contentsLength++;
+                                        }
+                                        replyContents.push(replyContentsText[i])
+                                        if (contentsLength > 45) {
+                                            replyContents.push('......');
+                                            break;
+                                        }
+                                    }
                                     const avatorImg = avator.eq(outputID).find('img:eq(0)').attr('src');
                                     allSource.eq(floor).before(`
                                         <div class=replyTraceback>
@@ -628,13 +645,13 @@
                                                     ${linkContent[1]}
                                             </span>
                                             <span class="responserContent_${floor}_${outputID}" style="padding-left: 10px;">
-                                                ${replyContents}
+                                                ${replyContents.join('')}
                                             </span>
                                         </div>`);
                                     // 如果内容超过45个字符，则增加悬浮显示全文内容功能
-                                    replyContentsText.length > 45
+                                    contentsLength > 45
                                         ? tippy(`.responserContent_${floor}_${outputID}`, {
-                                            content: replyContentsText,
+                                            content: replyContents.join(''),
                                             animateFill: false,
                                             maxWidth: '500px',
                                         })
