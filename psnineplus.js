@@ -551,6 +551,46 @@
                 }
             });
         /*
+         * 功能：根据纯文本的长度截断DOM
+         * @param elem 需要截断的DOM
+         * @param length 需要保留的纯文本长度
+         * @return 截断后的 html 文本
+         */
+        const truncateHtml = (elem, length) => {
+            // 递归获取 DOM 里的纯文本
+            const truncateElem = (elem, reqCount) => {
+                let grabText = '', missCount = reqCount;
+                $(elem).contents().each(function() {
+                    switch (this.nodeType) {
+                        case Node.TEXT_NODE:
+                            // Get node text, limited to missCount.
+                            grabText += this.data.substr(0, missCount);
+                            missCount -= Math.min(this.data.length, missCount);
+                            break;
+                        case Node.ELEMENT_NODE:
+                            // Explore current child:
+                            var childPart = truncateElem(this, missCount);
+                            grabText += childPart.text;
+                            missCount -= childPart.count;
+                            break;
+                    }
+                    if (missCount === 0) {
+                        // We got text enough, stop looping.
+                        return false;
+                    }
+                });
+                return {
+                    text:
+                    // Wrap text using current elem tag.
+                    elem.outerHTML.match(/^<[^>]+>/m)[0]
+                    + grabText
+                    + '</' + elem.localName + '>',
+                    count: reqCount - missCount,
+                };
+            };
+            return truncateElem(elem, length).text;
+        }
+        /*
          * 功能：回复内容回溯，仅支持机因、主题
          * @param  isOn  是否开启功能
          */
@@ -568,6 +608,7 @@
                 GM_addStyle(`
                     .tippy-content {
                         text-align: left;
+                        overflow-wrap: break-word;
                     }`
                 );
                 // 每一层楼的回复框
@@ -612,30 +653,15 @@
                                 }
                                 // 输出
                                 if (outputID !== -1) {
-                                    const replyContentHtml = allSource.eq(outputID).clone();
-                                    replyContentHtml.find('.mark').text(function (index, text) {
+                                    const replyContentObject = allSource.eq(outputID);
+                                    const replyContentPlainText = replyContentObject.text();
+                                    replyContentObject.find('.mark').text(function (index, text) {
                                         return `<span class="mark">${text}</span>`;
                                     });
-                                    const replyContentsText = replyContentHtml.text().split('');
-                                    let contentsLength = 0;
-                                    let isCount = true;
-                                    let replyContents = [];
-                                    for (let i = 0; i < replyContentsText.length; i++) {
-                                        if (replyContentsText[i] === '<') {
-                                            isCount = false;
-                                        }
-                                        if (replyContentsText[i] === '>') {
-                                            isCount = true;
-                                            contentsLength -= 1;
-                                        }
-                                        if (isCount) {
-                                            contentsLength++;
-                                        }
-                                        replyContents.push(replyContentsText[i])
-                                        if (contentsLength > 45) {
-                                            replyContents.push('......');
-                                            break;
-                                        }
+                                    const replyContentText = replyContentObject.text();
+                                    let replyContentTruncatedText = $(truncateHtml($('<p></p>').html(replyContentText)[0], 45)).html();
+                                    if (replyContentPlainText.length > 45) {
+                                        replyContentTruncatedText += '......';
                                     }
                                     const avatorImg = avator.eq(outputID).find('img:eq(0)').attr('src');
                                     allSource.eq(floor).before(`
@@ -645,13 +671,13 @@
                                                     ${linkContent[1]}
                                             </span>
                                             <span class="responserContent_${floor}_${outputID}" style="padding-left: 10px;">
-                                                ${replyContents.join('')}
+                                                ${replyContentTruncatedText}
                                             </span>
                                         </div>`);
                                     // 如果内容超过45个字符，则增加悬浮显示全文内容功能
-                                    contentsLength > 45
+                                    replyContentPlainText.length > 45
                                         ? tippy(`.responserContent_${floor}_${outputID}`, {
-                                            content: replyContents.join(''),
+                                            content: replyContentText,
                                             animateFill: false,
                                             maxWidth: '500px',
                                         })
