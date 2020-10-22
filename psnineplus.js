@@ -653,7 +653,7 @@
                                 }
                                 // 输出
                                 if (outputID !== -1) {
-                                    const replyContentObject = allSource.eq(outputID);
+                                    const replyContentObject = allSource.eq(outputID).clone();
                                     const replyContentPlainText = replyContentObject.text();
                                     replyContentObject.find('.mark').text(function (index, text) {
                                         return `<span class="mark">${text}</span>`;
