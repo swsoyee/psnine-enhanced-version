@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.9.40
+// @version      0.9.41
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404, Nathaniel_Wu, JayusTree
@@ -551,6 +551,46 @@
                 }
             });
         /*
+         * 功能：根据纯文本的长度截断DOM
+         * @param elem 需要截断的DOM
+         * @param length 需要保留的纯文本长度
+         * @return 截断后的 html 文本
+         */
+        const truncateHtml = (elem, length) => {
+            // 递归获取 DOM 里的纯文本
+            const truncateElem = (elem, reqCount) => {
+                let grabText = '', missCount = reqCount;
+                $(elem).contents().each(function() {
+                    switch (this.nodeType) {
+                        case Node.TEXT_NODE:
+                            // Get node text, limited to missCount.
+                            grabText += this.data.substr(0, missCount);
+                            missCount -= Math.min(this.data.length, missCount);
+                            break;
+                        case Node.ELEMENT_NODE:
+                            // Explore current child:
+                            var childPart = truncateElem(this, missCount);
+                            grabText += childPart.text;
+                            missCount -= childPart.count;
+                            break;
+                    }
+                    if (missCount === 0) {
+                        // We got text enough, stop looping.
+                        return false;
+                    }
+                });
+                return {
+                    text:
+                    // Wrap text using current elem tag.
+                    elem.outerHTML.match(/^<[^>]+>/m)[0]
+                    + grabText
+                    + '</' + elem.localName + '>',
+                    count: reqCount - missCount,
+                };
+            };
+            return truncateElem(elem, length).text;
+        }
+        /*
          * 功能：回复内容回溯，仅支持机因、主题
          * @param  isOn  是否开启功能
          */
@@ -568,6 +608,7 @@
                 GM_addStyle(`
                     .tippy-content {
                         text-align: left;
+                        overflow-wrap: break-word;
                     }`
                 );
                 // 每一层楼的回复框
@@ -612,10 +653,16 @@
                                 }
                                 // 输出
                                 if (outputID !== -1) {
-                                    const replyContentsText = allSource.eq(outputID).text();
-                                    const replyContents = replyContentsText.length > 45
-                                        ? `${replyContentsText.substring(0, 45)}......`
-                                        : replyContentsText;
+                                    const replyContentObject = allSource.eq(outputID).clone();
+                                    const replyContentPlainText = replyContentObject.text();
+                                    replyContentObject.find('.mark').text(function (index, text) {
+                                        return `<span class="mark">${text}</span>`;
+                                    });
+                                    const replyContentText = replyContentObject.text();
+                                    let replyContentTruncatedText = $(truncateHtml($('<p></p>').html(replyContentText)[0], 45)).html();
+                                    if (replyContentPlainText.length > 45) {
+                                        replyContentTruncatedText += '......';
+                                    }
                                     const avatorImg = avator.eq(outputID).find('img:eq(0)').attr('src');
                                     allSource.eq(floor).before(`
                                         <div class=replyTraceback>
@@ -624,13 +671,13 @@
                                                     ${linkContent[1]}
                                             </span>
                                             <span class="responserContent_${floor}_${outputID}" style="padding-left: 10px;">
-                                                ${replyContents}
+                                                ${replyContentTruncatedText}
                                             </span>
                                         </div>`);
                                     // 如果内容超过45个字符，则增加悬浮显示全文内容功能
-                                    replyContentsText.length > 45
+                                    replyContentPlainText.length > 45
                                         ? tippy(`.responserContent_${floor}_${outputID}`, {
-                                            content: replyContentsText,
+                                            content: replyContentText,
                                             animateFill: false,
                                             maxWidth: '500px',
                                         })
