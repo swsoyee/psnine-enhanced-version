@@ -2683,8 +2683,9 @@
                 });
                 score_stddev = Math.sqrt(score_stddev) / Math.sqrt(score_elements.length);
                 // adding score average to stats
-                const psnine_stats = $('div.min-inner.mt40 div.box.pd10');
-                psnine_stats.append(`<em>&nbsp<span class="alert-success pd5" align="right">均分 ${score_average}</span></em><p/>`);
+                $('div.min-inner.mt40 div.box.pd10').append(`<em>&nbsp<span class="alert-success pd5" align="right">均分 ${score_average}</span></em><p/>`);
+                $('div.min-inner.mt40 div.box.pd10').append(`<div id="scoreChartContainer" style="float: left; width: 100%;"></div>`);
+                const psnine_stats = $('#scoreChartContainer');
                 score_axis = [];
                 score_axis_no_gaussian = [];
                 let score_count_min = Number.MAX_SAFE_INTEGER, score_count_max = Number.MIN_SAFE_INTEGER;
