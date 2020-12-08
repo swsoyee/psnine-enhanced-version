@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.9.43
+// @version      0.9.44
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404, Nathaniel_Wu, JayusTree
@@ -1723,8 +1723,8 @@
                 credits: { enabled: false },
             };
             // 插入页面
-            $('.box.pd10').append(
-                `<p></p><div id="trophyRatioChart" align="left"></div>`
+            $('#trophyChartContainer').append(
+                `<div id="trophyRatioChart" align="left"></div>`
             );
             Highcharts.chart('trophyRatioChart', trophyRatio)
         }
@@ -1884,7 +1884,7 @@
                 credits: trophyGetTimeCredits,
             };
             // 插入页面
-            $('.box.pd10').append(
+            $('#trophyChartContainer').append(
                 `<div id="trophyGetTimeChart" align="left"></div>`
             );
             Highcharts.chart('trophyGetTimeChart', trophyGetTime);
@@ -1932,7 +1932,7 @@
             // 创建奖杯汇总框架函数
             const createTrophyContainer = (object, className, title) => {
                 // 添加标题框在汇总图下
-                $('.box.pd10').append(
+                $('#trophyChartContainer').append(
                     `<div class='${className}'><p class='trophyCount' style='${trophyTitleStyle}'></p><div class='trophyContainer' style='padding:5px;'></div></div>`
                 );
                 object.map(function (i, v) {
@@ -1996,6 +1996,7 @@
                 window.location.href
             )
         ) {
+            $('.box.pd10').append(`<div id="trophyChartContainer" style="float: left"></div>`);
             // 追加奖杯统计扇形图
             addTrophyPieChart();
             // 追加奖杯获得时间线形图
