@@ -68,7 +68,7 @@
         // 约战页面去掉发起人头像
         removeHeaderInBattle: false,
         // 机因、问答页面按最新排序
-        listPostsByNew: true,
+        listPostsByNew: false,
     };
     if (window.localStorage) {
         if (window.localStorage['psnine-night-mode-CSS-settings']) {
