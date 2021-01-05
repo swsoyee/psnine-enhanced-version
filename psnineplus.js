@@ -804,27 +804,52 @@
                     return 0;
                 const answer_list = $('body > div.inner.mt40 > div.main > div.box.mt20 > ul.list');
                 const page_list = $('body > div.inner.mt40 > div.main > div.box.mt20 > div.page > ul');
-                let qa_page_to_load = 0;
-                page_list.find('> li:not(.current):not(.disabled.h-p) > a').each((i, pageLink) => {
-                    qa_page_to_load++;
+                const last_page_url = page_list.find('> li:not(.current):not(.disabled.h-p) > a:last()').get()[0].href;
+                const last_page_number = Number(last_page_url.match(/\?page=\d+/)[0].replace('?page=', ''));
+                let qa_pages_to_load = last_page_number - 1;
+                let last_appended_page = 1;
+                const qa_page_data = new Array(qa_pages_to_load);
+                qa_page_data.fill(null);
+                const load_qa_page = (page_number) => {
+                    const append_answers = () => {
+                        let latest_ready_page = last_appended_page;
+                        for (let i = last_appended_page + 1; i <= last_page_number; i++) {
+                            if (Boolean(qa_page_data[i - 2]))
+                                latest_ready_page = i;
+                            else
+                                break;
+                        }
+                        if (latest_ready_page > last_appended_page) {
+                            for (let i = last_appended_page + 1; i <= latest_ready_page; i++) {
+                                qa_page_data[i - 2].find('div.inner.mt40 > div.main > div.box.mt20 > ul.list > li').each((index, answer) => {
+                                    answer_list.append(answer);
+                                });
+                                qa_page_data[i - 2].remove();
+                                qa_page_data[i - 2] = null;
+                            }
+                            last_appended_page = latest_ready_page;
+                        }
+                    }
+                    let page_url = last_page_url.replace(last_page_number, page_number);
                     $.get(
-                        pageLink.href,
-                        {},
+                        page_url,
+                        { retryLimit: 3 },
                         (data) => {
-                            const response = $('<div />').html(data);
-                            response.find('div.inner.mt40 > div.main > div.box.mt20 > ul.list > li').each((i, answer) => {
-                                answer_list.append(answer);
-                            });
-                            if ((--qa_page_to_load) == 0) { //必须在载入全部答案之后运行reverseQAAnwsers()与loadHiddenSubReply()
+                            qa_page_data[page_number - 2] = $('<div />').html(data);
+                            append_answers();
+                            if ((--qa_pages_to_load) == 0) { //在载入全部答案之后运行
                                 reverseAnwsers(reverseOrder);
                                 showHiddenSubReply(allSubReply);
+                                page_list.remove();
                             }
                         },
                         'html'
                     );
-                });
-                page_list.remove();
-                return qa_page_to_load;
+                };
+
+                for (let i = 2; i <= last_page_number; i++)
+                    load_qa_page(i);
+                return last_page_number - 1;
             }
 
             if (showAllAnsers(loadAll, reverseOrder, allSubReply) == 0) {
