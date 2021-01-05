@@ -804,7 +804,12 @@
                     return 0;
                 const answer_list = $('body > div.inner.mt40 > div.main > div.box.mt20 > ul.list');
                 const page_list = $('body > div.inner.mt40 > div.main > div.box.mt20 > div.page > ul');
-                const last_page_url = page_list.find('> li:not(.current):not(.disabled.h-p) > a:last()').get()[0].href;
+                const last_page_url_element = page_list.find('> li:not(.current):not(.disabled.h-p) > a:last()');
+                if (last_page_url_element.length == 0) {
+                    page_list.remove();
+                    return 0;
+                }
+                const last_page_url = last_page_url_element.get()[0].href;
                 const last_page_number = Number(last_page_url.match(/\?page=\d+/)[0].replace('?page=', ''));
                 let qa_pages_to_load = last_page_number - 1;
                 let last_appended_page = 1;
