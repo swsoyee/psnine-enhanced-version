@@ -70,11 +70,11 @@
         // 机因、问答页面按最新排序
         listPostsByNew: false,
         // 载入全部问答答案
-        showAllQAAnswers: true,
+        showAllQAAnswers: false,
         // 答案按时间顺序排列
         listQAAnswersByOld: false,
         // 答案显示隐藏回复
-        showHiddenQASubReply: true,
+        showHiddenQASubReply: false,
     };
     if (window.localStorage) {
         if (window.localStorage['psnine-night-mode-CSS-settings']) {
