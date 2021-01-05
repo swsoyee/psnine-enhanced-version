@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.9.47
+// @version      0.9.48
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404, Nathaniel_Wu, JayusTree
@@ -69,6 +69,12 @@
         removeHeaderInBattle: false,
         // 机因、问答页面按最新排序
         listPostsByNew: false,
+        // 载入全部问答答案
+        showAllQAAnswers: false,
+        // 答案按时间顺序排列
+        listQAAnswersByOld: false,
+        // 答案显示隐藏回复
+        showHiddenQASubReply: false,
     };
     if (window.localStorage) {
         if (window.localStorage['psnine-night-mode-CSS-settings']) {
@@ -764,6 +770,100 @@
             })
         }
 
+        const enhanceQAPage = (loadAll, reverseOrder, allSubReply) => {
+            if (!(loadAll || reverseOrder || allSubReply) || !/\/qa\/\d+($|(\/$))/.test(window.location.href))
+                return;
+            /*
+             * 功能：答案按时间顺序排列
+             * @param  isOn  是否开启该功能
+             */
+            const reverseAnwsers = (isOn) => {
+                if (!isOn)
+                    return;
+                const answer_list = $('body > div.inner.mt40 > div.main > div.box.mt20 > ul.list');
+                const answers = answer_list.find('> li');
+                answers.remove();
+                answers.get().reverse().forEach(answer => { answer_list.append(answer); });
+            }
+
+            /*
+             * 功能：展开隐藏的二级回复
+             * @param  isOn  是否开启该功能
+             */
+            const showHiddenSubReply = (isOn) => {
+                if (isOn)
+                    $('body > div.inner.mt40 > div.main > div.box.mt20 > ul.list div.btn.btn-white.font12').click();
+            }
+
+            /*
+             * 功能：载入全部问答答案
+             * @param  isOn  是否开启该功能
+             */
+            const showAllAnsers = (isOn, reverseOrder, allSubReply) => {
+                if (!isOn)
+                    return 0;
+                const answer_list = $('body > div.inner.mt40 > div.main > div.box.mt20 > ul.list');
+                const page_list = $('body > div.inner.mt40 > div.main > div.box.mt20 > div.page > ul');
+                const last_page_url_element = page_list.find('> li:not(.current):not(.disabled.h-p) > a:last()');
+                if (last_page_url_element.length == 0) {
+                    page_list.remove();
+                    return 0;
+                }
+                const last_page_url = last_page_url_element.get()[0].href;
+                const last_page_number = Number(last_page_url.match(/\?page=\d+/)[0].replace('?page=', ''));
+                let qa_pages_to_load = last_page_number - 1;
+                let last_appended_page = 1;
+                const qa_page_data = new Array(qa_pages_to_load);
+                qa_page_data.fill(null);
+                const load_qa_page = (page_number) => {
+                    const append_answers = () => {
+                        let latest_ready_page = last_appended_page;
+                        for (let i = last_appended_page + 1; i <= last_page_number; i++) {
+                            if (Boolean(qa_page_data[i - 2]))
+                                latest_ready_page = i;
+                            else
+                                break;
+                        }
+                        if (latest_ready_page > last_appended_page) {
+                            for (let i = last_appended_page + 1; i <= latest_ready_page; i++) {
+                                qa_page_data[i - 2].find('div.inner.mt40 > div.main > div.box.mt20 > ul.list > li').each((index, answer) => {
+                                    answer_list.append(answer);
+                                });
+                                qa_page_data[i - 2].remove();
+                                qa_page_data[i - 2] = null;
+                            }
+                            last_appended_page = latest_ready_page;
+                        }
+                    }
+                    let page_url = last_page_url.replace(last_page_number, page_number);
+                    $.get(
+                        page_url,
+                        { retryLimit: 3 },
+                        (data) => {
+                            qa_page_data[page_number - 2] = $('<div />').html(data);
+                            append_answers();
+                            if ((--qa_pages_to_load) == 0) { //在载入全部答案之后运行
+                                reverseAnwsers(reverseOrder);
+                                showHiddenSubReply(allSubReply);
+                                page_list.remove();
+                            }
+                        },
+                        'html'
+                    );
+                };
+
+                for (let i = 2; i <= last_page_number; i++)
+                    load_qa_page(i);
+                return last_page_number - 1;
+            }
+
+            if (showAllAnsers(loadAll, reverseOrder, allSubReply) == 0) {
+                reverseAnwsers(reverseOrder);
+                showHiddenSubReply(allSubReply);
+            }
+        }
+
+        enhanceQAPage(settings.showAllQAAnswers, settings.listQAAnswersByOld, settings.showHiddenQASubReply);
         reverseSubReply(true);
         addFloorIndex();
 
@@ -2755,13 +2855,16 @@
                 'removeHeaderInBattle',
                 'autoCheckIn',
                 'listPostsByNew',
+                'showAllQAAnswers',
+                'listQAAnswersByOld',
+                'showHiddenQASubReply',
             ]; // 只有true / false的设置项
             $('.header .dropdown ul').append(`
                 <li><a href="javascript:void(0);" id="psnine-enhanced-version-opensetting">插件设置</a></li>`
             );
             $('body').append(`
                 <style>.setting-panel-box{z-index:9999;background-color:#fff;transition:all .4s ease;position:fixed;left:50%;transform:translateX(-50%);top:-5000px;width:500px;box-shadow:0 0 20px rgba(0,0,0,0.3);padding:10px 0;box-sizing:border-box;border-radius:4px;max-height:700px;overflow-y:scroll;scrollbar-color:#dcdcdc #fff;scrollbar-width:thin}.setting-panel-box::-webkit-scrollbar{width:4px;background-color:#fff}.setting-panel-box::-webkit-scrollbar-button{display:none}.setting-panel-box::-webkit-scrollbar-thumb{background-color:#dcdcdc}.setting-panel-box.show{top:20px}.setting-panel-box h2{margin-bottom:10px;padding-left:20px}.setting-panel-box h4{margin-bottom:10px;padding-left:20px;font-weight:400;color:#1f2f3d;font-size:22px}.setting-panel-box .row{display:flex;align-items:center;justify-content:flex-start;width:100%;margin-bottom:5px;padding-left:20px;box-sizing:border-box}.setting-panel-box .row label{line-height:32px;text-align:left;font-size:14px;color:#606266;width:190px}.setting-panel-box .row .mini{line-height:26px;text-align:left;font-size:14px;color:#606266;margin:0 10px 0 0;width:50px}.setting-panel-box .row .normal{line-height:26px;text-align:left;font-size:14px;color:#606266;margin:0 10px 0 0;width:205px}.setting-panel-box .row textarea{resize:vertical;min-height:30px;border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;line-height:26px;box-sizing:border-box;width:227px;padding:0 10px}.setting-panel-box .row input{border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;height:26px;line-height:26px;display:inline-block;width:227px;padding:0 10px}.setting-panel-box .row input.slider{height:6px;background-color:#e4e7ed;margin:16px 0;border-radius:3px;position:relative;cursor:pointer;vertical-align:middle;outline:none;padding:0}.setting-panel-box .row input.slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border:2px solid #409eff;background-color:#fff;border-radius:50%;transition:.2s;user-select:none}.setting-panel-box .row input.slider::-moz-range-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border:2px solid #409eff;background-color:#fff;border-radius:50%;transition:.2s;user-select:none}.setting-panel-box .row .sliderValue{margin-left:5px}.setting-panel-box .row select{border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;height:26px;line-height:26px;display:inline-block;width:227px;padding:0 10px}.setting-panel-box .row span{line-height:32px;text-align:left;font-size:14px;color:#606266;margin-right:10px}.setting-panel-box .btnbox{display:flex;align-items:center;justify-content:center}.setting-panel-box button{-webkit-appearance:button;padding:9px 15px;font-size:12px;border-radius:3px;display:inline-block;line-height:1;white-space:nowrap;cursor:pointer;background:#fff;border:1px solid #dcdfe6;color:#606266;text-align:center;box-sizing:border-box;outline:0;margin:0;transition:.1s;font-weight:500;margin:0 10px}.setting-panel-box button:hover{color:#409eff;border-color:#c6e2ff;background-color:#ecf5ff}.setting-panel-box button.confirm{color:#fff;background-color:#3890ff}.setting-panel-box button.confirm:hover{background-color:#9ec9ff}</style>
-                <div class=setting-panel-box><h2>PSN中文网功能增强插件设置</h2><div class=row><a href=https://github.com/swsoyee/psnine-enhanced-version><img src=https://img.shields.io/github/stars/swsoyee/psnine-enhanced-version.svg?style=social></img></a></div><div class=row><label>夜间模式</label><select id=nightMode><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动夜间模式</label><select id=autoNightMode><option value="&quot;SYSTEM&quot;">跟随系统<option value="&quot;TIME&quot;">跟据时间<option value="&quot;OFF&quot;">关闭</select></div><div class=row><label>高亮用户ID</label><textarea name="" id="highlightSpecificID" cols="30" rows="2"></textarea></div><div class=row><label>黑名单ID</label><textarea name="" id="blockList" cols="30" rows="2"></textarea></div><div class=row><label>关键词屏蔽</label><textarea name="" id="blockWordsList" cols="30" rows="2"></textarea></div><div class=row><label>机因中显示被@的内容</label><select id=replyTraceback><option value=true>启用<option value=false>关闭</select></div><div class=row><label>悬浮显示刮刮卡内容</label><select id=hoverUnmark><option value=true>启用<option value=false>关闭</select></div><div class=row><label>插图显示方式</label><select id=showImagesInPosts><option value=true>直接显示<option value=false>悬浮预览</select></div><div class=row><label>个人主页下显示所有游戏</label><select id=autoPagingInHomepage><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动签到</label><select id=autoCheckIn><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动向后翻页数</label><input type=number class=normal id=autoPaging></div><div class=row><label>问答区状态优化</label><select id=newQaStatus><option value=true>启用<option value=false>关闭</select></div><div class=row><label>悬浮头像显示个人信息</label><select id=hoverHomepage><option value=true>启用<option value=false>关闭</select></div><div class=row><label>奖杯默认折叠</label><select id=foldTrophySummary><option value=true>启用<option value=false>关闭</select></div><div class=row><label>约战页面去掉发起人头像</label><select id=removeHeaderInBattle><option value=true>启用<option value=false>关闭</select></div><div class=row><label>机因、问答页面按最新排序</label><select id=listPostsByNew><option value=true>启用<option value=false>关闭</select></div><div class=row><label>无白金游戏图标透明度</label><input id=filterNonePlatinum class=slider type=range min=0 max=1 step=0.1><span id=filterNonePlatinumValue class=sliderValue></span></div><div class=row><label>热门标签回复数阈值</label><input id=hotTagThreshold class=slider type=range min=10 max=100 step=5><span id=hotTagThresholdValue class=sliderValue></span></div><div class=btnbox><button class=confirm>确定</button><button class=cancel>取消</button></div></div>`
+                <div class=setting-panel-box><h2>PSN中文网功能增强插件设置</h2><div class=row><a href=https://github.com/swsoyee/psnine-enhanced-version><img src=https://img.shields.io/github/stars/swsoyee/psnine-enhanced-version.svg?style=social></img></a></div><div class=row><label>夜间模式</label><select id=nightMode><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动夜间模式</label><select id=autoNightMode><option value="&quot;SYSTEM&quot;">跟随系统<option value="&quot;TIME&quot;">跟据时间<option value="&quot;OFF&quot;">关闭</select></div><div class=row><label>高亮用户ID</label><textarea name="" id="highlightSpecificID" cols="30" rows="2"></textarea></div><div class=row><label>黑名单ID</label><textarea name="" id="blockList" cols="30" rows="2"></textarea></div><div class=row><label>关键词屏蔽</label><textarea name="" id="blockWordsList" cols="30" rows="2"></textarea></div><div class=row><label>机因中显示被@的内容</label><select id=replyTraceback><option value=true>启用<option value=false>关闭</select></div><div class=row><label>悬浮显示刮刮卡内容</label><select id=hoverUnmark><option value=true>启用<option value=false>关闭</select></div><div class=row><label>插图显示方式</label><select id=showImagesInPosts><option value=true>直接显示<option value=false>悬浮预览</select></div><div class=row><label>个人主页下显示所有游戏</label><select id=autoPagingInHomepage><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动签到</label><select id=autoCheckIn><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动向后翻页数</label><input type=number class=normal id=autoPaging></div><div class=row><label>问答区状态优化</label><select id=newQaStatus><option value=true>启用<option value=false>关闭</select></div><div class=row><label>悬浮头像显示个人信息</label><select id=hoverHomepage><option value=true>启用<option value=false>关闭</select></div><div class=row><label>奖杯默认折叠</label><select id=foldTrophySummary><option value=true>启用<option value=false>关闭</select></div><div class=row><label>约战页面去掉发起人头像</label><select id=removeHeaderInBattle><option value=true>启用<option value=false>关闭</select></div><div class=row><label>机因、问答页面按最新排序</label><select id=listPostsByNew><option value=true>启用<option value=false>关闭</select></div><div class=row><label>载入全部问答答案</label><select id=showAllQAAnswers><option value=true>启用<option value=false>关闭</select></div><div class=row><label>答案按时间顺序排列</label><select id=listQAAnswersByOld><option value=true>启用<option value=false>关闭</select></div><div class=row><label>答案显示隐藏回复</label><select id=showHiddenQASubReply><option value=true>启用<option value=false>关闭</select></div><div class=row><label>无白金游戏图标透明度</label><input id=filterNonePlatinum class=slider type=range min=0 max=1 step=0.1><span id=filterNonePlatinumValue class=sliderValue></span></div><div class=row><label>热门标签回复数阈值</label><input id=hotTagThreshold class=slider type=range min=10 max=100 step=5><span id=hotTagThresholdValue class=sliderValue></span></div><div class=btnbox><button class=confirm>确定</button><button class=cancel>取消</button></div></div>`
             );
             // 点击打开设置面板
             $('#psnine-enhanced-version-opensetting').on('click', () => {
