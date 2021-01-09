@@ -920,9 +920,9 @@
 
         const fixLinksOnThePage = () => {
             // 检测纯文本中的链接
-            const untagged_URL_regex = /(?<!((href|src)=\"|<a( [^<]+?)?>))(https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*))(?!(\"|<\/a>))/g;// https://stackoverflow.com/a/3809435
+            const untagged_URL_regex = /(?<!((href|src)=\"|<a( [^<]+?)?>))(https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([A-Za-z0-9\-._~:/?#[\]@!$&'()*+,;=%]*))(?!(\"|<\/a>))/g;// https://stackoverflow.com/a/3809435 & https://stackoverflow.com/a/1547940
             const fixTextLinksOnThePage = (isOn) => {
-                if (isOn && /(\/(topic|gene|qa|battle|trade)\/\d+)|(\/psnid\/.+?\/comment)|(\/my\/notice)/.test(window.location.href))
+                if (isOn && /(\/(topic|gene|qa|battle|trade)\/\d+)|(\/psnid\/.+?\/comment)|(\/my\/notice)|(\/psngame\/\d+\/comment)|(\/trophy\/\d+)/.test(window.location.href))
                     $("div.content").each((i, e) => { e.innerHTML = e.innerHTML.replace(untagged_URL_regex, "<a href=\"$4\">$4</a>"); });
             }
             // 修复D7VG链接
