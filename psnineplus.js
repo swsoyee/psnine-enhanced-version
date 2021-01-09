@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.9.48
+// @version      0.9.49
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
 // @author       InfinityLoop, mordom0404, Nathaniel_Wu, JayusTree
@@ -917,25 +917,16 @@
         filterUserPost();
 
         // 修复D7VG链接
+        const linkReplace = (link, substr, new_substr) => { link.href = (link.href == link.innerText) ? (link.innerText = link.innerText.replace(substr, new_substr)) : link.href.replace(substr, new_substr) };
         const fixD7VGLinksOnThePage = (isOn) => {
             if (isOn)
                 $("a[href*='//d7vg.com'], a[href*='//www.d7vg.com']").each((i, a) => {
-                    if (!/d7vg\.com($|\/$)/.test(a.href)) {//排除可能特意指向d7vg.com的链接
-                        if (a.href == a.innerText)
-                            a.innerText = a.innerText.replace('d7vg.com', 'psnine.com');
-                        a.href = a.href.replace('d7vg.com', 'psnine.com');
-                    }
+                    if (!/d7vg\.com($|\/$)/.test(a.href)) //排除可能特意指向d7vg.com的链接
+                        linkReplace(a, 'd7vg.com', 'psnine.com');
                 });
         }
         // 站内使用HTTPS链接
-        const fixHTTPLinksOnThePage = (isOn) => {
-            if (isOn)
-                $("a[href*='http://psnine.com'], a[href*='http://www.psnine.com']").each((i, a) => {
-                    if (a.href == a.innerText)
-                        a.innerText = a.innerText.replace('http://', 'https://');
-                    a.href = a.href.replace('http://', 'https://');
-                });
-        }
+        const fixHTTPLinksOnThePage = (isOn) => { if (isOn) $("a[href*='http://psnine.com'], a[href*='http://www.psnine.com']").each((i, a) => linkReplace(a, 'http://', 'https://')); }
         fixD7VGLinksOnThePage(settings.fixD7VGLinks)
         fixHTTPLinksOnThePage(settings.fixHTTPLinks);
 
