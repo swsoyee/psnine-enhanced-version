@@ -1125,11 +1125,11 @@
     };
 
     /*
-         * 功能：悬浮于头像显示个人界面
-         */
+    * 功能：悬浮于头像显示个人界面
+    */
     const addHoverProfile = () => {
       if (settings.hoverHomepage) {
-        $("a[href*='psnid/'] > img").parent().map(function (i) {
+        $("a[href*='psnid/'] > img").parent().each(function (i) {
           const url = $(this).attr('href');
           $(this).attr('id', `profile${i}`);
           tippy(`#profile${i}`, {
@@ -1152,18 +1152,20 @@
     };
     addHoverProfile();
 
-    /* 日期转换函数，将（XX年XX月XX日）形式切割成UTC时间
-         *  @param   value     XX年XX月XX日 形式的字符串
-         *  @return  {object}  UTC时间对象
-         */
+    /*
+    * 日期转换函数，将（XX年XX月XX日）形式切割成UTC时间
+    * @param   value     XX年XX月XX日 形式的字符串
+    * @return  {object}  UTC时间对象
+    */
     const converntTime = (value) => {
       const time = value.replace(/年|月|日/g, '-').split('-');
       return Date.UTC(`20${time[0]}`, Number(time[1]) - 1, time[2]);
     };
 
-    /* 获取当前页面的价格变动时间，构建绘图曲线X轴数据集
-         *  @return  xValue  价格变动时间X数据
-         */
+    /*
+    * 获取当前页面的价格变动时间，构建绘图曲线X轴数据集
+    * @return  xValue  价格变动时间X数据
+    */
     const priceLineDataX = () => {
       // 获取X轴的日期
       const xContents = $('p.dd_text');
@@ -1175,15 +1177,16 @@
       return xValue;
     };
 
-    /* 获取当前页面的价格情况，构建绘图曲线Y轴数据集
-         *  @return  yNormal  普通会员价格Y数据
-         *  @return  yPlus    plus会员价格Y数据
-         */
+    /*
+    * 获取当前页面的价格情况，构建绘图曲线Y轴数据集
+    * @return  yNormal  普通会员价格Y数据
+    * @return  yPlus    plus会员价格Y数据
+    */
     const priceLineDataY = () => {
       const div = $('.dd_price');
       let yNormal = [];
       let yPlus = [];
-      div.map((i, el) => {
+      div.each((i, el) => {
         const yOld = $(el).children('.dd_price_old').eq(0).text();
         const yPriceNormal = $(el).children('.dd_price_off').eq(0).text();
         // 普通会员价格曲线值
@@ -1196,13 +1199,13 @@
       return { yNormal, yPlus };
     };
 
-    /* 修正数据集的最后一组数据函数。如果当前日期在最后一次促销结束前，
-         *  则修改最后一组数据为当前日期，如在以后，则将最后一次促销的原始
-         *  价格作为最后一组数据的当前价格。
-         *  @param   [dataArray]  包含[datetime, price]的原始数据
-         *
-         *  @return  [dataArray]  修改后的[datetime, price]数据
-         */
+    /*
+    * 修正数据集的最后一组数据函数。如果当前日期在最后一次促销结束前，
+    * 则修改最后一组数据为当前日期，如在以后，则将最后一次促销的原始
+    * 价格作为最后一组数据的当前价格。
+    * @param   [dataArray]  包含[datetime, price]的原始数据
+    * @return  [dataArray]  修改后的[datetime, price]数据
+    */
     const fixTheLastElement = (data) => {
       const today = new Date();
       const todayArray = Date.UTC(
@@ -1219,15 +1222,15 @@
       return data;
     };
 
-    /* 传入时间和一般、Plus会员价格数组，生成绘图用数据集
-         *  @param   xValue   价格变动时间数组
-         *  @param   yNormal  一般会员价格数组
-         *  @param   yPlus    Plus会员价格数组
-         *
-         *  @return  normalData  一般会员价格绘图用数组
-         *  @return  plusData    Plus会员价格绘图用数组
-         *  @return  region      地区货币符
-         */
+    /*
+    * 传入时间和一般、Plus会员价格数组，生成绘图用数据集
+    * @param   xValue      价格变动时间数组
+    * @param   yNormal     一般会员价格数组
+    * @param   yPlus       Plus会员价格数组
+    * @return  normalData  一般会员价格绘图用数组
+    * @return  plusData    Plus会员价格绘图用数组
+    * @return  region      地区货币符
+    */
     const createPriceLineData = (xValue, yNormal, yPlus) => {
       // 用于保存绘图数据的变量
       let normalData = [];
@@ -1236,7 +1239,7 @@
       const prefix = yNormal[0].substring(0, 1);
       const region = prefix === 'H' ? 'HK$' : prefix;
 
-      xValue.map((item, i) => {
+      xValue.forEach((item, i) => {
         normalData.push([item, Number(yNormal[i].replace(region, ''))]);
         plusData.push([item, Number(yPlus[i].replace(region, ''))]);
       });
@@ -1247,12 +1250,12 @@
     };
 
     /* 根据数据绘制价格变动走势图
-         *  @param   normalData     一般会员价格绘图用数组
-         *  @param   plusData       Plus会员价格绘图用数组
-         *  @param   region         地区货币符
-         *
-         *  @return  priceLinePlot  highChart对象
-         */
+    *  @param   normalData     一般会员价格绘图用数组
+    *  @param   plusData       Plus会员价格绘图用数组
+    *  @param   region    地区货币符
+    *
+    *  @return  priceLinePlot  highChart对象
+    */
     const createPriceLinePlot = (normalData, plusData, region) => {
       const priceLineChart = {
         type: 'areaspline',
@@ -1334,8 +1337,8 @@
       return priceLinePlot;
     };
     /*
-         * 功能：在页面中插入价格变动走势图
-         */
+    * 功能：在页面中插入价格变动走势图
+    */
     const addPriceLinePlot = () => {
       // 构建绘图数据
       const xValue = priceLineDataX();
@@ -1347,12 +1350,12 @@
       Highcharts.chart('container', priceLinePlot);
     };
     /*
-         * 增加单个价格或文字展示标签
-         * @param  value        展示数值或字符串
-         * @param  className    样式名
-         * @param  styleString  额外追加的样式
-         * @return {string}     展示内容标签
-         */
+    * 增加单个价格或文字展示标签
+    * @param  value        展示数值或字符串
+    * @param  className    样式名
+    * @param  styleString  额外追加的样式
+    * @return {string}     展示内容标签
+    */
     const priceSpan = (value, className, styleString = null) => {
       let text = value;
       if (typeof value === 'number') {
@@ -1365,8 +1368,8 @@
       return `<span class=${className} style="float:right;${styleString}">${text}</span>`;
     };
     /*
-         * 功能：在当前页面上添加外币转人民币的价格展示
-         */
+    * 功能：在当前页面上添加外币转人民币的价格展示
+    */
     const retrieveRealTimeExchangeRate = (callbackSuccess, callbackFailure) => {
       // 默认汇率 latest exchange rate as of 2020/09/30/00:00 AM (GMT+8)
       const exchangeRate = {
