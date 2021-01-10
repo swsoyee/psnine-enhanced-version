@@ -98,7 +98,7 @@
   }
 
   onDocumentStart();
-  if (document.readyState == 'loading') document.addEventListener('DOMContentLoaded', onDOMContentReady);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', onDOMContentReady);
   else onDOMContentReady();
 
   // 全局优化
@@ -333,7 +333,7 @@
             $(this).scrollTop() + $(window).height() + 700
                         >= $(document).height()
                         && $(this).scrollTop() > 700
-                        && isbool == true
+                        && isbool === true
                         && autoPagingLimitCount < settings.autoPaging
           ) {
             isbool = false;
@@ -386,7 +386,7 @@
             $(this).scrollTop() + $(window).height() + 700
                         >= $(document).height()
                         && $(this).scrollTop() > 700
-                        && isbool2 == true
+                        && isbool2 === true
           ) {
             isbool2 = false;
             const gamePage = `${window.location.href}/psngame?page=${gamePageIndex}`;
@@ -423,7 +423,7 @@
     const addOPBadge = (userId) => {
       $('.psnnode').map((i, n) => {
         // 匹配楼主ID，变更CSS
-        if ($(n).text() == userId) {
+        if ($(n).text() === userId) {
           $(n).after('<span class="badge badge-1">楼主</span>');
         }
       });
@@ -440,7 +440,7 @@
         dataType: 'html',
         async: false,
         success(data, status) {
-          if (status == 'success') {
+          if (status === 'success') {
             resultSet = successFunction(data);
           }
         },
@@ -604,7 +604,7 @@
                     ) {
                       traceIdTrue = traceId;
                       break;
-                    } else if (traceIdFirst == -1) {
+                    } else if (traceIdFirst === -1) {
                       traceIdFirst = traceId;
                     }
                   }
@@ -612,7 +612,7 @@
                 let outputID = -1;
                 if (traceIdTrue !== -1) {
                   outputID = traceIdTrue;
-                } else if (traceIdFirst != -1) {
+                } else if (traceIdFirst !== -1) {
                   outputID = traceIdFirst;
                 }
                 // 输出
@@ -750,7 +750,7 @@
         const answer_list = $('body > div.inner.mt40 > div.main > div.box.mt20 > ul.list');
         const page_list = $('body > div.inner.mt40 > div.main > div.box.mt20 > div.page > ul');
         const last_page_url_element = page_list.find('> li:not(.current):not(.disabled.h-p) > a:last()');
-        if (last_page_url_element.length == 0) {
+        if (last_page_url_element.length === 0) {
           page_list.remove();
           return 0;
         }
@@ -785,7 +785,7 @@
             (data) => {
               qa_page_data[page_number - 2] = $('<div />').html(data);
               append_answers();
-              if ((--qa_pages_to_load) == 0) { // 在载入全部答案之后运行
+              if ((--qa_pages_to_load) === 0) { // 在载入全部答案之后运行
                 reverseAnwsers(reverseOrder);
                 showHiddenSubReply(allSubReply);
                 page_list.remove();
@@ -799,7 +799,7 @@
         return last_page_number - 1;
       };
 
-      if (showAllAnsers(loadAll, reverseOrder, allSubReply) == 0) {
+      if (showAllAnsers(loadAll, reverseOrder, allSubReply) === 0) {
         reverseAnwsers(reverseOrder);
         showHiddenSubReply(allSubReply);
       }
@@ -813,18 +813,18 @@
     const Filter = (psnnode, parent, userListLowerCase, psnInfoGetter, userNameChecker) => {
       let psnInfo = '';
       const userNameCheckerFinal = (user) => userNameChecker(user, psnInfo);
-      const remover = parent.replace(/\s/g, '') == 'ul.sonlist>li' ? (el) => {
+      const remover = parent.replace(/\s/g, '') === 'ul.sonlist>li' ? (el) => {
         const parentElements = el.parents(parent);
         const sonlistmark = parentElements.parents('div.sonlistmark.ml64.mt10');
         parentElements.remove();
-        if (sonlistmark[0].querySelector('ul.sonlist>li') == null) {
+        if (sonlistmark[0].querySelector('ul.sonlist>li') === null) {
           sonlistmark.hide();
         }
       } : (el) => el.parents(parent).remove();
       let removed = 0;
       $(psnnode).map((i, el) => {
         psnInfo = psnInfoGetter($(el));
-        if (userListLowerCase.find(userNameCheckerFinal) != undefined) {
+        if (userListLowerCase.find(userNameCheckerFinal) !== undefined) {
           remover($(el));
           removed++;
         }
@@ -837,21 +837,21 @@
         const window_href = window.location.href;
         const userListLowerCase = [];
         settings.blockList.forEach((user) => { userListLowerCase.push(user.toLowerCase()); });
-        const FilterRegular = (psnnode, parent) => Filter(psnnode, parent, userListLowerCase, (el) => el.html().toLowerCase(), (user, psnid) => user == psnid);
+        const FilterRegular = (psnnode, parent) => Filter(psnnode, parent, userListLowerCase, (el) => el.html().toLowerCase(), (user, psnid) => user === psnid);
         if (window_href.match(/\/gen(e\/|e)$/)) {
           FilterRegular('.touchclick .psnnode', '.touchclick'); // 机因一览
         } else if (window_href.indexOf('gene') > -1) {
           FilterRegular('div.post .psnnode', 'div.post'); // 机因回复
-        } else if (window_href.match(/\.co(m\/|m)$/) != null || window_href.indexOf('node') > -1 || window_href.indexOf('qa') > -1 || window_href.match(/\/trad(e\/|e)$/) != null) {
+        } else if (window_href.match(/\.co(m\/|m)$/) !== null || window_href.indexOf('node') > -1 || window_href.indexOf('qa') > -1 || window_href.match(/\/trad(e\/|e)$/) !== null) {
           FilterRegular('div.ml64>.meta>.psnnode', 'li'); // 主页一览、问答一览、问答回复、交易一览
-        } else if (window_href.indexOf('topic') > -1 || window_href.indexOf('trade') > -1 || window_href.match(/\/battle\/[1-9][0-9]+/) != null) {
+        } else if (window_href.indexOf('topic') > -1 || window_href.indexOf('trade') > -1 || window_href.match(/\/battle\/[1-9][0-9]+/) !== null) {
           FilterRegular('div.ml64>.meta>.psnnode', 'div.post'); // 主页帖回复、交易帖回复、约战帖回复
         } else if (window_href.match(/\/my\/notice/)) {
           FilterRegular('.psnnode', 'li'); // 消息通知
-        } else if (window_href.indexOf('trophy') > -1 || window_href.match(/\/psnid\/[^\/]+\/comment/) != null) {
+        } else if (window_href.indexOf('trophy') > -1 || window_href.match(/\/psnid\/[^\/]+\/comment/) !== null) {
           FilterRegular('div.ml64>.meta.pb10>.psnnode', 'li'); // 奖杯TIPS、个人主页留言
           FilterRegular('ul.sonlist .content>.psnnode', 'ul.sonlist>li'); // 奖杯TIPS二级回复、个人主页留言二级回复
-        } else if (window_href.match(/\/psngame\/[1-9][0-9]+\/comment/) != null) {
+        } else if (window_href.match(/\/psngame\/[1-9][0-9]+\/comment/) !== null) {
           filteredCriticPost = FilterRegular('div.ml64>.meta.pb10>.psnnode', 'li') > 0; // 游戏测评
           FilterRegular('ul.sonlist .content>.psnnode', 'ul.sonlist>li'); // 游戏测评二级回复
         } else if (window_href.indexOf('battle') > -1) {
@@ -886,8 +886,8 @@
                 || window_href.indexOf('trophy') > -1 // 奖杯TIPS
                 || window_href.indexOf('qa') > -1 // 问答回复
                 || window_href.indexOf('trade') > -1 // 交易回复
-                || window_href.match(/\/battle\/[1-9][0-9]+/) != null // 约战回复
-                || window_href.match(/\/psnid\/[^\/]+\/comment/) != null // 个人主页留言
+                || window_href.match(/\/battle\/[1-9][0-9]+/) !== null // 约战回复
+                || window_href.match(/\/psnid\/[^\/]+\/comment/) !== null // 个人主页留言
       ) {
         FilterWordRegular('div.ml64>div.content.pb10');
       }
@@ -903,7 +903,7 @@
         if (isOn && /(\/(topic|gene|qa|battle|trade)\/\d+)|(\/psnid\/.+?\/comment)|(\/my\/notice)|(\/psngame\/\d+\/comment)|(\/trophy\/\d+)/.test(window.location.href)) $('div.content').each((i, e) => { e.innerHTML = e.innerHTML.replace(untagged_URL_regex, '<a href="$4">$4</a>'); });
       };
       // 修复D7VG链接
-      const linkReplace = (link, substr, new_substr) => { link.href = (link.href == link.innerText) ? (link.innerText = link.innerText.replace(substr, new_substr)) : link.href.replace(substr, new_substr); };
+      const linkReplace = (link, substr, new_substr) => { link.href = (link.href === link.innerText) ? (link.innerText = link.innerText.replace(substr, new_substr)) : link.href.replace(substr, new_substr); };
       const fixD7VGLinksOnThePage = (isOn) => {
         if (isOn) {
           $("a[href*='//d7vg.com'], a[href*='//www.d7vg.com']").each((i, a) => {
@@ -1383,7 +1383,7 @@
           // Wait until HTTP GET SUCCESSFULL or TIMEOUT
           if ((httpReq.status !== 200) && (httpReq.readyState !== XMLHttpRequest.DONE) && (Date.now() - startTime) < 3000) return false;
           let rawExchangeRate = null;
-          if ((httpReq.status == 200) && (httpReq.readyState == XMLHttpRequest.DONE)) rawExchangeRate = JSON.parse(httpReq.response);
+          if ((httpReq.status === 200) && (httpReq.readyState === XMLHttpRequest.DONE)) rawExchangeRate = JSON.parse(httpReq.response);
           if (rawExchangeRate)// HTTP GET SUCCESSFULL
           { ['HKD', 'USD', 'GBP', 'JPY'].forEach((currency) => exchangeRate[currency] = rawExchangeRate.rates.CNY / rawExchangeRate.rates[currency]); }
           callback_success(exchangeRate);
@@ -1400,7 +1400,7 @@
           // 一览页面和单商品页面不同位置偏移
           const offset = /dd\//.test(window.location.href) ? 2 : 3;
           const region = $(`.dd_info p:nth-child(${offset})`).eq(i).text();
-          if (region == '国服') return;
+          if (region === '国服') return;
           const price = [
             $(el).children().eq(0).text(), // 原始价格
             $(el).children().eq(1).text(), // 优惠价格
@@ -1435,7 +1435,7 @@
         $('.store_box>.store_price').map((i, el) => {
           // 一览页面和单商品页面不同位置偏移
           const region = window.location.href.match(/region=.+?(&|$)/)[0].replace(/(region=|&)/g, '').toLowerCase();
-          if (region == 'cn') return;
+          if (region === 'cn') return;
           // 根据地区转换原始价格
           const regionCurrency = {
             hk: ['HK$', exchangeRate.HKD],
@@ -1605,7 +1605,7 @@
          * 功能：页面上追加“显示人民币”功能按键（活动页面）
          */
     const showOriginalPrice = () => {
-      if (window.location.href.match(/region=.+?(&|$)/)[0].replace(/(region=|&)/g, '').toLowerCase() == 'cn') return;
+      if (window.location.href.match(/region=.+?(&|$)/)[0].replace(/(region=|&)/g, '').toLowerCase() === 'cn') return;
       $('.disabled.h-p').eq(0).after('<li style="color:white;padding: 2px 5px;">显示人民币<label class="switch"><input id="selectOriginalPrice" type="checkbox"><span class="slider round"></span></label></li>');
       const toggle = $('#selectOriginalPrice');
       toggle[0].checked = true;
@@ -1833,10 +1833,10 @@
         getTimeArray.push([xTime, el.parentElement.parentElement]);
       });
       getTimeArray.sort((t1, t2) => t1[0] - t2[0]);
-      const earliestValidTimeIndex = getTimeArray.findIndex((t) => t[0] != 0);
+      const earliestValidTimeIndex = getTimeArray.findIndex((t) => t[0] !== 0);
       if (earliestValidTimeIndex >= 0) {
         getTimeArray.forEach((t) => {
-          if (t[0] == 0) t[0] = getTimeArray[earliestValidTimeIndex][0];
+          if (t[0] === 0) t[0] = getTimeArray[earliestValidTimeIndex][0];
         });
       } else getTimeArray.forEach((t) => t[0] = Number.NaN);
       const data = getTimeArray.map((x, y) => [x[0], y + 1]);
@@ -1948,9 +1948,9 @@
 
     const sortTrophiesByTimestamp = () => {
       const trophyTableEntries = $('table.list').eq(0).children().find('tr');
-      const trophies = trophyTableEntries.filter((i, e) => e.id != '');
+      const trophies = trophyTableEntries.filter((i, e) => e.id !== '');
       if (trophies.eq(0).hasClass('t1'))// Platinum
-      { trophyTableEntries.filter((i, e) => e.id == '').eq(0).after(trophyGetTimeData.trophyElements); } else trophies.eq(0).after(trophyGetTimeData.trophyElements);
+      { trophyTableEntries.filter((i, e) => e.id === '').eq(0).after(trophyGetTimeData.trophyElements); } else trophies.eq(0).after(trophyGetTimeData.trophyElements);
     };
 
     /*
@@ -2264,12 +2264,12 @@
       }
       if (array) {
         for (let i = array.length - 1; i >= 0; i--) {
-          if (array[i] == '') {
+          if (array[i] === '') {
             array.splice(i, 1);
             continue;
           }
           array[i] = parseInt(array[i]);
-          if (i == 1) // Everything else is normal except month starts from 0
+          if (i === 1) // Everything else is normal except month starts from 0
           { array[i]--; }
         }
         return Date.UTC(...array) - 8 * unit_time_hour;
@@ -2302,8 +2302,8 @@
         let reviews_no_score = null; let
           reviews_no_score_hidden = false;
         const selectReviewsNoScore = () => {
-          if (reviews_no_score == null) reviews_no_score = $('div.min-inner.mt40 div.box ul.list li div.ml64 div.meta.pb10:not(:has(span.alert-success.pd5))').parents('li');
-          if (reviews_no_score.length == 0) reviews_no_score = $('div.min-inner.mt40 div.box div.ml64:not(:has(p.text-success))').parents('div.post');
+          if (reviews_no_score === null) reviews_no_score = $('div.min-inner.mt40 div.box ul.list li div.ml64 div.meta.pb10:not(:has(span.alert-success.pd5))').parents('li');
+          if (reviews_no_score.length === 0) reviews_no_score = $('div.min-inner.mt40 div.box div.ml64:not(:has(p.text-success))').parents('div.post');
         };
         const hideReviewsNoScore = () => {
           if (reviews_no_score_hidden) return;
@@ -2322,7 +2322,7 @@
           if (hidden_scores.indexOf(score) > -1) return;
           let hidden = 0;
           score_elements.each(function () {
-            if (score_parser($(this)) == score) {
+            if (score_parser($(this)) === score) {
               $(this).parents(score_parent_review).hide();
               hidden++;
             }
@@ -2336,10 +2336,10 @@
           const hidden_score_index = hidden_scores.indexOf(score);
           if (hidden_score_index >= 0) {
             score_elements.each(function () {
-              if (score_parser($(this)) == score) $(this).parents(score_parent_review).show();
+              if (score_parser($(this)) === score) $(this).parents(score_parent_review).show();
             });
             hidden_scores.splice(hidden_score_index, 1);
-            if (hidden_scores.length == 0) showReviewsNoScore();
+            if (hidden_scores.length === 0) showReviewsNoScore();
           }
         };
         const scoreOnclick = (chart, seriesEntry, score) => {
@@ -2369,7 +2369,7 @@
           chart.xAxis[0].labelGroup.element.childNodes.forEach((label) => {
             label.onclick = function () {
               const value = parseInt(this.innerHTML);
-              const pos = chart.series[0].data.find((e) => e.category == value).index;
+              const pos = chart.series[0].data.find((e) => e.category === value).index;
               scoreOnclick(chart, chart.series[0].data[pos], value);
             };
           });
@@ -2427,7 +2427,7 @@
               color: '#8080807f',
               fillColor: '#00000000',
             },
-            series: { point: { events: { click() { if (this.series.name == '评分计数') scoreOnclick(this.series.chart, this, this.category); } } } },
+            series: { point: { events: { click() { if (this.series.name === '评分计数') scoreOnclick(this.series.chart, this, this.category); } } } },
           };
           const scoreSeries = [{
             name: '评分计数',
@@ -2492,9 +2492,9 @@
         const weeksOfYearCache = {};
         const weeksOfYear = (year) => {
           let weeks = weeksOfYearCache[year];
-          if (weeks == undefined) {
+          if (weeks === undefined) {
             const last_week = weekOfYear(new Date(year, 11, 31));
-            if (last_week == 1) weeks = weekOfYear(new Date(year, 11, 24));
+            if (last_week === 1) weeks = weekOfYear(new Date(year, 11, 24));
             else weeks = last_week;
             weeksOfYearCache[year] = weeks;
           }
@@ -2502,10 +2502,10 @@
         };
         const yearOfWeek = (date, week = null) => {
           const real_year = date.getUTCFullYear();
-          if (week == null) week = weekOfYear(date);
-          if (date.getUTCMonth() == 0) {
+          if (week === null) week = weekOfYear(date);
+          if (date.getUTCMonth() === 0) {
             if (week > 5) return real_year - 1;
-          } else if (week == 1) return real_year + 1;
+          } else if (week === 1) return real_year + 1;
           return real_year;
         };
         const weekToTimestamp = (year, week, day = 4) => {
@@ -2537,14 +2537,14 @@
                 do {
                   text = text_array[text_array.length + index].replace(/(^\s)|(\s$)|(修改)/g, '');
                   index--;
-                } while (text == '');
+                } while (text === '');
                 return p9TimeTextParser(text);
               }
               return null;
             };
             score_elements.each(function () {
               const timestamp = scoreElementTime($(this));
-              if (timestamp != null) {
+              if (timestamp !== null) {
                 const score_date = new Date(timestamp);
                 const week_of_year = weekOfYear(score_date);
                 const year_of_week = yearOfWeek(score_date, week_of_year);
@@ -2566,16 +2566,16 @@
             first_week = [first_score[2], first_score[3]], last_week = [last_score[2], last_score[3]];
             score_trend.forEach((score) => {
               const week = `${score[2]}/${score[3]}`;
-              if (comment_count_by_week[week] == undefined) comment_count_by_week[week] = 1;
+              if (comment_count_by_week[week] === undefined) comment_count_by_week[week] = 1;
               else comment_count_by_week[week]++;
               score.splice(2, 2);
             });
             for (let year = first_week[0]; year <= last_week[0]; year++) {
-              const first = year == first_week[0] ? first_week[1] : 1;
-              const last = year == last_week[0] ? last_week[1] : weeksOfYear(year);
+              const first = year === first_week[0] ? first_week[1] : 1;
+              const last = year === last_week[0] ? last_week[1] : weeksOfYear(year);
               for (let week = first; week <= last; week++) {
                 const count = comment_count_by_week[`${year}/${week}`];
-                comment_trend.push([weekToTimestamp(year, week, 7.5), count == undefined ? 0 : count]);
+                comment_trend.push([weekToTimestamp(year, week, 7.5), count === undefined ? 0 : count]);
               }
             }
           };
@@ -2740,7 +2740,7 @@
         for (let score = 10; score >= 1; score--) {
           const index = score - 1;
           const score_count = score_data_barchart[index];
-          if (score_count == 0) {
+          if (score_count === 0) {
             score_data_barchart_no_gaussian.splice(index, 1);
           } else {
             if (score_count < score_count_min) {
@@ -2809,7 +2809,7 @@
           const option = $(`#${name}`);
           const optionValue = () => JSON.parse(option.children('option:selected').val());
           if (typeof newSetting === 'object') {
-            $(`#${name} option:nth-child(${newSetting.enum.findIndex((e) => e == newSetting.value) + 1})`)
+            $(`#${name} option:nth-child(${newSetting.enum.findIndex((e) => e === newSetting.value) + 1})`)
               .attr('selected', 'true');
             option.change(() => newSetting.value = optionValue());
           } else {
