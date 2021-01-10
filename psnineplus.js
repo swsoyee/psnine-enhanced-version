@@ -351,7 +351,7 @@
                   .append($response.find('.list'))
                   .append($response.find('.page'));
                 isbool = true;
-                autoPagingLimitCount++;
+                autoPagingLimitCount += 1;
                 // 各个页面的功能追加
                 if (/\/qa/.test(window.location.href)) {
                   changeQaStatus(settings.newQaStatus);
@@ -401,7 +401,7 @@
                 if (nextGameContent.length > 0) {
                   $('tbody > tr:last').after(nextGameContent);
                   isbool2 = true;
-                  gamePageIndex++;
+                  gamePageIndex += 1;
                 } else {
                   $('#loadingMessage').text('没有更多游戏了...');
                 }
@@ -826,7 +826,7 @@
         psnInfo = psnInfoGetter($(el));
         if (userListLowerCase.find(userNameCheckerFinal) !== undefined) {
           remover($(el));
-          removed++;
+          removed += 1;
         }
       });
       return removed;
@@ -2324,7 +2324,7 @@
           score_elements.each(function () {
             if (score_parser($(this)) === score) {
               $(this).parents(score_parent_review).hide();
-              hidden++;
+              hidden += 1;
             }
           });
           if (hidden > 0) {
