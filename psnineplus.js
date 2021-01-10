@@ -654,12 +654,12 @@
     };
 
     /*
-         * 功能：增加帖子楼层信息
-         */
+    * 功能：增加帖子楼层信息
+    */
     const addFloorIndex = () => {
       let baseFloorIndex = 0;
       let subFloorIndex = -1;
-      $('span[class^=r]').map((i, el) => {
+      $('span[class^=r]').each((i, el) => {
         if (i > 0) {
           if ($(el).attr('class') === 'r') {
             $(el).children('a:last')
@@ -676,10 +676,10 @@
     };
 
     /*
-         * 功能：热门帖子增加 热门 标签
-         */
+    * 功能：热门帖子增加 热门 标签
+    */
     const addHotTag = () => {
-      $('div.meta').map((index, element) => {
+      $('div.meta').each((index, element) => {
         const replyCount = $(element).text().split(/(\d+)/);
         if (Number(replyCount[replyCount.length - 2]) > settings.hotTagThreshold
                     && replyCount[replyCount.length - 1].match('评论|答案|回复')
@@ -823,7 +823,7 @@
         }
       } : (el) => el.parents(parent).remove();
       let removed = 0;
-      $(psnnode).map((i, el) => {
+      $(psnnode).each((i, el) => {
         psnInfo = psnInfoGetter($(el));
         if (userListLowerCase.find(userNameCheckerFinal) !== undefined) {
           remover($(el));
@@ -868,12 +868,12 @@
     const FilterWordRegular = (postSelector, width) => {
       const posts = $(postSelector);
       if (posts.length > 0) {
-        posts.map((index, post) => {
-          settings.blockWordsList.map((word) => {
+        posts.each((index, post) => {
+          settings.blockWordsList.forEach((word) => {
             if ($(post).text().match(word)) {
               $(post).parent().parent().after(`
-                                <div onclick="$(this).prev().show();$(this).hide();" class="btn btn-gray font12" style="margin-bottom:2px;${width && `width:${width}%;`}">====== 内容包含您的屏蔽词，点击查看屏蔽内容 ======</div>
-                            `);
+                <div onclick="$(this).prev().show();$(this).hide();" class="btn btn-gray font12" style="margin-bottom:2px;${width && `width:${width}%;`}">====== 内容包含您的屏蔽词，点击查看屏蔽内容 ======</div>
+              `);
               $(post).parent().parent().hide();
             }
           });
@@ -951,10 +951,9 @@
     }
 
     /* 将BBCode替换成对应html代码
-         * @param   str  原始BBCode输入
-         *
-         * @return  str  转换后的html代码
-         */
+    * @param   str  原始BBCode输入
+    * @return  str  转换后的html代码
+    */
     const replaceAll = (str, mapObj) => {
       for (const i in mapObj) {
         const re = new RegExp(i, 'g');
@@ -963,8 +962,8 @@
       return str;
     };
     /*
-         * BBCode和html标签对应表
-         */
+    * BBCode和html标签对应表
+    */
     const bbcode = {
       '\\[quote\\](.+?)\\[\/quote\\]': '<blockquote>$1</blockquote>',
       '\\[mark\\](.+?)\\[\/mark\\]': '<span class="mark">$1</span>',
@@ -981,9 +980,10 @@
       '\\n': '<br/>',
     };
 
-    /* 功能：在输入框下方追加输入内容预览框
-         * @param   tag  可定位到输入框的标签名
-         */
+    /*
+    * 功能：在输入框下方追加输入内容预览框
+    * @param   tag  可定位到输入框的标签名
+    */
     const addInputPreview = (tag) => {
       $(tag).after(
         "<div class='content' style='padding: 0px 10px; word-wrap: break-word; word-break:break-all;' id='preview' />",
@@ -994,8 +994,8 @@
     };
 
     /*
-         * 功能：实时统计创建机因时候的文字数
-         */
+    * 功能：实时统计创建机因时候的文字数
+    */
     const countInputLength = () => {
       $(".pr20 > textarea[name='content']").before(
         `<div class='text-warning'>
@@ -1025,13 +1025,13 @@
     // addInputPreview("textarea#comment[name='content']");
 
     /*
-         * 问答标题根据回答状况着色
-         * @param  isOn  是否开启功能
-         */
+    * 问答标题根据回答状况着色
+    * @param  isOn  是否开启功能
+    */
     const changeQaStatus = (isOn) => {
       if (isOn) {
         // 替换文字状态为图标形式
-        $('.list>li').map((i, node) => {
+        $('.list>li').each((i, node) => {
           const el = $(node).find('div.meta > .r > span:nth-child(2)');
           const status = $(el).text();
           // 替换文字状态为图标形式
@@ -1048,19 +1048,23 @@
           const reward = rewardNum.match(/悬赏(\d+)铜/);
           if (reward && reward.length > 0) {
             const number = Number(reward[1]);
-            $(elReward).replaceWith(`<div class="fa-coins"></div>&nbsp;<span class="${number > 30 ? 'text-gold' : (number === 10 ? 'text-bronze' : 'text-silver')}" style="font-weight:bold;"}">${number}</span>`);
+            let textType;
+            if (number > 30) {
+              textType = 'text-gold';
+            } else {
+              textType = number === 10 ? 'text-bronze' : 'text-silver';
+            }
+            $(elReward).replaceWith(`<div class="fa-coins"></div>&nbsp;<span class="${textType}" style="font-weight:bold;"}">${number}</span>`);
           }
         });
-      } else {
-
       }
     };
 
     /*
-         * 通过Ajax获取自己的该游戏页面的奖杯数目
-         * @param  data  Ajax获取的数据
-         * @param  tip   Tippy对象
-         */
+    * 通过Ajax获取自己的该游戏页面的奖杯数目
+    * @param  data  Ajax获取的数据
+    * @param  tip   Tippy对象
+    */
     const getTrophyContentByAjax = (data, tip) => {
       const reg = /[\s\S]*<\/body>/g;
       const html = reg.exec(data)[0];
