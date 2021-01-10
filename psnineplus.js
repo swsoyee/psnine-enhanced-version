@@ -1407,7 +1407,7 @@
     };
     const foreignCurrencyConversion = () => {
       const insertConvertedPriceTags = (exchangeRate) => {
-        $('.dd_price').map((i, el) => {
+        $('.dd_price').each((i, el) => {
           // 一览页面和单商品页面不同位置偏移
           const offset = /dd\//.test(window.location.href) ? 2 : 3;
           const region = $(`.dd_info p:nth-child(${offset})`).eq(i).text();
@@ -1443,7 +1443,7 @@
     };
     const foreignCurrencyConversionSalesPage = () => {
       const changeToConvertedPriceTags = (exchangeRate) => {
-        $('.store_box>.store_price').map((i, el) => {
+        $('.store_box>.store_price').each((i, el) => {
           // 一览页面和单商品页面不同位置偏移
           const region = window.location.href.match(/region=.+?(&|$)/)[0].replace(/(region=|&)/g, '').toLowerCase();
           if (region === 'cn') return;
@@ -1464,8 +1464,8 @@
       retrieveRealTimeExchangeRate(changeToConvertedPriceTags, changeToConvertedPriceTags);
     };
     /*
-         * 功能：根据降价幅度变更标题颜色
-         */
+    * 功能：根据降价幅度变更标题颜色
+    */
     const changeGameTitleColor = () => {
       // 设定不同降价范围的标题颜色
       const priceTitleColorDict = {
@@ -1475,7 +1475,7 @@
         20: 'rgb(40,167,69)',
       };
       // 着色
-      $('.dd_box').map((i, el) => {
+      $('.dd_box').each((i, el) => {
         try {
           const offPercent = Number(
             $(el).find('.dd_pic > div[class^="dd_tag"] ').text()
@@ -1494,24 +1494,24 @@
     };
 
     /*
-         * 增加按键样式
-         * @param  id               标签ID
-         * @param  backgroundColor  按键背景色
-         * @param  padding          padding
-         * @param  margin           margin
-         */
+    * 增加按键样式
+    * @param  id               标签ID
+    * @param  backgroundColor  按键背景色
+    * @param  padding          padding
+    * @param  margin           margin
+    */
     const addButtonStyle = (id, backgroundColor, padding = '0px 5px', margin = '0 0 0 10px') => {
       GM_addStyle(
         `#${id} {
-                    padding          : ${padding};
-                    margin           : ${margin};
-                    border-radius    : 2px;
-                    display          : inline-block;
-                    color            : white;
-                    background-color : ${backgroundColor};
-                    cursor           : pointer;
-                    line-height      : 24px;
-                }`,
+          padding          : ${padding};
+          margin           : ${margin};
+          border-radius    : 2px;
+          display          : inline-block;
+          color            : white;
+          background-color : ${backgroundColor};
+          cursor           : pointer;
+          line-height      : 24px;
+      }`,
       );
     };
     const colorAddedButtonReady = '#d9534f';
@@ -1580,8 +1580,8 @@
             }
         `);
     /*
-        * 功能：页面上追加“只看史低”功能按键，点击显示史低，再次点击恢复显示所有游戏（数折页面）
-        */
+    * 功能：页面上追加“只看史低”功能按键，点击显示史低，再次点击恢复显示所有游戏（数折页面）
+    */
     const showBest = () => {
       // 追加只看史低按键
       $('.dropmenu').append('<li style="color:#B8C4CE;padding: 0px 0px 0px 10px;">只看史低</li><label class="switch" style="line-height:1.3;"><input id="showBest" type="checkbox"><span class="slider round"></span></label>');
@@ -1589,7 +1589,7 @@
       const toggle = $('#showBest');
       toggle[0].checked = false;
       toggle.change(() => {
-        $('li.dd_box').map((i, el) => {
+        $('li.dd_box').each((i, el) => {
           if ($(el).children('.dd_status.dd_status_best').length === 0) {
             toggle[0].checked === true ? $(el).hide() : $(el).show();
           }
@@ -1597,15 +1597,15 @@
       });
     };
     /*
-        * 功能：页面上追加“只看史低”功能按键，点击显示史低，再次点击恢复显示所有游戏（活动页面）
-        */
+    * 功能：页面上追加“只看史低”功能按键，点击显示史低，再次点击恢复显示所有游戏（活动页面）
+    */
     const onlyLowestSalesPage = () => {
       // 追加只看史低按键
       $('.disabled.h-p').eq(0).after('<li style="color:white;padding: 2px 5px;">只看史低<label class="switch"><input id="hideGamebox" type="checkbox"><span class="slider round"></span></label></li>');
       const toggle = $('#hideGamebox');
       toggle[0].checked = false;
       toggle.change(() => {
-        $(document.querySelectorAll('li.store_box')).map((i, el) => {
+        $(document.querySelectorAll('li.store_box')).each((i, el) => {
           if ((el).querySelector('.store_tag_best') === null) {
             $(el).css('display', toggle[0].checked === true ? 'none' : 'block');
           }
@@ -1613,8 +1613,8 @@
       });
     };
     /*
-         * 功能：页面上追加“显示人民币”功能按键（活动页面）
-         */
+    * 功能：页面上追加“显示人民币”功能按键（活动页面）
+    */
     const showOriginalPrice = () => {
       if (window.location.href.match(/region=.+?(&|$)/)[0].replace(/(region=|&)/g, '').toLowerCase() === 'cn') return;
       $('.disabled.h-p').eq(0).after('<li style="color:white;padding: 2px 5px;">显示人民币<label class="switch"><input id="selectOriginalPrice" type="checkbox"><span class="slider round"></span></label></li>');
@@ -1680,22 +1680,21 @@
     toPageBottom();
 
     /*
-         * 获取奖杯各种类个数
-         * @param  className  用于识别的类名
-         * @param  name       奖杯种类名
-         * @param  color      色块所用颜色码
-         *
-         * @return {object}   用于绘扇形图的单个数据块
-         */
+    * 获取奖杯各种类个数
+    * @param  className  用于识别的类名
+    * @param  name       奖杯种类名
+    * @param  color      色块所用颜色码
+    * @return {object}   用于绘扇形图的单个数据块
+    */
     const getTrophyCategory = (className, name, color) => {
       const trophyCount = $(className).eq(0).text().replace(name, '');
       return { name, y: Number(trophyCount), color };
     };
 
     /*
-         * 获取奖杯各稀有度个数
-         * @return {object}   用于绘扇形图的数据块
-         */
+    * 获取奖杯各稀有度个数
+    * @return {object}   用于绘扇形图的数据块
+    */
     const getTrophyRarity = () => {
       const rareArray = [0, 0, 0, 0, 0]; // 个数统计
       const rareStandard = [0, 5, 10, 20, 50]; // 区间定义
@@ -1713,8 +1712,8 @@
       return rareArray;
     };
     /*
-         * 功能：在单独游戏页面上方追加奖杯统计扇形图
-         */
+    * 功能：在单独游戏页面上方追加奖杯统计扇形图
+    */
     const addTrophyPieChart = () => {
       // 奖杯稀有度统计数据
       const rareArray = getTrophyRarity();
@@ -1799,29 +1798,28 @@
       Highcharts.chart('trophyRatioChart', trophyRatio);
     };
     /*
-         * 增加绘图框架样式
-         * @param  id     标签ID
-         * @param  width  宽度
-         */
+    * 增加绘图框架样式
+    * @param  id     标签ID
+    * @param  width  宽度
+    */
     const addPlotFrame = (id, width) => {
       GM_addStyle(
         `#${id} {
-                    width   : ${width}px;
-                    height  : 200px;
-                    margin  : 0 0;
-                    display : inline-block;
-                }`,
+          width   : ${width}px;
+          height  : 200px;
+          margin  : 0 0;
+          display : inline-block;
+      }`,
       );
     };
     addPlotFrame('trophyRatioChart', 320);
     addPlotFrame('trophyGetTimeChart', 460);
 
     /*
-         * 构建奖杯获得时间绘图数据集
-         * @param  className  用于识别的类名
-         *
-         * @return {object}   用于绘线形图的数据集
-         */
+    * 构建奖杯获得时间绘图数据集
+    * @param  className  用于识别的类名
+    * @return {object}   用于绘线形图的数据集
+    */
     const trophyGetTimeElementParser = (timeElement) => {
       // 奖杯时间丢失部分处理
       const dayTime = $(timeElement).text().trim();
@@ -1839,7 +1837,7 @@
     const createTrophyGetTimeData = (className) => {
       const timeElements = $(className);
       const getTimeArray = [];
-      timeElements.map((i, el) => {
+      timeElements.each((i, el) => {
         const xTime = trophyGetTimeElementParser(el);
         getTimeArray.push([xTime, el.parentElement.parentElement]);
       });
@@ -1858,8 +1856,8 @@
     };
 
     /*
-         * 功能：在单独游戏页面上方追加奖杯获得时间线形图
-         */
+    * 功能：在单独游戏页面上方追加奖杯获得时间线形图
+    */
     let trophyGetTimeData;
     const addTrophyGetTimeLineChart = () => {
       // 奖杯获得时间年月统计
