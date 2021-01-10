@@ -2234,7 +2234,7 @@
       let array = null;
       // 1小时
       const unitTimeHour = 60 * 60 * 1000;
-      const relativeDescriptionToOffset = (prunePattern, unitTime) => -parseInt(timestampText.replace(prunePattern, '')) * unitTime;
+      const relativeDescriptionToOffset = (prunePattern, unitTime) => -parseInt(timestampText.replace(prunePattern, ''), 10) * unitTime;
       const relativeTimestamp = (offset, replacePattern) => {
         if (replacePattern) {
           return (
@@ -2272,7 +2272,7 @@
             array.splice(i, 1);
             continue;
           }
-          array[i] = parseInt(array[i]);
+          array[i] = parseInt(array[i], 10);
           if (i === 1) // Everything else is normal except month starts from 0
           { array[i]--; }
         }
@@ -2289,12 +2289,12 @@
         const selectScoreElements = () => {
           scoreElements = $('div.min-inner.mt40 div.box ul.list li div.ml64 div.meta.pb10 span.alert-success.pd5:contains(评分 )');
           if (scoreElements.length > 0) {
-            scoreParser = (element) => parseInt(element.text().replace('评分 ', ''));
+            scoreParser = (element) => parseInt(element.text().replace('评分 ', ''), 10);
             scoreParentReview = 'li';
           } else {
             scoreElements = $('div.min-inner.mt40 div.box div.ml64 p.text-success:contains(评分 ) b');
             if (scoreElements.length > 0) {
-              scoreParser = (element) => parseInt(element.text());
+              scoreParser = (element) => parseInt(element.text(), 10);
               scoreParentReview = 'div.post';
             } else {
               return false;
@@ -2372,7 +2372,7 @@
         const scoreBarChartAddLabelOnclick = (chart) => {
           chart.xAxis[0].labelGroup.element.childNodes.forEach((label) => {
             label.onclick = function () {
-              const value = parseInt(this.innerHTML);
+              const value = parseInt(this.innerHTML, 10);
               const pos = chart.series[0].data.find((e) => e.category === value).index;
               scoreOnclick(chart, chart.series[0].data[pos], value);
             };
