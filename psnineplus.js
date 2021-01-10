@@ -592,11 +592,11 @@
         const userId = $('.post > .ml64 > [class$=meta]');
         // 每一层的头像
         const avator = $('.post > a.l');
-        for (let floor = allSource.length - 1; floor > 0; floor--) {
+        for (let floor = allSource.length - 1; floor > 0; floor -= 1) {
           // 层内内容里包含链接（B的发言中是否有A）
           const content = allSource.eq(floor).find('a');
           if (content.length > 0) {
-            for (let userNum = 0; userNum < content.length; userNum++) {
+            for (let userNum = 0; userNum < content.length; userNum += 1) {
               // 对每一个链接的文本内容判断
               const linkContent = content.eq(userNum).text().match('@(.+)');
               // 链接里是@用户生成的链接， linkContent为用户名（B的发言中有A）
@@ -604,7 +604,7 @@
                 // 从本层的上一层开始，回溯所@的用户的最近回复（找最近的一条A的发言）
                 let traceIdFirst = -1;
                 let traceIdTrue = -1;
-                for (let traceId = floor - 1; traceId >= 0; traceId--) {
+                for (let traceId = floor - 1; traceId >= 0; traceId -= 1) {
                   // 如果回溯到了的话，选取内容
                   // 回溯层用户名
                   const thisUserID = userId.eq(traceId).find('.psnnode:eq(0)').text();
@@ -777,12 +777,12 @@
         const loadQaPage = (pageNumber) => {
           const appendAnswers = () => {
             let latestReadyPage = lastAppendedPage;
-            for (let i = lastAppendedPage + 1; i <= lastPageNumber; i++) {
+            for (let i = lastAppendedPage + 1; i <= lastPageNumber; i += 1) {
               if (qaPageData[i - 2]) latestReadyPage = i;
               else break;
             }
             if (latestReadyPage > lastAppendedPage) {
-              for (let i = lastAppendedPage + 1; i <= latestReadyPage; i++) {
+              for (let i = lastAppendedPage + 1; i <= latestReadyPage; i += 1) {
                 qaPageData[i - 2].find('div.inner.mt40 > div.main > div.box.mt20 > ul.list > li').each((index, answer) => {
                   answerList.append(answer);
                 });
@@ -809,7 +809,7 @@
           );
         };
 
-        for (let i = 2; i <= lastPageNumber; i++) loadQaPage(i);
+        for (let i = 2; i <= lastPageNumber; i += 1) loadQaPage(i);
         return lastPageNumber - 1;
       };
 
@@ -2304,14 +2304,14 @@
         else if (timestampText.match(/刚刚/)) array = relativeTimestamp(0);
       }
       if (array) {
-        for (let i = array.length - 1; i >= 0; i--) {
+        for (let i = array.length - 1; i >= 0; i -= 1) {
           if (array[i] === '') {
             array.splice(i, 1);
             continue;
           }
           array[i] = parseInt(array[i], 10);
           if (i === 1) // Everything else is normal except month starts from 0
-          { array[i]--; }
+          { array[i] -= 1; }
         }
         return Date.UTC(...array) - 8 * unitTimeHour;
       }
@@ -2607,7 +2607,7 @@
             });
             scoreTrend.sort((e1, e2) => (e1[0] - e2[0]));
             let accumulatedScore = 0;
-            for (let i = 0; i < scoreTrend.length; i++) {
+            for (let i = 0; i < scoreTrend.length; i += 1) {
               accumulatedScore += scoreTrend[i][1];
               const updatedAverageScore = accumulatedScore / (i + 1);
               scoreTrend[i][1] = updatedAverageScore;
@@ -2624,10 +2624,10 @@
               else commentCountByWeek[week] += 1;
               score.splice(2, 2);
             });
-            for (let year = firstWeek[0]; year <= lastWeek[0]; year++) {
+            for (let year = firstWeek[0]; year <= lastWeek[0]; year += 1) {
               const first = year === firstWeek[0] ? firstWeek[1] : 1;
               const last = year === lastWeek[0] ? lastWeek[1] : weeksOfYear(year);
-              for (let week = first; week <= last; week++) {
+              for (let week = first; week <= last; week += 1) {
                 const count = commentCountByWeek[`${year}/${week}`];
                 commentTrend.push([
                   weekToTimestamp(year, week, 7.5), count === undefined ? 0 : count,
@@ -2794,7 +2794,7 @@
         // 柱状图颜色
         const scoreColors = new Array(10).fill('#3890ff'); // do not assign transparency! otherwise scoreOnclick() will break
         scoreColors[maxScoreCountIndex] = '#da314b';
-        for (let score = 10; score >= 1; score--) {
+        for (let score = 10; score >= 1; score -= 1) {
           const index = score - 1;
           const scoreCount = scoreDataBarchart[index];
           if (scoreCount === 0) {
