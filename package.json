@@ -15,5 +15,10 @@
   "bugs": {
     "url": "https://github.com/swsoyee/psnine-night-mode-CSS/issues"
   },
-  "homepage": "https://github.com/swsoyee/psnine-night-mode-CSS#readme"
+  "homepage": "https://github.com/swsoyee/psnine-night-mode-CSS#readme",
+  "devDependencies": {
+    "eslint": "^7.17.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.22.1"
+  }
 }
