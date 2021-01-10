@@ -194,6 +194,7 @@
       },
     });
     // 暴力猴中已经删掉了GM_addStyle函数，因此需要自己定义
+    // eslint-disable-next-line camelcase
     function GM_addStyle(css) {
       const style = document.getElementById('GM_addStyleBy8626') || (function () {
         const style = document.createElement('style');
@@ -727,10 +728,10 @@
              */
       const reverseAnwsers = (isOn) => {
         if (!isOn) return;
-        const answer_list = $('body > div.inner.mt40 > div.main > div.box.mt20 > ul.list');
-        const answers = answer_list.find('> li');
+        const answerList = $('body > div.inner.mt40 > div.main > div.box.mt20 > ul.list');
+        const answers = answerList.find('> li');
         answers.remove();
-        answers.get().reverse().forEach((answer) => { answer_list.append(answer); });
+        answers.get().reverse().forEach((answer) => { answerList.append(answer); });
       };
 
       /*
@@ -747,56 +748,56 @@
              */
       const showAllAnsers = (isOn, reverseOrder, allSubReply) => {
         if (!isOn) return 0;
-        const answer_list = $('body > div.inner.mt40 > div.main > div.box.mt20 > ul.list');
-        const page_list = $('body > div.inner.mt40 > div.main > div.box.mt20 > div.page > ul');
-        const last_page_url_element = page_list.find('> li:not(.current):not(.disabled.h-p) > a:last()');
-        if (last_page_url_element.length === 0) {
-          page_list.remove();
+        const answerList = $('body > div.inner.mt40 > div.main > div.box.mt20 > ul.list');
+        const pageList = $('body > div.inner.mt40 > div.main > div.box.mt20 > div.page > ul');
+        const lastPageUrlElement = pageList.find('> li:not(.current):not(.disabled.h-p) > a:last()');
+        if (lastPageUrlElement.length === 0) {
+          pageList.remove();
           return 0;
         }
-        const last_page_url = last_page_url_element.get()[0].href;
-        const last_page_number = Number(last_page_url.match(/\?page=\d+/)[0].replace('?page=', ''));
-        let qa_pages_to_load = last_page_number - 1;
-        let last_appended_page = 1;
-        const qa_page_data = new Array(qa_pages_to_load);
-        qa_page_data.fill(null);
-        const load_qa_page = (page_number) => {
-          const append_answers = () => {
-            let latest_ready_page = last_appended_page;
-            for (let i = last_appended_page + 1; i <= last_page_number; i++) {
-              if (qa_page_data[i - 2]) latest_ready_page = i;
+        const lastPageUrl = lastPageUrlElement.get()[0].href;
+        const lastPageNumber = Number(lastPageUrl.match(/\?page=\d+/)[0].replace('?page=', ''));
+        let qaPagesToLoad = lastPageNumber - 1;
+        let lastAppendedPage = 1;
+        const qaPageData = new Array(qaPagesToLoad);
+        qaPageData.fill(null);
+        const loadQaPage = (pageNumber) => {
+          const appendAnswers = () => {
+            let latestReadyPage = lastAppendedPage;
+            for (let i = lastAppendedPage + 1; i <= lastPageNumber; i++) {
+              if (qaPageData[i - 2]) latestReadyPage = i;
               else break;
             }
-            if (latest_ready_page > last_appended_page) {
-              for (let i = last_appended_page + 1; i <= latest_ready_page; i++) {
-                qa_page_data[i - 2].find('div.inner.mt40 > div.main > div.box.mt20 > ul.list > li').each((index, answer) => {
-                  answer_list.append(answer);
+            if (latestReadyPage > lastAppendedPage) {
+              for (let i = lastAppendedPage + 1; i <= latestReadyPage; i++) {
+                qaPageData[i - 2].find('div.inner.mt40 > div.main > div.box.mt20 > ul.list > li').each((index, answer) => {
+                  answerList.append(answer);
                 });
-                qa_page_data[i - 2].remove();
-                qa_page_data[i - 2] = null;
+                qaPageData[i - 2].remove();
+                qaPageData[i - 2] = null;
               }
-              last_appended_page = latest_ready_page;
+              lastAppendedPage = latestReadyPage;
             }
           };
-          const page_url = last_page_url.replace(last_page_number, page_number);
+          const pageUrl = lastPageUrl.replace(lastPageNumber, pageNumber);
           $.get(
-            page_url,
+            pageUrl,
             { retryLimit: 3 },
             (data) => {
-              qa_page_data[page_number - 2] = $('<div />').html(data);
-              append_answers();
-              if ((--qa_pages_to_load) === 0) { // 在载入全部答案之后运行
+              qaPageData[pageNumber - 2] = $('<div />').html(data);
+              appendAnswers();
+              if ((--qaPagesToLoad) === 0) { // 在载入全部答案之后运行
                 reverseAnwsers(reverseOrder);
                 showHiddenSubReply(allSubReply);
-                page_list.remove();
+                pageList.remove();
               }
             },
             'html',
           );
         };
 
-        for (let i = 2; i <= last_page_number; i++) load_qa_page(i);
-        return last_page_number - 1;
+        for (let i = 2; i <= lastPageNumber; i++) loadQaPage(i);
+        return lastPageNumber - 1;
       };
 
       if (showAllAnsers(loadAll, reverseOrder, allSubReply) === 0) {
@@ -834,30 +835,30 @@
     let filteredCriticPost = false;
     const filterUserPost = () => {
       if (settings.blockList.length > 0) {
-        const window_href = window.location.href;
+        const windowHref = window.location.href;
         const userListLowerCase = [];
         settings.blockList.forEach((user) => { userListLowerCase.push(user.toLowerCase()); });
         const FilterRegular = (psnnode, parent) => Filter(psnnode, parent, userListLowerCase, (el) => el.html().toLowerCase(), (user, psnid) => user === psnid);
-        if (window_href.match(/\/gen(e\/|e)$/)) {
+        if (windowHref.match(/\/gen(e\/|e)$/)) {
           FilterRegular('.touchclick .psnnode', '.touchclick'); // 机因一览
-        } else if (window_href.indexOf('gene') > -1) {
+        } else if (windowHref.indexOf('gene') > -1) {
           FilterRegular('div.post .psnnode', 'div.post'); // 机因回复
-        } else if (window_href.match(/\.co(m\/|m)$/) !== null || window_href.indexOf('node') > -1 || window_href.indexOf('qa') > -1 || window_href.match(/\/trad(e\/|e)$/) !== null) {
+        } else if (windowHref.match(/\.co(m\/|m)$/) !== null || windowHref.indexOf('node') > -1 || windowHref.indexOf('qa') > -1 || windowHref.match(/\/trad(e\/|e)$/) !== null) {
           FilterRegular('div.ml64>.meta>.psnnode', 'li'); // 主页一览、问答一览、问答回复、交易一览
-        } else if (window_href.indexOf('topic') > -1 || window_href.indexOf('trade') > -1 || window_href.match(/\/battle\/[1-9][0-9]+/) !== null) {
+        } else if (windowHref.indexOf('topic') > -1 || windowHref.indexOf('trade') > -1 || windowHref.match(/\/battle\/[1-9][0-9]+/) !== null) {
           FilterRegular('div.ml64>.meta>.psnnode', 'div.post'); // 主页帖回复、交易帖回复、约战帖回复
-        } else if (window_href.match(/\/my\/notice/)) {
+        } else if (windowHref.match(/\/my\/notice/)) {
           FilterRegular('.psnnode', 'li'); // 消息通知
-        } else if (window_href.indexOf('trophy') > -1 || window_href.match(/\/psnid\/[^\/]+\/comment/) !== null) {
+        } else if (windowHref.indexOf('trophy') > -1 || windowHref.match(/\/psnid\/[^\/]+\/comment/) !== null) {
           FilterRegular('div.ml64>.meta.pb10>.psnnode', 'li'); // 奖杯TIPS、个人主页留言
           FilterRegular('ul.sonlist .content>.psnnode', 'ul.sonlist>li'); // 奖杯TIPS二级回复、个人主页留言二级回复
-        } else if (window_href.match(/\/psngame\/[1-9][0-9]+\/comment/) !== null) {
+        } else if (windowHref.match(/\/psngame\/[1-9][0-9]+\/comment/) !== null) {
           filteredCriticPost = FilterRegular('div.ml64>.meta.pb10>.psnnode', 'li') > 0; // 游戏测评
           FilterRegular('ul.sonlist .content>.psnnode', 'ul.sonlist>li'); // 游戏测评二级回复
-        } else if (window_href.indexOf('battle') > -1) {
-          Filter('table.list td.pdd15.h-p>a', 'tr', userListLowerCase, (el) => el[0].href, (user, element_href) => element_href.indexOf(`psnid/${user}`) > -1); // 约战一览
+        } else if (windowHref.indexOf('battle') > -1) {
+          Filter('table.list td.pdd15.h-p>a', 'tr', userListLowerCase, (el) => el[0].href, (user, elementHref) => elementHref.indexOf(`psnid/${user}`) > -1); // 约战一览
         }
-        if (window_href.match(/\/qa\/[1-9][0-9]*/)) {
+        if (windowHref.match(/\/qa\/[1-9][0-9]*/)) {
           FilterRegular('ul.sonlist .content>.psnnode', 'ul.sonlist>li'); // 问答二级回复
         }
       }
@@ -880,14 +881,14 @@
       }
     };
     const filterBlockWorld = () => {
-      const window_href = window.location.href;
-      if (window_href.indexOf('gene') > -1 // 机因回复
-                || window_href.indexOf('topic') > -1 // 主帖回复
-                || window_href.indexOf('trophy') > -1 // 奖杯TIPS
-                || window_href.indexOf('qa') > -1 // 问答回复
-                || window_href.indexOf('trade') > -1 // 交易回复
-                || window_href.match(/\/battle\/[1-9][0-9]+/) !== null // 约战回复
-                || window_href.match(/\/psnid\/[^\/]+\/comment/) !== null // 个人主页留言
+      const windowHref = window.location.href;
+      if (windowHref.indexOf('gene') > -1 // 机因回复
+                || windowHref.indexOf('topic') > -1 // 主帖回复
+                || windowHref.indexOf('trophy') > -1 // 奖杯TIPS
+                || windowHref.indexOf('qa') > -1 // 问答回复
+                || windowHref.indexOf('trade') > -1 // 交易回复
+                || windowHref.match(/\/battle\/[1-9][0-9]+/) !== null // 约战回复
+                || windowHref.match(/\/psnid\/[^\/]+\/comment/) !== null // 个人主页留言
       ) {
         FilterWordRegular('div.ml64>div.content.pb10');
       }
@@ -898,12 +899,12 @@
 
     const fixLinksOnThePage = () => {
       // 检测纯文本中的链接
-      const untagged_URL_regex = /(?<!((href|src)=\"|<a( [^<]+?)?>))(https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([A-Za-z0-9\-._~:/?#[\]@!$&'()*+,;=%]*))(?!(\"|<\/a>))/g;// https://stackoverflow.com/a/3809435 & https://stackoverflow.com/a/1547940
+      const untaggedUrlRegex = /(?<!((href|src)=\"|<a( [^<]+?)?>))(https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([A-Za-z0-9\-._~:/?#[\]@!$&'()*+,;=%]*))(?!(\"|<\/a>))/g;// https://stackoverflow.com/a/3809435 & https://stackoverflow.com/a/1547940
       const fixTextLinksOnThePage = (isOn) => {
-        if (isOn && /(\/(topic|gene|qa|battle|trade)\/\d+)|(\/psnid\/.+?\/comment)|(\/my\/notice)|(\/psngame\/\d+\/comment)|(\/trophy\/\d+)/.test(window.location.href)) $('div.content').each((i, e) => { e.innerHTML = e.innerHTML.replace(untagged_URL_regex, '<a href="$4">$4</a>'); });
+        if (isOn && /(\/(topic|gene|qa|battle|trade)\/\d+)|(\/psnid\/.+?\/comment)|(\/my\/notice)|(\/psngame\/\d+\/comment)|(\/trophy\/\d+)/.test(window.location.href)) $('div.content').each((i, e) => { e.innerHTML = e.innerHTML.replace(untaggedUrlRegex, '<a href="$4">$4</a>'); });
       };
       // 修复D7VG链接
-      const linkReplace = (link, substr, new_substr) => { link.href = (link.href === link.innerText) ? (link.innerText = link.innerText.replace(substr, new_substr)) : link.href.replace(substr, new_substr); };
+      const linkReplace = (link, substr, newSubstr) => { link.href = (link.href === link.innerText) ? (link.innerText = link.innerText.replace(substr, newSubstr)) : link.href.replace(substr, newSubstr); };
       const fixD7VGLinksOnThePage = (isOn) => {
         if (isOn) {
           $("a[href*='//d7vg.com'], a[href*='//www.d7vg.com']").each((i, a) => {
@@ -1041,13 +1042,13 @@
             case '解决中': $(node).find(selector).append('<div class="fa-comments"></div>'); break;
             default: return;
           }
-          const el_reward = $(node).find('div.meta > .r > span:nth-child(1)');
-          const reward_num = $(el_reward).text();
+          const elReward = $(node).find('div.meta > .r > span:nth-child(1)');
+          const rewardNum = $(elReward).text();
           // 替换文字状态为图标形式
-          const reward = reward_num.match(/悬赏(\d+)铜/);
+          const reward = rewardNum.match(/悬赏(\d+)铜/);
           if (reward && reward.length > 0) {
             const number = Number(reward[1]);
-            $(el_reward).replaceWith(`<div class="fa-coins"></div>&nbsp;<span class="${number > 30 ? 'text-gold' : (number === 10 ? 'text-bronze' : 'text-silver')}" style="font-weight:bold;"}">${number}</span>`);
+            $(elReward).replaceWith(`<div class="fa-coins"></div>&nbsp;<span class="${number > 30 ? 'text-gold' : (number === 10 ? 'text-bronze' : 'text-silver')}" style="font-weight:bold;"}">${number}</span>`);
           }
         });
       } else {
@@ -1362,20 +1363,23 @@
     /*
          * 功能：在当前页面上添加外币转人民币的价格展示
          */
-    const retrieveRealTimeExchangeRate = (callback_success, callback_failure) => {
-      // 默认汇率
+    const retrieveRealTimeExchangeRate = (callbackSuccess, callbackFailure) => {
+      // 默认汇率 latest exchange rate as of 2020/09/30/00:00 AM (GMT+8)
       const exchangeRate = {
-        HKD: 0.8796572978575602, USD: 6.817381644163391, GBP: 8.770269230346404, JPY: 0.06453927675754388,
-      };// latest exchange rate as of 2020/09/30/00:00 AM (GMT+8)
+        HKD: 0.8796572978575602,
+        USD: 6.817381644163391,
+        GBP: 8.770269230346404,
+        JPY: 0.06453927675754388,
+      };
       try { // 获取实时汇率
         const httpReq = new XMLHttpRequest();
         httpReq.open('GET', 'https://api.exchangeratesapi.io/latest', false);
         httpReq.send(null);
         const startTime = Date.now();
-        const repeatUntilSuccessful = (function_ptr, interval) => {
-          if (!function_ptr()) {
+        const repeatUntilSuccessful = (functionPtr, interval) => {
+          if (!functionPtr()) {
             setTimeout(() => {
-              repeatUntilSuccessful(function_ptr, interval);
+              repeatUntilSuccessful(functionPtr, interval);
             }, interval);
           }
         };
@@ -1386,12 +1390,12 @@
           if ((httpReq.status === 200) && (httpReq.readyState === XMLHttpRequest.DONE)) rawExchangeRate = JSON.parse(httpReq.response);
           if (rawExchangeRate)// HTTP GET SUCCESSFULL
           { ['HKD', 'USD', 'GBP', 'JPY'].forEach((currency) => exchangeRate[currency] = rawExchangeRate.rates.CNY / rawExchangeRate.rates[currency]); }
-          callback_success(exchangeRate);
+          callbackSuccess(exchangeRate);
           return true;
         }, 50);
       } catch (e) {
         console.log('实时汇率获取失败，使用默认汇率');
-        callback_failure(exchangeRate);
+        callbackFailure(exchangeRate);
       }
     };
     const foreignCurrencyConversion = () => {
@@ -1443,10 +1447,10 @@
             jp: ['¥', exchangeRate.JPY],
             gb: ['£', exchangeRate.GBP],
           };
-          $(el).children().each((j, price_tag) => {
-            $(price_tag).attr('original-price', $(price_tag).text());
-            $(price_tag).attr('converted-price', `CN¥${(Number($(price_tag).text().replace(regionCurrency[region][0], '')) * regionCurrency[region][1]).toFixed(2)}`);
-            $(price_tag).text($(price_tag).attr('converted-price'));
+          $(el).children().each((j, priceTag) => {
+            $(priceTag).attr('original-price', $(priceTag).text());
+            $(priceTag).attr('converted-price', `CN¥${(Number($(priceTag).text().replace(regionCurrency[region][0], '')) * regionCurrency[region][1]).toFixed(2)}`);
+            $(priceTag).text($(priceTag).attr('converted-price'));
           });
         });
       };
@@ -1503,9 +1507,9 @@
                 }`,
       );
     };
-    const color_AddedButtonReady = '#d9534f';
+    const colorAddedButtonReady = '#d9534f';
     addButtonStyle('selectUnget', '#3498db'); // 未获得
-    addButtonStyle('selectOriginalPrice', color_AddedButtonReady); // 原币种价格
+    addButtonStyle('selectOriginalPrice', colorAddedButtonReady); // 原币种价格
 
     GM_addStyle(`
             .switch {
@@ -1610,8 +1614,8 @@
       const toggle = $('#selectOriginalPrice');
       toggle[0].checked = true;
       toggle.change(() => {
-        $('.store_box>.store_price').children().each((i, price_tag) => {
-          $(price_tag).text($(price_tag).attr(toggle[0].checked === true ? 'converted-price' : 'original-price'));
+        $('.store_box>.store_price').children().each((i, priceTag) => {
+          $(priceTag).text($(priceTag).attr(toggle[0].checked === true ? 'converted-price' : 'original-price'));
         });
       });
     };
@@ -2226,18 +2230,18 @@
     }
 
     // P9时间格式转换函数
-    function p9TimeTextParser(timestamp_text) { // returns UTC time
+    function p9TimeTextParser(timestampText) { // returns UTC time
       let array = null;
       // 1小时
-      const unit_time_hour = 60 * 60 * 1000;
-      const relative_description_to_offset = (prune_pattern, unit_time) => -parseInt(timestamp_text.replace(prune_pattern, '')) * unit_time;
-      const relative_timestamp = (offset, replace_pattern) => {
-        if (replace_pattern) {
+      const unitTimeHour = 60 * 60 * 1000;
+      const relativeDescriptionToOffset = (prunePattern, unitTime) => -parseInt(timestampText.replace(prunePattern, '')) * unitTime;
+      const relativeTimestamp = (offset, replacePattern) => {
+        if (replacePattern) {
           return (
-            (new Date((new Date()).getTime() + 8 * unit_time_hour + offset))
+            (new Date((new Date()).getTime() + 8 * unitTimeHour + offset))
               .toLocaleDateString('en-CA', { timeZone: 'Asia/Shanghai' })
               .split('-')
-              .concat(timestamp_text.replace(replace_pattern, '').split(/:/))
+              .concat(timestampText.replace(replacePattern, '').split(/:/))
           );
         }
         const _array = (new Date((new Date()).getTime() + offset))
@@ -2246,21 +2250,21 @@
         _array.pop();
         return _array;
       };
-      const date_string_to_array = (date_string) => date_string.split(/-|\s|:/);
-      if (timestamp_text.match(/[0-9]{4}-[0-9]{2}-[0-9]{2}\s[0-9]{2}:[0-9]{2}/)) {
-        array = date_string_to_array(timestamp_text);
-      } else if (timestamp_text.match(/[0-9]{2}-[0-9]{2}\s[0-9]{2}:[0-9]{2}/)) {
-        array = date_string_to_array(timestamp_text);
+      const dateStringToArray = (dateString) => dateString.split(/-|\s|:/);
+      if (timestampText.match(/[0-9]{4}-[0-9]{2}-[0-9]{2}\s[0-9]{2}:[0-9]{2}/)) {
+        array = dateStringToArray(timestampText);
+      } else if (timestampText.match(/[0-9]{2}-[0-9]{2}\s[0-9]{2}:[0-9]{2}/)) {
+        array = dateStringToArray(timestampText);
         array.unshift((new Date()).getFullYear());
       } else {
         // if time were not offset by 8 hours, date calculation would be incorrect when description involves '[0-9]+天前'
-        if (timestamp_text.match(/[0-9]+天前\s[0-9]{2}:[0-9]{2}/)) array = relative_timestamp(relative_description_to_offset(/天前.+$/g, unit_time_hour * 24), /[0-9]+天前\s/g);
-        else if (timestamp_text.match(/前天\s[0-9]{2}:[0-9]{2}/)) array = relative_timestamp(-2 * unit_time_hour * 24, /前天\s/g);
-        else if (timestamp_text.match(/昨天\s[0-9]{2}:[0-9]{2}/)) array = relative_timestamp(-unit_time_hour * 24, /昨天\s/g);
-        else if (timestamp_text.match(/今天\s[0-9]{2}:[0-9]{2}/)) array = relative_timestamp(0, /今天\s/g);
-        else if (timestamp_text.match(/[0-9]+小时前/)) array = relative_timestamp(relative_description_to_offset(/小时.+$/g, unit_time_hour));
-        else if (timestamp_text.match(/[0-9]+分钟前/)) array = relative_timestamp(relative_description_to_offset(/分钟.+$/g, 60 * 1000));
-        else if (timestamp_text.match(/刚刚/)) array = relative_timestamp(0);
+        if (timestampText.match(/[0-9]+天前\s[0-9]{2}:[0-9]{2}/)) array = relativeTimestamp(relativeDescriptionToOffset(/天前.+$/g, unitTimeHour * 24), /[0-9]+天前\s/g);
+        else if (timestampText.match(/前天\s[0-9]{2}:[0-9]{2}/)) array = relativeTimestamp(-2 * unitTimeHour * 24, /前天\s/g);
+        else if (timestampText.match(/昨天\s[0-9]{2}:[0-9]{2}/)) array = relativeTimestamp(-unitTimeHour * 24, /昨天\s/g);
+        else if (timestampText.match(/今天\s[0-9]{2}:[0-9]{2}/)) array = relativeTimestamp(0, /今天\s/g);
+        else if (timestampText.match(/[0-9]+小时前/)) array = relativeTimestamp(relativeDescriptionToOffset(/小时.+$/g, unitTimeHour));
+        else if (timestampText.match(/[0-9]+分钟前/)) array = relativeTimestamp(relativeDescriptionToOffset(/分钟.+$/g, 60 * 1000));
+        else if (timestampText.match(/刚刚/)) array = relativeTimestamp(0);
       }
       if (array) {
         for (let i = array.length - 1; i >= 0; i--) {
@@ -2272,26 +2276,26 @@
           if (i === 1) // Everything else is normal except month starts from 0
           { array[i]--; }
         }
-        return Date.UTC(...array) - 8 * unit_time_hour;
+        return Date.UTC(...array) - 8 * unitTimeHour;
       }
-      console.log(`not parsed: ${timestamp_text}`);
+      console.log(`not parsed: ${timestampText}`);
       return null;
     }
     // 游戏评论页面计算平均分
     function showCriticAverage() {
       if (window.location.href.match(/psngame\/[1-9][0-9]+\/comment/)) {
-        let score_parser; let score_elements; let
-          score_parent_review;
+        let scoreParser; let scoreElements; let
+          scoreParentReview;
         const selectScoreElements = () => {
-          score_elements = $('div.min-inner.mt40 div.box ul.list li div.ml64 div.meta.pb10 span.alert-success.pd5:contains(评分 )');
-          if (score_elements.length > 0) {
-            score_parser = (element) => parseInt(element.text().replace('评分 ', ''));
-            score_parent_review = 'li';
+          scoreElements = $('div.min-inner.mt40 div.box ul.list li div.ml64 div.meta.pb10 span.alert-success.pd5:contains(评分 )');
+          if (scoreElements.length > 0) {
+            scoreParser = (element) => parseInt(element.text().replace('评分 ', ''));
+            scoreParentReview = 'li';
           } else {
-            score_elements = $('div.min-inner.mt40 div.box div.ml64 p.text-success:contains(评分 ) b');
-            if (score_elements.length > 0) {
-              score_parser = (element) => parseInt(element.text());
-              score_parent_review = 'div.post';
+            scoreElements = $('div.min-inner.mt40 div.box div.ml64 p.text-success:contains(评分 ) b');
+            if (scoreElements.length > 0) {
+              scoreParser = (element) => parseInt(element.text());
+              scoreParentReview = 'div.post';
             } else {
               return false;
             }
@@ -2299,47 +2303,47 @@
           return true;
         };
         if (!selectScoreElements()) return;
-        let reviews_no_score = null; let
-          reviews_no_score_hidden = false;
+        let reviewsNoScore = null; let
+          reviewsNoScoreHidden = false;
         const selectReviewsNoScore = () => {
-          if (reviews_no_score === null) reviews_no_score = $('div.min-inner.mt40 div.box ul.list li div.ml64 div.meta.pb10:not(:has(span.alert-success.pd5))').parents('li');
-          if (reviews_no_score.length === 0) reviews_no_score = $('div.min-inner.mt40 div.box div.ml64:not(:has(p.text-success))').parents('div.post');
+          if (reviewsNoScore === null) reviewsNoScore = $('div.min-inner.mt40 div.box ul.list li div.ml64 div.meta.pb10:not(:has(span.alert-success.pd5))').parents('li');
+          if (reviewsNoScore.length === 0) reviewsNoScore = $('div.min-inner.mt40 div.box div.ml64:not(:has(p.text-success))').parents('div.post');
         };
         const hideReviewsNoScore = () => {
-          if (reviews_no_score_hidden) return;
+          if (reviewsNoScoreHidden) return;
           selectReviewsNoScore();
-          reviews_no_score.hide();
-          reviews_no_score_hidden = true;
+          reviewsNoScore.hide();
+          reviewsNoScoreHidden = true;
         };
         const showReviewsNoScore = () => {
-          if (!reviews_no_score_hidden) return;
+          if (!reviewsNoScoreHidden) return;
           selectReviewsNoScore();
-          reviews_no_score.show();
-          reviews_no_score_hidden = false;
+          reviewsNoScore.show();
+          reviewsNoScoreHidden = false;
         };
-        const hidden_scores = [];
+        const hiddenScores = [];
         const hideSpecificScore = (score) => {
-          if (hidden_scores.indexOf(score) > -1) return;
+          if (hiddenScores.indexOf(score) > -1) return;
           let hidden = 0;
-          score_elements.each(function () {
-            if (score_parser($(this)) === score) {
-              $(this).parents(score_parent_review).hide();
+          scoreElements.each(function () {
+            if (scoreParser($(this)) === score) {
+              $(this).parents(scoreParentReview).hide();
               hidden += 1;
             }
           });
           if (hidden > 0) {
             hideReviewsNoScore();
-            hidden_scores.push(score);
+            hiddenScores.push(score);
           }
         };
         const showSpecificScore = (score) => {
-          const hidden_score_index = hidden_scores.indexOf(score);
-          if (hidden_score_index >= 0) {
-            score_elements.each(function () {
-              if (score_parser($(this)) === score) $(this).parents(score_parent_review).show();
+          const hiddenScoreIndex = hiddenScores.indexOf(score);
+          if (hiddenScoreIndex >= 0) {
+            scoreElements.each(function () {
+              if (scoreParser($(this)) === score) $(this).parents(scoreParentReview).show();
             });
-            hidden_scores.splice(hidden_score_index, 1);
-            if (hidden_scores.length === 0) showReviewsNoScore();
+            hiddenScores.splice(hiddenScoreIndex, 1);
+            if (hiddenScores.length === 0) showReviewsNoScore();
           }
         };
         const scoreOnclick = (chart, seriesEntry, score) => {
@@ -2359,12 +2363,12 @@
           }
           chart.redraw();
         };
-        let gaussian_on = true; const
-          gradient_stops = null;
-        let score_data_barchart; let score_data_barchart_no_gaussian; let
-          score_data_gaussian;
-        let score_axis; let
-          score_axis_no_gaussian;
+        let gaussianOn = true;
+        const gradientStops = null;
+        let scoreDataBarchart; let scoreDataBarchartNoGaussian; let
+          scoreDataGaussian;
+        let scoreAxis; let
+          scoreAxisNoGaussian;
         const scoreBarChartAddLabelOnclick = (chart) => {
           chart.xAxis[0].labelGroup.element.childNodes.forEach((label) => {
             label.onclick = function () {
@@ -2380,10 +2384,10 @@
             backgroundColor: 'rgba(0,0,0,0)',
             events: {
               click(event) {
-                gaussian_on = !gaussian_on;
+                gaussianOn = !gaussianOn;
                 const chart = Highcharts.chart('scoreBarChart', createScoreBarChart(criticsCount, scoreCountMin, scoreCountMax));
                 scoreBarChartAddLabelOnclick(chart);
-                hidden_scores.forEach((s) => scoreOnclick(chart, chart.series[0].data[chart.xAxis[0].categories.indexOf(s)], s));
+                hiddenScores.forEach((s) => scoreOnclick(chart, chart.series[0].data[chart.xAxis[0].categories.indexOf(s)], s));
               },
             },
           };
@@ -2396,11 +2400,11 @@
             style: { fontSize: '9px', color: '#808080' },
           };
           const scoreXaxis = [{
-            categories: gaussian_on ? score_axis : score_axis_no_gaussian,
+            categories: gaussianOn ? scoreAxis : scoreAxisNoGaussian,
             crosshair: true,
           }];
           const scoreYaxis = [{
-            tickInterval: gaussian_on ? 2 : 1,
+            tickInterval: gaussianOn ? 2 : 1,
             min: scoreCountMin < 3 ? 0 : scoreCountMin,
             max: scoreCountMax,
             title: { text: '点评人数' },
@@ -2435,12 +2439,12 @@
             yAxis: 0,
             zIndex: 1,
             baseSeries: 0,
-            data: gaussian_on ? score_data_barchart : score_data_barchart_no_gaussian,
+            data: gaussianOn ? scoreDataBarchart : scoreDataBarchartNoGaussian,
           }];
           const scoreCredits = {
             text: `点评总人数：${criticsCount}`,
           };
-          if (gaussian_on) {
+          if (gaussianOn) {
             scoreXaxis.push({
               min: 0.5,
               max: 10.5,
@@ -2464,7 +2468,7 @@
               yAxis: 1,
               zIndex: 0,
               baseSeries: 1,
-              data: score_data_gaussian,
+              data: scoreDataGaussian,
               enableMouseTracking: false,
             });
           }
@@ -2483,99 +2487,105 @@
           return scoreBarChart;
         };
         const weekOfYear = (date) => { // https://stackoverflow.com/a/6117889
-          const start_of_day = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-          const day_of_week = start_of_day.getUTCDay() || 7;
-          start_of_day.setUTCDate(start_of_day.getUTCDate() + 4 - day_of_week);
-          const start_of_year = new Date(Date.UTC(start_of_day.getUTCFullYear(), 0, 1));
-          return Math.ceil((((start_of_day - start_of_year) / 86400000/* milliseconds of a day */) + 1) / 7);
+          const startOfDay = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+          const dayOfWeek = startOfDay.getUTCDay() || 7;
+          startOfDay.setUTCDate(startOfDay.getUTCDate() + 4 - dayOfWeek);
+          const startOfYear = new Date(Date.UTC(startOfDay.getUTCFullYear(), 0, 1));
+          return Math.ceil((((startOfDay - startOfYear) / 86400000/* milliseconds of a day */) + 1) / 7);
         };
         const weeksOfYearCache = {};
         const weeksOfYear = (year) => {
           let weeks = weeksOfYearCache[year];
           if (weeks === undefined) {
-            const last_week = weekOfYear(new Date(year, 11, 31));
-            if (last_week === 1) weeks = weekOfYear(new Date(year, 11, 24));
-            else weeks = last_week;
+            const lastWeek = weekOfYear(new Date(year, 11, 31));
+            if (lastWeek === 1) weeks = weekOfYear(new Date(year, 11, 24));
+            else weeks = lastWeek;
             weeksOfYearCache[year] = weeks;
           }
           return weeks;
         };
         const yearOfWeek = (date, week = null) => {
-          const real_year = date.getUTCFullYear();
+          const realYear = date.getUTCFullYear();
           if (week === null) week = weekOfYear(date);
           if (date.getUTCMonth() === 0) {
-            if (week > 5) return real_year - 1;
-          } else if (week === 1) return real_year + 1;
-          return real_year;
+            if (week > 5) return realYear - 1;
+          } else if (week === 1) return realYear + 1;
+          return realYear;
         };
         const weekToTimestamp = (year, week, day = 4) => {
-          let start_of_year = new Date(Date.UTC(year, 0, 1));
-          if (weekOfYear(start_of_year) > 1) start_of_year = new Date(Date.UTC(year, 0, 8));
-          return start_of_year.getTime() + (-((start_of_year.getUTCDay() || 7) - 1) + (7 * (week - 1) + (day - 1))) * 86400000/* milliseconds of a day */;
+          let startOfYear = new Date(Date.UTC(year, 0, 1));
+          if (weekOfYear(startOfYear) > 1) startOfYear = new Date(Date.UTC(year, 0, 8));
+          return startOfYear.getTime() + (-((startOfYear.getUTCDay() || 7) - 1) + (7 * (week - 1) + (day - 1))) * 86400000/* milliseconds of a day */;
         };
-        const weekDifference = (date_1, date_2) => {
-          const week_of_year_1 = weekOfYear(date_1); const year_of_week_1 = yearOfWeek(date_1, week_of_year_1); const
-            week_start_1 = weekToTimestamp(year_of_week_1, week_of_year_1, 1);
-          const week_of_year_2 = weekOfYear(date_2); const year_of_week_2 = yearOfWeek(date_2, week_of_year_2); const
-            week_start_2 = weekToTimestamp(year_of_week_2, week_of_year_2, 1);
-          return (week_start_1 - week_start_2) / 604800000/* milliseconds of a week */;
+        const weekDifference = (date1, date2) => {
+          const weekOfYear1 = weekOfYear(date1);
+          const yearOfWeek1 = yearOfWeek(date1, weekOfYear1);
+          const weekStart1 = weekToTimestamp(yearOfWeek1, weekOfYear1, 1);
+          const weekOfYear2 = weekOfYear(date2);
+          const yearOfWeek2 = yearOfWeek(date2, weekOfYear2);
+          const weekStart2 = weekToTimestamp(yearOfWeek2, weekOfYear2, 1);
+          return (weekStart1 - weekStart2) / 604800000/* milliseconds of a week */;
         };
         const createScoreTrendChart = () => {
-          const score_trend = []; const comment_trend = []; let min_score = Number.MAX_SAFE_INTEGER; let max_score = Number.MIN_SAFE_INTEGER; let first_week; let
-            last_week;
+          const scoreTrend = [];
+          const commentTrend = [];
+          let minScore = Number.MAX_SAFE_INTEGER;
+          let maxScore = Number.MIN_SAFE_INTEGER;
+          let firstWeek;
+          let lastWeek;
           const createScoreTrendChartData = () => {
-            const scoreElementTime = (score_element) => { // must be single element
-              let timestamp_element = $(score_element).parents('div.ml64').find('div.meta:not(.pb10) > span:nth-child(2)');
-              if (timestamp_element.length > 0) {
-                return p9TimeTextParser(timestamp_element.text().replace(/(^\s)|(\s$)|(修改)/g, ''));
+            const scoreElementTime = (scoreElement) => { // must be single element
+              let timestampElement = $(scoreElement).parents('div.ml64').find('div.meta:not(.pb10) > span:nth-child(2)');
+              if (timestampElement.length > 0) {
+                return p9TimeTextParser(timestampElement.text().replace(/(^\s)|(\s$)|(修改)/g, ''));
               }
-              timestamp_element = $(score_element).parents('div.ml64').find('div.meta');
-              if (timestamp_element.length > 0) {
-                const text_array = timestamp_element.text().split(/\r?\n/);
+              timestampElement = $(scoreElement).parents('div.ml64').find('div.meta');
+              if (timestampElement.length > 0) {
+                const textArray = timestampElement.text().split(/\r?\n/);
                 let index = -1; let
                   text;
                 do {
-                  text = text_array[text_array.length + index].replace(/(^\s)|(\s$)|(修改)/g, '');
+                  text = textArray[textArray.length + index].replace(/(^\s)|(\s$)|(修改)/g, '');
                   index--;
                 } while (text === '');
                 return p9TimeTextParser(text);
               }
               return null;
             };
-            score_elements.each(function () {
+            scoreElements.each(function () {
               const timestamp = scoreElementTime($(this));
               if (timestamp !== null) {
-                const score_date = new Date(timestamp);
-                const week_of_year = weekOfYear(score_date);
-                const year_of_week = yearOfWeek(score_date, week_of_year);
-                score_trend.push([timestamp, score_parser($(this)), year_of_week, week_of_year]);
+                const scoreDate = new Date(timestamp);
+                const weekOfYear = weekOfYear(scoreDate);
+                const yearOfWeek = yearOfWeek(scoreDate, weekOfYear);
+                scoreTrend.push([timestamp, scoreParser($(this)), yearOfWeek, weekOfYear]);
               }
             });
-            score_trend.sort((e1, e2) => (e1[0] - e2[0]));
-            let accumulated_score = 0;
-            for (let i = 0; i < score_trend.length; i++) {
-              accumulated_score += score_trend[i][1];
-              const updated_average_score = accumulated_score / (i + 1);
-              score_trend[i][1] = updated_average_score;
-              if (updated_average_score < min_score) min_score = updated_average_score;
-              if (updated_average_score > max_score) max_score = updated_average_score;
+            scoreTrend.sort((e1, e2) => (e1[0] - e2[0]));
+            let accumulatedScore = 0;
+            for (let i = 0; i < scoreTrend.length; i++) {
+              accumulatedScore += scoreTrend[i][1];
+              const updatedAverageScore = accumulatedScore / (i + 1);
+              scoreTrend[i][1] = updatedAverageScore;
+              if (updatedAverageScore < minScore) minScore = updatedAverageScore;
+              if (updatedAverageScore > maxScore) maxScore = updatedAverageScore;
             }
-            const comment_count_by_week = {};
-            const first_score = score_trend[0]; const
-              last_score = score_trend[score_trend.length - 1];
-            first_week = [first_score[2], first_score[3]], last_week = [last_score[2], last_score[3]];
-            score_trend.forEach((score) => {
+            const commentCountByWeek = {};
+            const firstScore = scoreTrend[0]; const
+              lastScore = scoreTrend[scoreTrend.length - 1];
+            firstWeek = [firstScore[2], firstScore[3]], lastWeek = [lastScore[2], lastScore[3]];
+            scoreTrend.forEach((score) => {
               const week = `${score[2]}/${score[3]}`;
-              if (comment_count_by_week[week] === undefined) comment_count_by_week[week] = 1;
-              else comment_count_by_week[week]++;
+              if (commentCountByWeek[week] === undefined) commentCountByWeek[week] = 1;
+              else commentCountByWeek[week]++;
               score.splice(2, 2);
             });
-            for (let year = first_week[0]; year <= last_week[0]; year++) {
-              const first = year === first_week[0] ? first_week[1] : 1;
-              const last = year === last_week[0] ? last_week[1] : weeksOfYear(year);
+            for (let year = firstWeek[0]; year <= lastWeek[0]; year++) {
+              const first = year === firstWeek[0] ? firstWeek[1] : 1;
+              const last = year === lastWeek[0] ? lastWeek[1] : weeksOfYear(year);
               for (let week = first; week <= last; week++) {
-                const count = comment_count_by_week[`${year}/${week}`];
-                comment_trend.push([weekToTimestamp(year, week, 7.5), count === undefined ? 0 : count]);
+                const count = commentCountByWeek[`${year}/${week}`];
+                commentTrend.push([weekToTimestamp(year, week, 7.5), count === undefined ? 0 : count]);
               }
             }
           };
@@ -2601,13 +2611,14 @@
             },
           };
           // 绘图数据
-          const first_week_date = new Date(weekToTimestamp(first_week[0], first_week[1])); const last_week_date = new Date(weekToTimestamp(last_week[0], last_week[1])); const
-            total_weeks_passed = weekDifference(last_week_date, first_week_date) + 1;
+          const firstWeekDate = new Date(weekToTimestamp(firstWeek[0], firstWeek[1]));
+          const lastWeekDate = new Date(weekToTimestamp(lastWeek[0], lastWeek[1]));
+          const totalWeeksPassed = weekDifference(lastWeekDate, firstWeekDate) + 1;
           const scoreTrendSeries = [
             {
               name: '平均分',
               yAxis: 0,
-              data: score_trend,
+              data: scoreTrend,
               showInLegend: false,
               color: '#7CB5EC',
               opacity: 1,
@@ -2619,23 +2630,23 @@
             }, {
               name: '周增评分次数',
               yAxis: 1,
-              data: comment_trend,
+              data: commentTrend,
               showInLegend: false,
               color: '#E41A1C',
               opacity: 0.5,
               tooltip: {
                 headerFormat: '', // tooltip.formatter doesn't work, using this hack to suppress default xAxis label
                 pointFormatter() {
-                  let week_str;
-                  if (total_weeks_passed > 26) {
-                    const week_date = new Date(this.x);
-                    const week_of_year = weekOfYear(week_date);
-                    const year_of_week = yearOfWeek(week_date, week_of_year);
-                    week_str = `<span>${year_of_week}年 第${week_of_year}周</span><br/>`;
+                  let weekStr;
+                  if (totalWeeksPassed > 26) {
+                    const weekDate = new Date(this.x);
+                    const weekOfYear = weekOfYear(weekDate);
+                    const yearOfWeek = yearOfWeek(weekDate, weekOfYear);
+                    weekStr = `<span>${yearOfWeek}年 第${weekOfYear}周</span><br/>`;
                   } else {
-                    week_str = `<span>第${weekDifference(new Date(this.x), first_week_date) + 1}周</span><br/>`;
+                    weekStr = `<span>第${weekDifference(new Date(this.x), firstWeekDate) + 1}周</span><br/>`;
                   }
-                  return week_str + (this.y > 0 ? `<b>${this.y}</b>` : '<b>无评论</b>');
+                  return weekStr + (this.y > 0 ? `<b>${this.y}</b>` : '<b>无评论</b>');
                 },
               },
             },
@@ -2663,8 +2674,8 @@
                   color: '#7CB5EC',
                 },
               },
-              min: min_score - 0.2 > 0 ? min_score - 0.2 : min_score,
-              max: max_score + 0.2 < 10 ? max_score + 0.2 : 10,
+              min: minScore - 0.2 > 0 ? minScore - 0.2 : minScore,
+              max: maxScore + 0.2 < 10 ? maxScore + 0.2 : 10,
               endOnTick: true,
               tickInterval: 0.1,
               opposite: false,
@@ -2675,8 +2686,8 @@
                   color: '#F28D8F',
                 },
               },
-              min: Math.min.apply(Math, comment_trend.map((i) => i[1])),
-              max: Math.max.apply(Math, comment_trend.map((i) => i[1])),
+              min: Math.min.apply(Math, commentTrend.map((i) => i[1])),
+              max: Math.max.apply(Math, commentTrend.map((i) => i[1])),
               endOnTick: true,
               tickInterval: 1,
               opposite: true,
@@ -2707,57 +2718,57 @@
           };
           return scoreTrendChartData;
         };
-        let score_total = 0;
-        score_data_barchart = new Array(10).fill(0);
-        score_data_gaussian = [];
-        score_elements.each(function () {
-          const score = score_parser($(this));
-          score_data_gaussian.push(score);
-          score_total += score;
-          score_data_barchart[score - 1]++;
+        let scoreTotal = 0;
+        scoreDataBarchart = new Array(10).fill(0);
+        scoreDataGaussian = [];
+        scoreElements.each(function () {
+          const score = scoreParser($(this));
+          scoreDataGaussian.push(score);
+          scoreTotal += score;
+          scoreDataBarchart[score - 1]++;
         });
-        const score_average = (score_total / score_elements.length).toFixed(2);
-        let score_stddev = 0;
-        score_data_gaussian.forEach((score) => {
-          const dev = score - score_average;
-          score_stddev += dev * dev;
+        const scoreAverage = (scoreTotal / scoreElements.length).toFixed(2);
+        let scoreStddev = 0;
+        scoreDataGaussian.forEach((score) => {
+          const dev = score - scoreAverage;
+          scoreStddev += dev * dev;
         });
-        score_stddev = Math.sqrt(score_stddev) / Math.sqrt(score_elements.length);
+        scoreStddev = Math.sqrt(scoreStddev) / Math.sqrt(scoreElements.length);
         // adding score average to stats
-        $('div.min-inner.mt40 div.box.pd10').append(`<em>&nbsp<span class="alert-success pd5" align="right">均分 ${score_average}</span></em><p/>`);
+        $('div.min-inner.mt40 div.box.pd10').append(`<em>&nbsp<span class="alert-success pd5" align="right">均分 ${scoreAverage}</span></em><p/>`);
         $('div.min-inner.mt40 div.box.pd10').append('<div id="scoreChartContainer" style="float: left; width: 100%;"></div>');
-        const psnine_stats = $('#scoreChartContainer');
-        score_axis = [];
-        score_axis_no_gaussian = [];
-        let score_count_min = Number.MAX_SAFE_INTEGER; let
-          score_count_max = Number.MIN_SAFE_INTEGER;
-        score_data_barchart_no_gaussian = score_data_barchart.slice(0);
+        const psnineStats = $('#scoreChartContainer');
+        scoreAxis = [];
+        scoreAxisNoGaussian = [];
+        let scoreCountMin = Number.MAX_SAFE_INTEGER; let
+          scoreCountMax = Number.MIN_SAFE_INTEGER;
+        scoreDataBarchartNoGaussian = scoreDataBarchart.slice(0);
         // 评分人数最高区间（分数）
-        const max_score_count_index = score_data_barchart.indexOf(Math.max(...score_data_barchart));
+        const maxScoreCountIndex = scoreDataBarchart.indexOf(Math.max(...scoreDataBarchart));
         // 柱状图颜色
-        const score_colors = new Array(10).fill('#3890ff'); // do not assign transparency! otherwise scoreOnclick() will break
-        score_colors[max_score_count_index] = '#da314b';
+        const scoreColors = new Array(10).fill('#3890ff'); // do not assign transparency! otherwise scoreOnclick() will break
+        scoreColors[maxScoreCountIndex] = '#da314b';
         for (let score = 10; score >= 1; score--) {
           const index = score - 1;
-          const score_count = score_data_barchart[index];
-          if (score_count === 0) {
-            score_data_barchart_no_gaussian.splice(index, 1);
+          const scoreCount = scoreDataBarchart[index];
+          if (scoreCount === 0) {
+            scoreDataBarchartNoGaussian.splice(index, 1);
           } else {
-            if (score_count < score_count_min) {
-              score_count_min = score_count;
+            if (scoreCount < scoreCountMin) {
+              scoreCountMin = scoreCount;
             }
-            if (score_count > score_count_max) {
-              score_count_max = score_count;
+            if (scoreCount > scoreCountMax) {
+              scoreCountMax = scoreCount;
             }
-            score_data_barchart_no_gaussian[index] = { y: score_count, color: score_colors[index] };
-            score_axis_no_gaussian.unshift(score);
+            scoreDataBarchartNoGaussian[index] = { y: scoreCount, color: scoreColors[index] };
+            scoreAxisNoGaussian.unshift(score);
           }
-          score_data_barchart[index] = { y: score_count, color: score_colors[index] };
-          score_axis.unshift(score);
+          scoreDataBarchart[index] = { y: scoreCount, color: scoreColors[index] };
+          scoreAxis.unshift(score);
         }
-        psnine_stats.append('<div id="scoreBarChart" align="left" style="height: 200px;width: 50%;display: inline-block"/>');
-        psnine_stats.append('<div id="scoreTrendChart" align="right" style="height: 200px;width: 50%;display: inline-block"/>');
-        const charts = Highcharts.chart('scoreBarChart', createScoreBarChart(score_elements.length, score_count_min, score_count_max));
+        psnineStats.append('<div id="scoreBarChart" align="left" style="height: 200px;width: 50%;display: inline-block"/>');
+        psnineStats.append('<div id="scoreTrendChart" align="right" style="height: 200px;width: 50%;display: inline-block"/>');
+        const charts = Highcharts.chart('scoreBarChart', createScoreBarChart(scoreElements.length, scoreCountMin, scoreCountMax));
         scoreBarChartAddLabelOnclick(charts);
         Highcharts.chart('scoreTrendChart', createScoreTrendChart());
       }
