@@ -101,6 +101,9 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', onDOMContentReady);
   else onDOMContentReady();
 
+  // 获取自己的PSN ID
+  const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
+
   // 全局优化
   function onDocumentStart() { // run before anything is downloaded
     // 站内使用HTTPS链接
@@ -118,10 +121,14 @@
         node.appendChild(document.createTextNode(`
                     li[style="background:#f5faec"]{background:#344836!important}li[style="background:#fdf7f7"]{background:#4f3945!important}li[style="background:#faf8f0"]{background:#4e4c39!important}li[style="background:#f4f8fa"]{background:#505050!important}span[style="color:blue;"]{color:#64a5ff!important}span[style="color:red;"],span[style="color:#a10000"]{color:#ff6464!important}span[style="color:brown;"]{color:#ff8864!important}.tit3{color:white!important}.mark{background:#bbb!important;color:#bbb}body.bg{background:#2b2b2b!important}.list li,.box .post,td,th{border-bottom:1px solid #333}.psnnode{background:#656565}.box{background:#3d3d3d!important}.title a{color:#bbb}.text-strong,strong,.storeinfo,.content{color:#bbb!important}.alert-warning,.alert-error,.alert-success,.alert-info{background:#4b4b4b!important}h1,.title2{color:#fff!important}.twoge{color:#fff!important}.inav{background:#3d3d3d!important}.inav li.current{background:#4b4b4b!important}.ml100 p{color:#fff!important}.t1{background:#657caf!important}.t2{background:#845e2f!important}.t3{background:#707070!important}.t4{background:#8b4d2d!important}blockquote{background:#bababa!important}.text-gray{color:#bbb!important}.tradelist li{color:white!important}.tbl{background:#3c3c3c!important}.genelist li:hover,.touchclick:hover{background:#333!important}.showbar{background:radial-gradient(at center top,#7b8492,#3c3c3c)}.darklist,.cloud{background-color:#3c3c3c}.side .hd3,.header,.dropdown ul{background-color:#222}.list li .sonlist li{background-color:#333}.node{background-color:#3b4861}.rep{background-color:#3b4861}.btn-gray{background-color:#666}`));
         const heads = document.getElementsByTagName('head');
-        if (heads.length > 0) heads[0].appendChild(node);
-        else // no head yet, stick it whereever
-        { document.documentElement.appendChild(node); }
-      } else $('#nightModeStyle').remove();
+        if (heads.length > 0) {
+          heads[0].appendChild(node);
+        } else { // no head yet, stick it whereever
+          document.documentElement.appendChild(node);
+        }
+      } else {
+        $('#nightModeStyle').remove();
+      }
     };
     const setNightMode = (isOn) => {
       settings.nightMode = isOn;
@@ -136,10 +143,12 @@
           else darkThemeQuery.addListener((e) => setNightMode(e.matches)); // deprecated
           break;
         }
-      case 'TIME':
+      // eslint-disable-next-line no-fallthrough
+      case 'TIME': {
         const hour = (new Date()).getHours();
         setNightMode(hour > 18 || hour < 7);// TODO: time selector in settings panel
         break;
+      }
       default:
         toggleNightMode();
     }
@@ -194,8 +203,10 @@
       },
     });
     // 暴力猴中已经删掉了GM_addStyle函数，因此需要自己定义
+    // eslint-disable-next-line camelcase
     function GM_addStyle(css) {
       const style = document.getElementById('GM_addStyleBy8626') || (function () {
+        // eslint-disable-next-line no-shadow
         const style = document.createElement('style');
         style.type = 'text/css';
         style.id = 'GM_addStyleBy8626';
@@ -237,8 +248,8 @@
                 background: url('data:image/svg+xml;utf8,<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="coins" class="svg-inline--fa fa-coins fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="%23bf6a3a" d="M0 405.3V448c0 35.3 86 64 192 64s192-28.7 192-64v-42.7C342.7 434.4 267.2 448 192 448S41.3 434.4 0 405.3zM320 128c106 0 192-28.7 192-64S426 0 320 0 128 28.7 128 64s86 64 192 64zM0 300.4V352c0 35.3 86 64 192 64s192-28.7 192-64v-51.6c-41.3 34-116.9 51.6-192 51.6S41.3 334.4 0 300.4zm416 11c57.3-11.1 96-31.7 96-55.4v-42.7c-23.2 16.4-57.3 27.6-96 34.5v63.6zM192 160C86 160 0 195.8 0 240s86 80 192 80 192-35.8 192-80-86-80-192-80zm219.3 56.3c60-10.8 100.7-32 100.7-56.3v-42.7c-35.5 25.1-96.5 38.6-160.7 41.8 29.5 14.3 51.2 33.5 60 57.2z"></path></svg>') no-repeat center;
             }`);
     /*
-         * 页面右下角追加点击跳转到页面底部按钮
-         */
+    * 页面右下角追加点击跳转到页面底部按钮
+    */
     const toPageBottom = () => {
       $('.bottombar').append("<a id='scrollbottom' class='yuan mt10'>B</a>");
       $('#scrollbottom').click(() => {
@@ -253,12 +264,15 @@
 
     // 功能0-2：夜间模式
     const nightModeStyle = document.getElementById('nightModeStyle');
-    if (nightModeStyle) document.head.appendChild(nightModeStyle);// ensures that night mode css is after native psnine css
+    // ensures that night mode css is after native psnine css
+    if (nightModeStyle) {
+      document.head.appendChild(nightModeStyle);
+    }
 
     /*
-         * 功能：黑条文字鼠标悬浮显示
-         * param:  isOn  是否开启功能
-         */
+    * 功能：黑条文字鼠标悬浮显示
+    * param:  isOn  是否开启功能
+    */
     const showMarkMessage = (isOn) => {
       if (isOn) {
         window.addEventListener('load', () => {
@@ -277,9 +291,9 @@
     showMarkMessage(settings.hoverUnmark);
 
     /*
-         * 自动签到功能
-         * @param  isOn  是否开启功能
-         */
+    * 自动签到功能
+    * @param  isOn  是否开启功能
+    */
     const automaticSignIn = (isOn) => {
       // 如果签到按钮存在页面上
       if (isOn && $('[class$=yuan]').length > 0) {
@@ -288,10 +302,11 @@
     };
     automaticSignIn(settings.autoCheckIn);
 
-    /* 获取当前页面的后一页页码和链接
-         *  @return  nextPage      后一页页码
-         *  @return  nextPageLink  后一页的链接
-         */
+    /*
+    * 获取当前页面的后一页页码和链接
+    * @return  nextPage      后一页页码
+    * @return  nextPageLink  后一页的链接
+    */
     const getNextPageInfo = () => {
       // 获取下一页页码
       const nextPage = Number($('.page > ul > .current:last').text()) + 1;
@@ -320,9 +335,9 @@
     );
 
     /*
-         * 功能：自动翻页
-         * @param  pagingSetting  自动翻页的页数
-         */
+    * 功能：自动翻页
+    * @param  pagingSetting  自动翻页的页数
+    */
     const autoPaging = (pagingSetting) => {
       if (pagingSetting > 0) {
         let isbool = true; // 触发开关，防止多次调用事件
@@ -417,11 +432,11 @@
     }
     // 帖子优化
     /*
-         * 功能：对发帖楼主增加“楼主”标志
-         * @param  userId  用户（楼主）ID
-         */
+    * 功能：对发帖楼主增加“楼主”标志
+    * @param  userId  用户（楼主）ID
+    */
     const addOPBadge = (userId) => {
-      $('.psnnode').map((i, n) => {
+      $('.psnnode').each((i, n) => {
         // 匹配楼主ID，变更CSS
         if ($(n).text() === userId) {
           $(n).after('<span class="badge badge-1">楼主</span>');
@@ -430,8 +445,8 @@
     };
 
     /*
-         * AJAX获取页面
-         */
+    * AJAX获取页面
+    */
     const fetchOtherPage = (url, successFunction) => {
       let resultSet;
       $.ajax({
@@ -458,7 +473,7 @@
       $(html).find('tbody>tr[id]').find('.imgbg.earned').parent()
         .parent()
         .parent()
-        .map((index, el) => {
+        .each((index, el) => {
           const earnedTime = $(el).find('em.lh180.alert-success.pd5.r');
           const earnedTimeCopy = earnedTime.clone();
           earnedTimeCopy.find('br').replaceWith(' ');
@@ -470,11 +485,9 @@
       return resultSet;
     };
 
-    // 在攻略页面增加自己奖杯的获得状况
-    const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
     if (/topic\//.test(window.location.href) && psnidCookie) {
       const games = {};
-      $('.imgbgnb').parent().map((index, el) => {
+      $('.imgbgnb').parent().each((index, el) => {
         const href = $(el).attr('href');
         const gameId = href.slice(href.lastIndexOf('/') + 1, -3);
         // 根据具体游戏获取对应自己页面的信息
@@ -494,7 +507,7 @@
 
     if (
       /(gene|trade|topic)\//.test(window.location.href)
-            & !/comment/.test(window.location.href)
+            && !/comment/.test(window.location.href)
     ) {
       // 获取楼主ID
       const authorId = $('.title2').text();
@@ -502,10 +515,10 @@
     }
 
     /*
-         * 功能：对关注用户进行ID高亮功能函数
-         */
+    * 功能：对关注用户进行ID高亮功能函数
+    */
     const addHighlightOnID = () => {
-      settings.highlightSpecificID.map((i, n) => {
+      settings.highlightSpecificID.forEach((i) => {
         $(`.meta>[href="${window.location.href.match('(.*)\\.com')[0]}/psnid/${i}"]`).css({
           'background-color': settings.highlightSpecificBack,
           color: settings.highlightSpecificFront,
@@ -515,29 +528,34 @@
     addHighlightOnID();
 
     /*
-         * 功能：根据纯文本的长度截断DOM
-         * @param elem 需要截断的DOM
-         * @param length 需要保留的纯文本长度
-         * @return 截断后的 html 文本
-         */
+    * 功能：根据纯文本的长度截断DOM
+    * @param elem 需要截断的DOM
+    * @param length 需要保留的纯文本长度
+    * @return 截断后的 html 文本
+    */
     const truncateHtml = (elem, length) => {
       // 递归获取 DOM 里的纯文本
       const truncateElem = (elem, reqCount) => {
-        let grabText = ''; let
-          missCount = reqCount;
+        let grabText = '';
+        let missCount = reqCount;
         $(elem).contents().each(function () {
           switch (this.nodeType) {
-            case Node.TEXT_NODE:
+            case Node.TEXT_NODE: {
               // Get node text, limited to missCount.
               grabText += this.data.substr(0, missCount);
               missCount -= Math.min(this.data.length, missCount);
               break;
-            case Node.ELEMENT_NODE:
+            }
+            case Node.ELEMENT_NODE: {
               // Explore current child:
-              var childPart = truncateElem(this, missCount);
+              const childPart = truncateElem(this, missCount);
               grabText += childPart.text;
               missCount -= childPart.count;
               break;
+            }
+            default: {
+              break;
+            }
           }
           if (missCount === 0) {
             // We got text enough, stop looping.
@@ -545,20 +563,17 @@
           }
         });
         return {
-          text:
-                        // Wrap text using current elem tag.
-                        `${elem.outerHTML.match(/^<[^>]+>/m)[0]
-                        + grabText
-                        }</${elem.localName}>`,
+          // Wrap text using current elem tag.
+          text: `${elem.outerHTML.match(/^<[^>]+>/m)[0] + grabText}</${elem.localName}>`,
           count: reqCount - missCount,
         };
       };
       return truncateElem(elem, length).text;
     };
     /*
-         * 功能：回复内容回溯，仅支持机因、主题
-         * @param  isOn  是否开启功能
-         */
+    * 功能：回复内容回溯，仅支持机因、主题
+    * @param  isOn  是否开启功能
+    */
     const showReplyContent = (isOn) => {
       if (isOn) {
         GM_addStyle(
@@ -581,11 +596,11 @@
         const userId = $('.post > .ml64 > [class$=meta]');
         // 每一层的头像
         const avator = $('.post > a.l');
-        for (let floor = allSource.length - 1; floor > 0; floor--) {
+        for (let floor = allSource.length - 1; floor > 0; floor -= 1) {
           // 层内内容里包含链接（B的发言中是否有A）
           const content = allSource.eq(floor).find('a');
           if (content.length > 0) {
-            for (let userNum = 0; userNum < content.length; userNum++) {
+            for (let userNum = 0; userNum < content.length; userNum += 1) {
               // 对每一个链接的文本内容判断
               const linkContent = content.eq(userNum).text().match('@(.+)');
               // 链接里是@用户生成的链接， linkContent为用户名（B的发言中有A）
@@ -593,7 +608,7 @@
                 // 从本层的上一层开始，回溯所@的用户的最近回复（找最近的一条A的发言）
                 let traceIdFirst = -1;
                 let traceIdTrue = -1;
-                for (let traceId = floor - 1; traceId >= 0; traceId--) {
+                for (let traceId = floor - 1; traceId >= 0; traceId -= 1) {
                   // 如果回溯到了的话，选取内容
                   // 回溯层用户名
                   const thisUserID = userId.eq(traceId).find('.psnnode:eq(0)').text();
@@ -626,24 +641,25 @@
                     replyContentTruncatedText += '......';
                   }
                   const avatorImg = avator.eq(outputID).find('img:eq(0)').attr('src');
-                  allSource.eq(floor).before(`
-                                        <div class=replyTraceback>
-                                            <span class="badge">
-                                                <img src="${avatorImg}" height="15" width="15" style="margin-right: 5px; border-radius: 8px;vertical-align:sub;"/>
-                                                    ${linkContent[1]}
-                                            </span>
-                                            <span class="responserContent_${floor}_${outputID}" style="padding-left: 10px;">
-                                                ${replyContentTruncatedText}
-                                            </span>
-                                        </div>`);
+                  allSource.eq(floor).before(
+                    `<div class=replyTraceback>
+                      <span class="badge">
+                          <img src="${avatorImg}" height="15" width="15" style="margin-right: 5px; border-radius: 8px;vertical-align:sub;"/>
+                              ${linkContent[1]}
+                      </span>
+                      <span class="responserContent_${floor}_${outputID}" style="padding-left: 10px;">
+                          ${replyContentTruncatedText}
+                      </span>
+                    </div>`,
+                  );
                   // 如果内容超过45个字符，则增加悬浮显示全文内容功能
-                  replyContentPlainText.length > 45
-                    ? tippy(`.responserContent_${floor}_${outputID}`, {
+                  if (replyContentPlainText.length > 45) {
+                    tippy(`.responserContent_${floor}_${outputID}`, {
                       content: replyContentText,
                       animateFill: false,
                       maxWidth: '500px',
-                    })
-                    : null;
+                    });
+                  }
                 }
               }
             }
@@ -653,32 +669,34 @@
     };
 
     /*
-         * 功能：增加帖子楼层信息
-         */
+    * 功能：增加帖子楼层信息
+    */
     const addFloorIndex = () => {
       let baseFloorIndex = 0;
       let subFloorIndex = -1;
-      $('span[class^=r]').map((i, el) => {
+      $('span[class^=r]').each((i, el) => {
         if (i > 0) {
           if ($(el).attr('class') === 'r') {
             $(el).children('a:last')
-              .after(`&nbsp&nbsp<span>#${++baseFloorIndex}</span>`);
+              .after(`&nbsp&nbsp<span>#${baseFloorIndex}</span>`);
+            baseFloorIndex += 1;
             subFloorIndex = -1;
           } else {
             $(el).children('a:last')
               .after(
-                `&nbsp&nbsp<span>#${baseFloorIndex}${subFloorIndex--}</span>`,
+                `&nbsp&nbsp<span>#${baseFloorIndex}${subFloorIndex}</span>`,
               );
+            subFloorIndex -= 1;
           }
         }
       });
     };
 
     /*
-         * 功能：热门帖子增加 热门 标签
-         */
+    * 功能：热门帖子增加 热门 标签
+    */
     const addHotTag = () => {
-      $('div.meta').map((index, element) => {
+      $('div.meta').each((index, element) => {
         const replyCount = $(element).text().split(/(\d+)/);
         if (Number(replyCount[replyCount.length - 2]) > settings.hotTagThreshold
                     && replyCount[replyCount.length - 1].match('评论|答案|回复')
@@ -697,18 +715,18 @@
     addHotTag();
 
     /*
-         * 功能：层内逆序显示
-         * @param  isOn  是否开启该功能
-         */
+    * 功能：层内逆序显示
+    * @param  isOn  是否开启该功能
+    */
     const reverseSubReply = (isOn) => {
       if (!isOn || !/(\/trophy\/\d+)|(\/psngame\/\d+\/comment)|(\/psnid\/.+?\/comment)/.test(window.location.href)) return;
       $('div.btn.btn-white.font12').click();
       const blocks = $('div.sonlistmark.ml64.mt10:not([style="display:none;"])');
-      blocks.map((index, block) => {
+      blocks.each((index, block) => {
         const reversedBlock = $($(block).find('li').get().reverse());
         $(block).find('.sonlist').remove();
         $(block).append('<ul class="sonlist">');
-        reversedBlock.map((index, li) => {
+        reversedBlock.each((index, li) => {
           if (index === 0) {
             $(li).attr({ style: 'border-top:none;' });
           } else {
@@ -722,81 +740,81 @@
     const enhanceQAPage = (loadAll, reverseOrder, allSubReply) => {
       if (!(loadAll || reverseOrder || allSubReply) || !/\/qa\/\d+($|(\/$))/.test(window.location.href)) return;
       /*
-             * 功能：答案按时间顺序排列
-             * @param  isOn  是否开启该功能
-             */
+      * 功能：答案按时间顺序排列
+      * @param  isOn  是否开启该功能
+      */
       const reverseAnwsers = (isOn) => {
         if (!isOn) return;
-        const answer_list = $('body > div.inner.mt40 > div.main > div.box.mt20 > ul.list');
-        const answers = answer_list.find('> li');
+        const answerList = $('body > div.inner.mt40 > div.main > div.box.mt20 > ul.list');
+        const answers = answerList.find('> li');
         answers.remove();
-        answers.get().reverse().forEach((answer) => { answer_list.append(answer); });
+        answers.get().reverse().forEach((answer) => { answerList.append(answer); });
       };
 
       /*
-             * 功能：展开隐藏的二级回复
-             * @param  isOn  是否开启该功能
-             */
+      * 功能：展开隐藏的二级回复
+      * @param  isOn  是否开启该功能
+      */
       const showHiddenSubReply = (isOn) => {
         if (isOn) $('body > div.inner.mt40 > div.main > div.box.mt20 > ul.list div.btn.btn-white.font12').click();
       };
 
       /*
-             * 功能：载入全部问答答案
-             * @param  isOn  是否开启该功能
-             */
-      const showAllAnsers = (isOn, reverseOrder, allSubReply) => {
+      * 功能：载入全部问答答案
+      * @param  isOn  是否开启该功能
+      */
+      const showAllAnsers = (isOn, isReverseOrder, isAllSubReply) => {
         if (!isOn) return 0;
-        const answer_list = $('body > div.inner.mt40 > div.main > div.box.mt20 > ul.list');
-        const page_list = $('body > div.inner.mt40 > div.main > div.box.mt20 > div.page > ul');
-        const last_page_url_element = page_list.find('> li:not(.current):not(.disabled.h-p) > a:last()');
-        if (last_page_url_element.length === 0) {
-          page_list.remove();
+        const answerList = $('body > div.inner.mt40 > div.main > div.box.mt20 > ul.list');
+        const pageList = $('body > div.inner.mt40 > div.main > div.box.mt20 > div.page > ul');
+        const lastPageUrlElement = pageList.find('> li:not(.current):not(.disabled.h-p) > a:last()');
+        if (lastPageUrlElement.length === 0) {
+          pageList.remove();
           return 0;
         }
-        const last_page_url = last_page_url_element.get()[0].href;
-        const last_page_number = Number(last_page_url.match(/\?page=\d+/)[0].replace('?page=', ''));
-        let qa_pages_to_load = last_page_number - 1;
-        let last_appended_page = 1;
-        const qa_page_data = new Array(qa_pages_to_load);
-        qa_page_data.fill(null);
-        const load_qa_page = (page_number) => {
-          const append_answers = () => {
-            let latest_ready_page = last_appended_page;
-            for (let i = last_appended_page + 1; i <= last_page_number; i++) {
-              if (qa_page_data[i - 2]) latest_ready_page = i;
+        const lastPageUrl = lastPageUrlElement.get()[0].href;
+        const lastPageNumber = Number(lastPageUrl.match(/\?page=\d+/)[0].replace('?page=', ''));
+        let qaPagesToLoad = lastPageNumber - 1;
+        let lastAppendedPage = 1;
+        const qaPageData = new Array(qaPagesToLoad);
+        qaPageData.fill(null);
+        const loadQaPage = (pageNumber) => {
+          const appendAnswers = () => {
+            let latestReadyPage = lastAppendedPage;
+            for (let i = lastAppendedPage + 1; i <= lastPageNumber; i += 1) {
+              if (qaPageData[i - 2]) latestReadyPage = i;
               else break;
             }
-            if (latest_ready_page > last_appended_page) {
-              for (let i = last_appended_page + 1; i <= latest_ready_page; i++) {
-                qa_page_data[i - 2].find('div.inner.mt40 > div.main > div.box.mt20 > ul.list > li').each((index, answer) => {
-                  answer_list.append(answer);
+            if (latestReadyPage > lastAppendedPage) {
+              for (let i = lastAppendedPage + 1; i <= latestReadyPage; i += 1) {
+                qaPageData[i - 2].find('div.inner.mt40 > div.main > div.box.mt20 > ul.list > li').each((index, answer) => {
+                  answerList.append(answer);
                 });
-                qa_page_data[i - 2].remove();
-                qa_page_data[i - 2] = null;
+                qaPageData[i - 2].remove();
+                qaPageData[i - 2] = null;
               }
-              last_appended_page = latest_ready_page;
+              lastAppendedPage = latestReadyPage;
             }
           };
-          const page_url = last_page_url.replace(last_page_number, page_number);
+          const pageUrl = lastPageUrl.replace(lastPageNumber, pageNumber);
           $.get(
-            page_url,
+            pageUrl,
             { retryLimit: 3 },
             (data) => {
-              qa_page_data[page_number - 2] = $('<div />').html(data);
-              append_answers();
-              if ((--qa_pages_to_load) === 0) { // 在载入全部答案之后运行
-                reverseAnwsers(reverseOrder);
-                showHiddenSubReply(allSubReply);
-                page_list.remove();
+              qaPageData[pageNumber - 2] = $('<div />').html(data);
+              appendAnswers();
+              if ((--qaPagesToLoad) === 0) { // 在载入全部答案之后运行
+                reverseAnwsers(isReverseOrder);
+                showHiddenSubReply(isAllSubReply);
+                pageList.remove();
               }
             },
             'html',
           );
         };
 
-        for (let i = 2; i <= last_page_number; i++) load_qa_page(i);
-        return last_page_number - 1;
+        for (let i = 2; i <= lastPageNumber; i += 1) loadQaPage(i);
+        return lastPageNumber - 1;
       };
 
       if (showAllAnsers(loadAll, reverseOrder, allSubReply) === 0) {
@@ -805,7 +823,11 @@
       }
     };
 
-    enhanceQAPage(settings.showAllQAAnswers, settings.listQAAnswersByOld, settings.showHiddenQASubReply);
+    enhanceQAPage(
+      settings.showAllQAAnswers,
+      settings.listQAAnswersByOld,
+      settings.showHiddenQASubReply,
+    );
     reverseSubReply(true);
     addFloorIndex();
 
@@ -822,7 +844,7 @@
         }
       } : (el) => el.parents(parent).remove();
       let removed = 0;
-      $(psnnode).map((i, el) => {
+      $(psnnode).each((i, el) => {
         psnInfo = psnInfoGetter($(el));
         if (userListLowerCase.find(userNameCheckerFinal) !== undefined) {
           remover($(el));
@@ -834,30 +856,34 @@
     let filteredCriticPost = false;
     const filterUserPost = () => {
       if (settings.blockList.length > 0) {
-        const window_href = window.location.href;
+        const windowHref = window.location.href;
         const userListLowerCase = [];
         settings.blockList.forEach((user) => { userListLowerCase.push(user.toLowerCase()); });
-        const FilterRegular = (psnnode, parent) => Filter(psnnode, parent, userListLowerCase, (el) => el.html().toLowerCase(), (user, psnid) => user === psnid);
-        if (window_href.match(/\/gen(e\/|e)$/)) {
+        const FilterRegular = (psnnode, parent) => {
+          Filter(psnnode, parent, userListLowerCase,
+            (el) => el.html().toLowerCase(),
+            (user, psnid) => user === psnid);
+        };
+        if (windowHref.match(/\/gen(e\/|e)$/)) {
           FilterRegular('.touchclick .psnnode', '.touchclick'); // 机因一览
-        } else if (window_href.indexOf('gene') > -1) {
+        } else if (windowHref.indexOf('gene') > -1) {
           FilterRegular('div.post .psnnode', 'div.post'); // 机因回复
-        } else if (window_href.match(/\.co(m\/|m)$/) !== null || window_href.indexOf('node') > -1 || window_href.indexOf('qa') > -1 || window_href.match(/\/trad(e\/|e)$/) !== null) {
+        } else if (windowHref.match(/\.co(m\/|m)$/) !== null || windowHref.indexOf('node') > -1 || windowHref.indexOf('qa') > -1 || windowHref.match(/\/trad(e\/|e)$/) !== null) {
           FilterRegular('div.ml64>.meta>.psnnode', 'li'); // 主页一览、问答一览、问答回复、交易一览
-        } else if (window_href.indexOf('topic') > -1 || window_href.indexOf('trade') > -1 || window_href.match(/\/battle\/[1-9][0-9]+/) !== null) {
+        } else if (windowHref.indexOf('topic') > -1 || windowHref.indexOf('trade') > -1 || windowHref.match(/\/battle\/[1-9][0-9]+/) !== null) {
           FilterRegular('div.ml64>.meta>.psnnode', 'div.post'); // 主页帖回复、交易帖回复、约战帖回复
-        } else if (window_href.match(/\/my\/notice/)) {
+        } else if (windowHref.match(/\/my\/notice/)) {
           FilterRegular('.psnnode', 'li'); // 消息通知
-        } else if (window_href.indexOf('trophy') > -1 || window_href.match(/\/psnid\/[^\/]+\/comment/) !== null) {
+        } else if (windowHref.indexOf('trophy') > -1 || windowHref.match(/\/psnid\/[^\/]+\/comment/) !== null) {
           FilterRegular('div.ml64>.meta.pb10>.psnnode', 'li'); // 奖杯TIPS、个人主页留言
           FilterRegular('ul.sonlist .content>.psnnode', 'ul.sonlist>li'); // 奖杯TIPS二级回复、个人主页留言二级回复
-        } else if (window_href.match(/\/psngame\/[1-9][0-9]+\/comment/) !== null) {
+        } else if (windowHref.match(/\/psngame\/[1-9][0-9]+\/comment/) !== null) {
           filteredCriticPost = FilterRegular('div.ml64>.meta.pb10>.psnnode', 'li') > 0; // 游戏测评
           FilterRegular('ul.sonlist .content>.psnnode', 'ul.sonlist>li'); // 游戏测评二级回复
-        } else if (window_href.indexOf('battle') > -1) {
-          Filter('table.list td.pdd15.h-p>a', 'tr', userListLowerCase, (el) => el[0].href, (user, element_href) => element_href.indexOf(`psnid/${user}`) > -1); // 约战一览
+        } else if (windowHref.indexOf('battle') > -1) {
+          Filter('table.list td.pdd15.h-p>a', 'tr', userListLowerCase, (el) => el[0].href, (user, elementHref) => elementHref.indexOf(`psnid/${user}`) > -1); // 约战一览
         }
-        if (window_href.match(/\/qa\/[1-9][0-9]*/)) {
+        if (windowHref.match(/\/qa\/[1-9][0-9]*/)) {
           FilterRegular('ul.sonlist .content>.psnnode', 'ul.sonlist>li'); // 问答二级回复
         }
       }
@@ -867,12 +893,12 @@
     const FilterWordRegular = (postSelector, width) => {
       const posts = $(postSelector);
       if (posts.length > 0) {
-        posts.map((index, post) => {
-          settings.blockWordsList.map((word) => {
+        posts.each((index, post) => {
+          settings.blockWordsList.forEach((word) => {
             if ($(post).text().match(word)) {
               $(post).parent().parent().after(`
-                                <div onclick="$(this).prev().show();$(this).hide();" class="btn btn-gray font12" style="margin-bottom:2px;${width && `width:${width}%;`}">====== 内容包含您的屏蔽词，点击查看屏蔽内容 ======</div>
-                            `);
+                <div onclick="$(this).prev().show();$(this).hide();" class="btn btn-gray font12" style="margin-bottom:2px;${width && `width:${width}%;`}">====== 内容包含您的屏蔽词，点击查看屏蔽内容 ======</div>
+              `);
               $(post).parent().parent().hide();
             }
           });
@@ -880,35 +906,39 @@
       }
     };
     const filterBlockWorld = () => {
-      const window_href = window.location.href;
-      if (window_href.indexOf('gene') > -1 // 机因回复
-                || window_href.indexOf('topic') > -1 // 主帖回复
-                || window_href.indexOf('trophy') > -1 // 奖杯TIPS
-                || window_href.indexOf('qa') > -1 // 问答回复
-                || window_href.indexOf('trade') > -1 // 交易回复
-                || window_href.match(/\/battle\/[1-9][0-9]+/) !== null // 约战回复
-                || window_href.match(/\/psnid\/[^\/]+\/comment/) !== null // 个人主页留言
+      const windowHref = window.location.href;
+      if (windowHref.indexOf('gene') > -1 // 机因回复
+                || windowHref.indexOf('topic') > -1 // 主帖回复
+                || windowHref.indexOf('trophy') > -1 // 奖杯TIPS
+                || windowHref.indexOf('qa') > -1 // 问答回复
+                || windowHref.indexOf('trade') > -1 // 交易回复
+                || windowHref.match(/\/battle\/[1-9][0-9]+/) !== null // 约战回复
+                || windowHref.match(/\/psnid\/[^\/]+\/comment/) !== null // 个人主页留言
       ) {
         FilterWordRegular('div.ml64>div.content.pb10');
       }
     };
     filterBlockWorld();
-    showCriticAverage();
     filterUserPost();
 
     const fixLinksOnThePage = () => {
       // 检测纯文本中的链接
-      const untagged_URL_regex = /(?<!((href|src)=\"|<a( [^<]+?)?>))(https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([A-Za-z0-9\-._~:/?#[\]@!$&'()*+,;=%]*))(?!(\"|<\/a>))/g;// https://stackoverflow.com/a/3809435 & https://stackoverflow.com/a/1547940
+      const untaggedUrlRegex = /(?<!((href|src)=\"|<a( [^<]+?)?>))(https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([A-Za-z0-9\-._~:/?#[\]@!$&'()*+,;=%]*))(?!(\"|<\/a>))/g;// https://stackoverflow.com/a/3809435 & https://stackoverflow.com/a/1547940
       const fixTextLinksOnThePage = (isOn) => {
-        if (isOn && /(\/(topic|gene|qa|battle|trade)\/\d+)|(\/psnid\/.+?\/comment)|(\/my\/notice)|(\/psngame\/\d+\/comment)|(\/trophy\/\d+)/.test(window.location.href)) $('div.content').each((i, e) => { e.innerHTML = e.innerHTML.replace(untagged_URL_regex, '<a href="$4" target="_blank">$4</a>'); });
+        if (isOn && /(\/(topic|gene|qa|battle|trade)\/\d+)|(\/psnid\/.+?\/comment)|(\/my\/notice)|(\/psngame\/\d+\/comment)|(\/trophy\/\d+)/.test(window.location.href)) $('div.content').each((i, e) => { e.innerHTML = e.innerHTML.replace(untaggedUrlRegex, '<a href="$4" target="_blank">$4</a>'); });
       };
       // 修复D7VG链接
-      const linkReplace = (link, substr, new_substr) => { link.href = (link.href === link.innerText) ? (link.innerText = link.innerText.replace(substr, new_substr)) : link.href.replace(substr, new_substr); };
+      const linkReplace = (link, substr, newSubstr) => {
+        link.href = (link.href === link.innerText)
+          ? (link.innerText = link.innerText.replace(substr, newSubstr))
+          : link.href.replace(substr, newSubstr);
+      };
       const fixD7VGLinksOnThePage = (isOn) => {
         if (isOn) {
           $("a[href*='//d7vg.com'], a[href*='//www.d7vg.com']").each((i, a) => {
-            if (!/d7vg\.com($|\/$)/.test(a.href)) // 排除可能特意指向d7vg.com的链接
-            { linkReplace(a, 'd7vg.com', 'psnine.com'); }
+            if (!/d7vg\.com($|\/$)/.test(a.href)) { // 排除可能特意指向d7vg.com的链接
+              linkReplace(a, 'd7vg.com', 'psnine.com');
+            }
           });
         }
       };
@@ -950,29 +980,29 @@
     }
 
     /* 将BBCode替换成对应html代码
-         * @param   str  原始BBCode输入
-         *
-         * @return  str  转换后的html代码
-         */
+    * @param   str  原始BBCode输入
+    * @return  str  转换后的html代码
+    */
     const replaceAll = (str, mapObj) => {
-      for (const i in mapObj) {
+      let newStr = str;
+      Object.keys(mapObj).forEach((i) => {
         const re = new RegExp(i, 'g');
-        str = str.replace(re, mapObj[i]);
-      }
-      return str;
+        newStr = str.replace(re, mapObj[i]);
+      });
+      return newStr;
     };
     /*
-         * BBCode和html标签对应表
-         */
+    * BBCode和html标签对应表
+    */
     const bbcode = {
-      '\\[quote\\](.+?)\\[\/quote\\]': '<blockquote>$1</blockquote>',
-      '\\[mark\\](.+?)\\[\/mark\\]': '<span class="mark">$1</span>',
-      '\\[img\\](.+?)\\[\/img\\]': '<img src="$1"></img>',
-      '\\[b\\](.+?)\\[\/b\\]': '<b>$1</b>',
-      '\\[s\\](.+?)\\[\/s\\]': '<s>$1</s>',
-      '\\[center\\](.+?)\\[\/center\\]': '<center>$1</center>',
-      '\\[\\](.+?)\\[\/b\\]': '<b>$1</b>',
-      '\\[color=(.+?)\\](.+?)\\[\/color\\]': '<span style="color:$1;">$2</span>',
+      '\\[quote\\](.+?)\\[/quote\\]': '<blockquote>$1</blockquote>',
+      '\\[mark\\](.+?)\\[/mark\\]': '<span class="mark">$1</span>',
+      '\\[img\\](.+?)\\[/img\\]': '<img src="$1"></img>',
+      '\\[b\\](.+?)\\[/b\\]': '<b>$1</b>',
+      '\\[s\\](.+?)\\[/s\\]': '<s>$1</s>',
+      '\\[center\\](.+?)\\[/center\\]': '<center>$1</center>',
+      '\\[\\](.+?)\\[/b\\]': '<b>$1</b>',
+      '\\[color=(.+?)\\](.+?)\\[/color\\]': '<span style="color:$1;">$2</span>',
       '\\[url\\](.+)\\[/url\\]': '<a href="$1">$1</a>',
       '\\[url=(.+)\\](.+)\\[/url\\]': '<a href="$1">$2</a>',
       // '\\[trophy=(.+)\\]\\[/trophy\\]': '<a href="$1">$2</a>',
@@ -980,9 +1010,10 @@
       '\\n': '<br/>',
     };
 
-    /* 功能：在输入框下方追加输入内容预览框
-         * @param   tag  可定位到输入框的标签名
-         */
+    /*
+    * 功能：在输入框下方追加输入内容预览框
+    * @param   tag  可定位到输入框的标签名
+    */
     const addInputPreview = (tag) => {
       $(tag).after(
         "<div class='content' style='padding: 0px 10px; word-wrap: break-word; word-break:break-all;' id='preview' />",
@@ -993,8 +1024,8 @@
     };
 
     /*
-         * 功能：实时统计创建机因时候的文字数
-         */
+    * 功能：实时统计创建机因时候的文字数
+    */
     const countInputLength = () => {
       $(".pr20 > textarea[name='content']").before(
         `<div class='text-warning'>
@@ -1024,13 +1055,13 @@
     // addInputPreview("textarea#comment[name='content']");
 
     /*
-         * 问答标题根据回答状况着色
-         * @param  isOn  是否开启功能
-         */
+    * 问答标题根据回答状况着色
+    * @param  isOn  是否开启功能
+    */
     const changeQaStatus = (isOn) => {
       if (isOn) {
         // 替换文字状态为图标形式
-        $('.list>li').map((i, node) => {
+        $('.list>li').each((i, node) => {
           const el = $(node).find('div.meta > .r > span:nth-child(2)');
           const status = $(el).text();
           // 替换文字状态为图标形式
@@ -1041,25 +1072,29 @@
             case '解决中': $(node).find(selector).append('<div class="fa-comments"></div>'); break;
             default: return;
           }
-          const el_reward = $(node).find('div.meta > .r > span:nth-child(1)');
-          const reward_num = $(el_reward).text();
+          const elReward = $(node).find('div.meta > .r > span:nth-child(1)');
+          const rewardNum = $(elReward).text();
           // 替换文字状态为图标形式
-          const reward = reward_num.match(/悬赏(\d+)铜/);
+          const reward = rewardNum.match(/悬赏(\d+)铜/);
           if (reward && reward.length > 0) {
             const number = Number(reward[1]);
-            $(el_reward).replaceWith(`<div class="fa-coins"></div>&nbsp;<span class="${number > 30 ? 'text-gold' : (number === 10 ? 'text-bronze' : 'text-silver')}" style="font-weight:bold;"}">${number}</span>`);
+            let textType;
+            if (number > 30) {
+              textType = 'text-gold';
+            } else {
+              textType = number === 10 ? 'text-bronze' : 'text-silver';
+            }
+            $(elReward).replaceWith(`<div class="fa-coins"></div>&nbsp;<span class="${textType}" style="font-weight:bold;"}">${number}</span>`);
           }
         });
-      } else {
-
       }
     };
 
     /*
-         * 通过Ajax获取自己的该游戏页面的奖杯数目
-         * @param  data  Ajax获取的数据
-         * @param  tip   Tippy对象
-         */
+    * 通过Ajax获取自己的该游戏页面的奖杯数目
+    * @param  data  Ajax获取的数据
+    * @param  tip   Tippy对象
+    */
     const getTrophyContentByAjax = (data, tip) => {
       const reg = /[\s\S]*<\/body>/g;
       const html = reg.exec(data)[0];
@@ -1120,11 +1155,11 @@
     };
 
     /*
-         * 功能：悬浮于头像显示个人界面
-         */
+    * 功能：悬浮于头像显示个人界面
+    */
     const addHoverProfile = () => {
       if (settings.hoverHomepage) {
-        $("a[href*='psnid/'] > img").parent().map(function (i, v) {
+        $("a[href*='psnid/'] > img").parent().each(function (i) {
           const url = $(this).attr('href');
           $(this).attr('id', `profile${i}`);
           tippy(`#profile${i}`, {
@@ -1147,18 +1182,20 @@
     };
     addHoverProfile();
 
-    /* 日期转换函数，将（XX年XX月XX日）形式切割成UTC时间
-         *  @param   value     XX年XX月XX日 形式的字符串
-         *  @return  {object}  UTC时间对象
-         */
+    /*
+    * 日期转换函数，将（XX年XX月XX日）形式切割成UTC时间
+    * @param   value     XX年XX月XX日 形式的字符串
+    * @return  {object}  UTC时间对象
+    */
     const converntTime = (value) => {
       const time = value.replace(/年|月|日/g, '-').split('-');
       return Date.UTC(`20${time[0]}`, Number(time[1]) - 1, time[2]);
     };
 
-    /* 获取当前页面的价格变动时间，构建绘图曲线X轴数据集
-         *  @return  xValue  价格变动时间X数据
-         */
+    /*
+    * 获取当前页面的价格变动时间，构建绘图曲线X轴数据集
+    * @return  xValue  价格变动时间X数据
+    */
     const priceLineDataX = () => {
       // 获取X轴的日期
       const xContents = $('p.dd_text');
@@ -1170,15 +1207,16 @@
       return xValue;
     };
 
-    /* 获取当前页面的价格情况，构建绘图曲线Y轴数据集
-         *  @return  yNormal  普通会员价格Y数据
-         *  @return  yPlus    plus会员价格Y数据
-         */
+    /*
+    * 获取当前页面的价格情况，构建绘图曲线Y轴数据集
+    * @return  yNormal  普通会员价格Y数据
+    * @return  yPlus    plus会员价格Y数据
+    */
     const priceLineDataY = () => {
       const div = $('.dd_price');
       let yNormal = [];
       let yPlus = [];
-      div.map((i, el) => {
+      div.each((i, el) => {
         const yOld = $(el).children('.dd_price_old').eq(0).text();
         const yPriceNormal = $(el).children('.dd_price_off').eq(0).text();
         // 普通会员价格曲线值
@@ -1191,38 +1229,39 @@
       return { yNormal, yPlus };
     };
 
-    /* 修正数据集的最后一组数据函数。如果当前日期在最后一次促销结束前，
-         *  则修改最后一组数据为当前日期，如在以后，则将最后一次促销的原始
-         *  价格作为最后一组数据的当前价格。
-         *  @param   [dataArray]  包含[datetime, price]的原始数据
-         *
-         *  @return  [dataArray]  修改后的[datetime, price]数据
-         */
+    /*
+    * 修正数据集的最后一组数据函数。如果当前日期在最后一次促销结束前，
+    * 则修改最后一组数据为当前日期，如在以后，则将最后一次促销的原始
+    * 价格作为最后一组数据的当前价格。
+    * @param   [dataArray]  包含[datetime, price]的原始数据
+    * @return  [dataArray]  修改后的[datetime, price]数据
+    */
     const fixTheLastElement = (data) => {
+      const newData = data;
       const today = new Date();
       const todayArray = Date.UTC(
         today.getYear() + 1900,
         today.getMonth(),
         today.getDate(),
       );
-      if (data[data.length - 1][0] > todayArray) {
-        data.pop();
-        data[data.length - 1][0] = todayArray;
+      if (newData[newData.length - 1][0] > todayArray) {
+        newData.pop();
+        newData[newData.length - 1][0] = todayArray;
       } else {
-        data.push([todayArray, data[data.length - 1][1]]);
+        newData.push([todayArray, newData[newData.length - 1][1]]);
       }
-      return data;
+      return newData;
     };
 
-    /* 传入时间和一般、Plus会员价格数组，生成绘图用数据集
-         *  @param   xValue   价格变动时间数组
-         *  @param   yNormal  一般会员价格数组
-         *  @param   yPlus    Plus会员价格数组
-         *
-         *  @return  normalData  一般会员价格绘图用数组
-         *  @return  plusData    Plus会员价格绘图用数组
-         *  @return  region      地区货币符
-         */
+    /*
+    * 传入时间和一般、Plus会员价格数组，生成绘图用数据集
+    * @param   xValue      价格变动时间数组
+    * @param   yNormal     一般会员价格数组
+    * @param   yPlus       Plus会员价格数组
+    * @return  normalData  一般会员价格绘图用数组
+    * @return  plusData    Plus会员价格绘图用数组
+    * @return  region      地区货币符
+    */
     const createPriceLineData = (xValue, yNormal, yPlus) => {
       // 用于保存绘图数据的变量
       let normalData = [];
@@ -1231,7 +1270,7 @@
       const prefix = yNormal[0].substring(0, 1);
       const region = prefix === 'H' ? 'HK$' : prefix;
 
-      xValue.map((item, i) => {
+      xValue.forEach((item, i) => {
         normalData.push([item, Number(yNormal[i].replace(region, ''))]);
         plusData.push([item, Number(yPlus[i].replace(region, ''))]);
       });
@@ -1242,12 +1281,12 @@
     };
 
     /* 根据数据绘制价格变动走势图
-         *  @param   normalData     一般会员价格绘图用数组
-         *  @param   plusData       Plus会员价格绘图用数组
-         *  @param   region         地区货币符
-         *
-         *  @return  priceLinePlot  highChart对象
-         */
+    *  @param   normalData     一般会员价格绘图用数组
+    *  @param   plusData       Plus会员价格绘图用数组
+    *  @param   region    地区货币符
+    *
+    *  @return  priceLinePlot  highChart对象
+    */
     const createPriceLinePlot = (normalData, plusData, region) => {
       const priceLineChart = {
         type: 'areaspline',
@@ -1329,8 +1368,8 @@
       return priceLinePlot;
     };
     /*
-         * 功能：在页面中插入价格变动走势图
-         */
+    * 功能：在页面中插入价格变动走势图
+    */
     const addPriceLinePlot = () => {
       // 构建绘图数据
       const xValue = priceLineDataX();
@@ -1342,12 +1381,12 @@
       Highcharts.chart('container', priceLinePlot);
     };
     /*
-         * 增加单个价格或文字展示标签
-         * @param  value        展示数值或字符串
-         * @param  className    样式名
-         * @param  styleString  额外追加的样式
-         * @return {string}     展示内容标签
-         */
+    * 增加单个价格或文字展示标签
+    * @param  value        展示数值或字符串
+    * @param  className    样式名
+    * @param  styleString  额外追加的样式
+    * @return {string}     展示内容标签
+    */
     const priceSpan = (value, className, styleString = null) => {
       let text = value;
       if (typeof value === 'number') {
@@ -1360,43 +1399,56 @@
       return `<span class=${className} style="float:right;${styleString}">${text}</span>`;
     };
     /*
-         * 功能：在当前页面上添加外币转人民币的价格展示
-         */
-    const retrieveRealTimeExchangeRate = (callback_success, callback_failure) => {
-      // 默认汇率
+    * 功能：在当前页面上添加外币转人民币的价格展示
+    */
+    const retrieveRealTimeExchangeRate = (callbackSuccess, callbackFailure) => {
+      // 默认汇率 latest exchange rate as of 2020/09/30/00:00 AM (GMT+8)
       const exchangeRate = {
-        HKD: 0.8796572978575602, USD: 6.817381644163391, GBP: 8.770269230346404, JPY: 0.06453927675754388,
-      };// latest exchange rate as of 2020/09/30/00:00 AM (GMT+8)
+        HKD: 0.8796572978575602,
+        USD: 6.817381644163391,
+        GBP: 8.770269230346404,
+        JPY: 0.06453927675754388,
+      };
       try { // 获取实时汇率
         const httpReq = new XMLHttpRequest();
         httpReq.open('GET', 'https://api.exchangeratesapi.io/latest', false);
         httpReq.send(null);
         const startTime = Date.now();
-        const repeatUntilSuccessful = (function_ptr, interval) => {
-          if (!function_ptr()) {
+        const repeatUntilSuccessful = (functionPtr, interval) => {
+          if (!functionPtr()) {
             setTimeout(() => {
-              repeatUntilSuccessful(function_ptr, interval);
+              repeatUntilSuccessful(functionPtr, interval);
             }, interval);
           }
         };
         repeatUntilSuccessful(() => {
           // Wait until HTTP GET SUCCESSFULL or TIMEOUT
-          if ((httpReq.status !== 200) && (httpReq.readyState !== XMLHttpRequest.DONE) && (Date.now() - startTime) < 3000) return false;
+          if ((httpReq.status !== 200)
+            && (httpReq.readyState !== XMLHttpRequest.DONE)
+            && (Date.now() - startTime) < 3000) {
+            return false;
+          }
           let rawExchangeRate = null;
-          if ((httpReq.status === 200) && (httpReq.readyState === XMLHttpRequest.DONE)) rawExchangeRate = JSON.parse(httpReq.response);
-          if (rawExchangeRate)// HTTP GET SUCCESSFULL
-          { ['HKD', 'USD', 'GBP', 'JPY'].forEach((currency) => exchangeRate[currency] = rawExchangeRate.rates.CNY / rawExchangeRate.rates[currency]); }
-          callback_success(exchangeRate);
+          if ((httpReq.status === 200)
+            && (httpReq.readyState === XMLHttpRequest.DONE)) {
+            rawExchangeRate = JSON.parse(httpReq.response);
+          }
+          if (rawExchangeRate) { // HTTP GET SUCCESSFULL
+            ['HKD', 'USD', 'GBP', 'JPY'].forEach((currency) => {
+              exchangeRate[currency] = rawExchangeRate.rates.CNY / rawExchangeRate.rates[currency];
+            });
+          }
+          callbackSuccess(exchangeRate);
           return true;
         }, 50);
       } catch (e) {
         console.log('实时汇率获取失败，使用默认汇率');
-        callback_failure(exchangeRate);
+        callbackFailure(exchangeRate);
       }
     };
     const foreignCurrencyConversion = () => {
       const insertConvertedPriceTags = (exchangeRate) => {
-        $('.dd_price').map((i, el) => {
+        $('.dd_price').each((i, el) => {
           // 一览页面和单商品页面不同位置偏移
           const offset = /dd\//.test(window.location.href) ? 2 : 3;
           const region = $(`.dd_info p:nth-child(${offset})`).eq(i).text();
@@ -1432,7 +1484,7 @@
     };
     const foreignCurrencyConversionSalesPage = () => {
       const changeToConvertedPriceTags = (exchangeRate) => {
-        $('.store_box>.store_price').map((i, el) => {
+        $('.store_box>.store_price').each((i, el) => {
           // 一览页面和单商品页面不同位置偏移
           const region = window.location.href.match(/region=.+?(&|$)/)[0].replace(/(region=|&)/g, '').toLowerCase();
           if (region === 'cn') return;
@@ -1443,18 +1495,18 @@
             jp: ['¥', exchangeRate.JPY],
             gb: ['£', exchangeRate.GBP],
           };
-          $(el).children().each((j, price_tag) => {
-            $(price_tag).attr('original-price', $(price_tag).text());
-            $(price_tag).attr('converted-price', `CN¥${(Number($(price_tag).text().replace(regionCurrency[region][0], '')) * regionCurrency[region][1]).toFixed(2)}`);
-            $(price_tag).text($(price_tag).attr('converted-price'));
+          $(el).children().each((j, priceTag) => {
+            $(priceTag).attr('original-price', $(priceTag).text());
+            $(priceTag).attr('converted-price', `CN¥${(Number($(priceTag).text().replace(regionCurrency[region][0], '')) * regionCurrency[region][1]).toFixed(2)}`);
+            $(priceTag).text($(priceTag).attr('converted-price'));
           });
         });
       };
       retrieveRealTimeExchangeRate(changeToConvertedPriceTags, changeToConvertedPriceTags);
     };
     /*
-         * 功能：根据降价幅度变更标题颜色
-         */
+    * 功能：根据降价幅度变更标题颜色
+    */
     const changeGameTitleColor = () => {
       // 设定不同降价范围的标题颜色
       const priceTitleColorDict = {
@@ -1464,7 +1516,7 @@
         20: 'rgb(40,167,69)',
       };
       // 着色
-      $('.dd_box').map((i, el) => {
+      $('.dd_box').each((i, el) => {
         try {
           const offPercent = Number(
             $(el).find('.dd_pic > div[class^="dd_tag"] ').text()
@@ -1483,29 +1535,29 @@
     };
 
     /*
-         * 增加按键样式
-         * @param  id               标签ID
-         * @param  backgroundColor  按键背景色
-         * @param  padding          padding
-         * @param  margin           margin
-         */
+    * 增加按键样式
+    * @param  id               标签ID
+    * @param  backgroundColor  按键背景色
+    * @param  padding          padding
+    * @param  margin           margin
+    */
     const addButtonStyle = (id, backgroundColor, padding = '0px 5px', margin = '0 0 0 10px') => {
       GM_addStyle(
         `#${id} {
-                    padding          : ${padding};
-                    margin           : ${margin};
-                    border-radius    : 2px;
-                    display          : inline-block;
-                    color            : white;
-                    background-color : ${backgroundColor};
-                    cursor           : pointer;
-                    line-height      : 24px;
-                }`,
+          padding          : ${padding};
+          margin           : ${margin};
+          border-radius    : 2px;
+          display          : inline-block;
+          color            : white;
+          background-color : ${backgroundColor};
+          cursor           : pointer;
+          line-height      : 24px;
+      }`,
       );
     };
-    const color_AddedButtonReady = '#d9534f';
+    const colorAddedButtonReady = '#d9534f';
     addButtonStyle('selectUnget', '#3498db'); // 未获得
-    addButtonStyle('selectOriginalPrice', color_AddedButtonReady); // 原币种价格
+    addButtonStyle('selectOriginalPrice', colorAddedButtonReady); // 原币种价格
 
     GM_addStyle(`
             .switch {
@@ -1569,8 +1621,8 @@
             }
         `);
     /*
-        * 功能：页面上追加“只看史低”功能按键，点击显示史低，再次点击恢复显示所有游戏（数折页面）
-        */
+    * 功能：页面上追加“只看史低”功能按键，点击显示史低，再次点击恢复显示所有游戏（数折页面）
+    */
     const showBest = () => {
       // 追加只看史低按键
       $('.dropmenu').append('<li style="color:#B8C4CE;padding: 0px 0px 0px 10px;">只看史低</li><label class="switch" style="line-height:1.3;"><input id="showBest" type="checkbox"><span class="slider round"></span></label>');
@@ -1578,7 +1630,7 @@
       const toggle = $('#showBest');
       toggle[0].checked = false;
       toggle.change(() => {
-        $('li.dd_box').map((i, el) => {
+        $('li.dd_box').each((i, el) => {
           if ($(el).children('.dd_status.dd_status_best').length === 0) {
             toggle[0].checked === true ? $(el).hide() : $(el).show();
           }
@@ -1586,15 +1638,15 @@
       });
     };
     /*
-        * 功能：页面上追加“只看史低”功能按键，点击显示史低，再次点击恢复显示所有游戏（活动页面）
-        */
+    * 功能：页面上追加“只看史低”功能按键，点击显示史低，再次点击恢复显示所有游戏（活动页面）
+    */
     const onlyLowestSalesPage = () => {
       // 追加只看史低按键
       $('.disabled.h-p').eq(0).after('<li style="color:white;padding: 2px 5px;">只看史低<label class="switch"><input id="hideGamebox" type="checkbox"><span class="slider round"></span></label></li>');
       const toggle = $('#hideGamebox');
       toggle[0].checked = false;
       toggle.change(() => {
-        $(document.querySelectorAll('li.store_box')).map((i, el) => {
+        $(document.querySelectorAll('li.store_box')).each((i, el) => {
           if ((el).querySelector('.store_tag_best') === null) {
             $(el).css('display', toggle[0].checked === true ? 'none' : 'block');
           }
@@ -1602,16 +1654,16 @@
       });
     };
     /*
-         * 功能：页面上追加“显示人民币”功能按键（活动页面）
-         */
+    * 功能：页面上追加“显示人民币”功能按键（活动页面）
+    */
     const showOriginalPrice = () => {
       if (window.location.href.match(/region=.+?(&|$)/)[0].replace(/(region=|&)/g, '').toLowerCase() === 'cn') return;
       $('.disabled.h-p').eq(0).after('<li style="color:white;padding: 2px 5px;">显示人民币<label class="switch"><input id="selectOriginalPrice" type="checkbox"><span class="slider round"></span></label></li>');
       const toggle = $('#selectOriginalPrice');
       toggle[0].checked = true;
       toggle.change(() => {
-        $('.store_box>.store_price').children().each((i, price_tag) => {
-          $(price_tag).text($(price_tag).attr(toggle[0].checked === true ? 'converted-price' : 'original-price'));
+        $('.store_box>.store_price').children().each((i, priceTag) => {
+          $(priceTag).text($(priceTag).attr(toggle[0].checked === true ? 'converted-price' : 'original-price'));
         });
       });
     };
@@ -1669,41 +1721,40 @@
     toPageBottom();
 
     /*
-         * 获取奖杯各种类个数
-         * @param  className  用于识别的类名
-         * @param  name       奖杯种类名
-         * @param  color      色块所用颜色码
-         *
-         * @return {object}   用于绘扇形图的单个数据块
-         */
+    * 获取奖杯各种类个数
+    * @param  className  用于识别的类名
+    * @param  name       奖杯种类名
+    * @param  color      色块所用颜色码
+    * @return {object}   用于绘扇形图的单个数据块
+    */
     const getTrophyCategory = (className, name, color) => {
       const trophyCount = $(className).eq(0).text().replace(name, '');
       return { name, y: Number(trophyCount), color };
     };
 
     /*
-         * 获取奖杯各稀有度个数
-         * @return {object}   用于绘扇形图的数据块
-         */
+    * 获取奖杯各稀有度个数
+    * @return {object}   用于绘扇形图的数据块
+    */
     const getTrophyRarity = () => {
       const rareArray = [0, 0, 0, 0, 0]; // 个数统计
       const rareStandard = [0, 5, 10, 20, 50]; // 区间定义
       for (const rareIndex of [1, 2, 3, 4]) {
-        $(`.twoge.t${rareIndex}.h-p`).map((i, ev) => {
+        $(`.twoge.t${rareIndex}.h-p`).each((i, ev) => {
           // 获取稀有度
           const rarity = Number($(ev).eq(0).text().split('%')[0]
             .replace('%', ''));
           // 计算该稀有度的奖杯数量
           rareArray[[...rareStandard, rarity]
             .sort((a, b) => a - b)
-            .indexOf(rarity) - 1]++;
+            .indexOf(rarity) - 1] += 1;
         });
       }
       return rareArray;
     };
     /*
-         * 功能：在单独游戏页面上方追加奖杯统计扇形图
-         */
+    * 功能：在单独游戏页面上方追加奖杯统计扇形图
+    */
     const addTrophyPieChart = () => {
       // 奖杯稀有度统计数据
       const rareArray = getTrophyRarity();
@@ -1788,29 +1839,28 @@
       Highcharts.chart('trophyRatioChart', trophyRatio);
     };
     /*
-         * 增加绘图框架样式
-         * @param  id     标签ID
-         * @param  width  宽度
-         */
+    * 增加绘图框架样式
+    * @param  id     标签ID
+    * @param  width  宽度
+    */
     const addPlotFrame = (id, width) => {
       GM_addStyle(
         `#${id} {
-                    width   : ${width}px;
-                    height  : 200px;
-                    margin  : 0 0;
-                    display : inline-block;
-                }`,
+          width   : ${width}px;
+          height  : 200px;
+          margin  : 0 0;
+          display : inline-block;
+      }`,
       );
     };
     addPlotFrame('trophyRatioChart', 320);
     addPlotFrame('trophyGetTimeChart', 460);
 
     /*
-         * 构建奖杯获得时间绘图数据集
-         * @param  className  用于识别的类名
-         *
-         * @return {object}   用于绘线形图的数据集
-         */
+    * 构建奖杯获得时间绘图数据集
+    * @param  className  用于识别的类名
+    * @return {object}   用于绘线形图的数据集
+    */
     const trophyGetTimeElementParser = (timeElement) => {
       // 奖杯时间丢失部分处理
       const dayTime = $(timeElement).text().trim();
@@ -1828,7 +1878,7 @@
     const createTrophyGetTimeData = (className) => {
       const timeElements = $(className);
       const getTimeArray = [];
-      timeElements.map((i, el) => {
+      timeElements.each((i, el) => {
         const xTime = trophyGetTimeElementParser(el);
         getTimeArray.push([xTime, el.parentElement.parentElement]);
       });
@@ -1836,9 +1886,13 @@
       const earliestValidTimeIndex = getTimeArray.findIndex((t) => t[0] !== 0);
       if (earliestValidTimeIndex >= 0) {
         getTimeArray.forEach((t) => {
-          if (t[0] === 0) t[0] = getTimeArray[earliestValidTimeIndex][0];
+          if (t[0] === 0) {
+            t[0] = getTimeArray[earliestValidTimeIndex][0];
+          }
         });
-      } else getTimeArray.forEach((t) => t[0] = Number.NaN);
+      } else {
+        getTimeArray.forEach((t) => t[0] = Number.NaN);
+      }
       const data = getTimeArray.map((x, y) => [x[0], y + 1]);
       // 调整最终数据点
       // data[data.length - 1][1] -= 1;
@@ -1847,8 +1901,8 @@
     };
 
     /*
-         * 功能：在单独游戏页面上方追加奖杯获得时间线形图
-         */
+    * 功能：在单独游戏页面上方追加奖杯获得时间线形图
+    */
     let trophyGetTimeData;
     const addTrophyGetTimeLineChart = () => {
       // 奖杯获得时间年月统计
@@ -1921,7 +1975,7 @@
       };
       // Credits设置
       const trophyGetTimeCreditsText = [];
-      $('div.main>.box.pd10>em:eq(0)>span').map((i, el) => {
+      $('div.main>.box.pd10>em:eq(0)>span').each((i, el) => {
         trophyGetTimeCreditsText.push($(el).text());
       });
       const trophyGetTimeCredits = {
@@ -1949,13 +2003,16 @@
     const sortTrophiesByTimestamp = () => {
       const trophyTableEntries = $('table.list').eq(0).children().find('tr');
       const trophies = trophyTableEntries.filter((i, e) => e.id !== '');
-      if (trophies.eq(0).hasClass('t1'))// Platinum
-      { trophyTableEntries.filter((i, e) => e.id === '').eq(0).after(trophyGetTimeData.trophyElements); } else trophies.eq(0).after(trophyGetTimeData.trophyElements);
+      if (trophies.eq(0).hasClass('t1')) { // Platinum
+        trophyTableEntries.filter((i, e) => e.id === '').eq(0).after(trophyGetTimeData.trophyElements);
+      } else {
+        trophies.eq(0).after(trophyGetTimeData.trophyElements);
+      }
     };
 
     /*
-         * 功能：奖杯筛选功能
-         */
+    * 功能：奖杯筛选功能
+    */
     const addTrophyFilter = () => {
       $('.dropmenu').append('<li style="color:#B8C4CE;"></em>只显示未获得</em><label class="switch" style="line-height:1.3;"><input id="filterEarned" type="checkbox"><span class="slider round"></span></label></li>');
       const toggle = $('#filterEarned');
@@ -1975,8 +2032,8 @@
     };
 
     /*
-         * 功能：汇总以获得和未获得奖杯
-         */
+    * 功能：汇总以获得和未获得奖杯
+    */
     const addEarnedTrophiesSummary = () => {
       const trophyTitleStyle = `border-radius: 2px; padding:5px; background-color:${$('li.current').css('background-color')};`;
       // tippy弹出框的样式
@@ -1989,7 +2046,7 @@
         $('#trophyChartContainer').append(
           `<div class='${className}'><p class='trophyCount' style='${trophyTitleStyle}'></p><div class='trophyContainer' style='padding:5px;'></div></div>`,
         );
-        object.map(function (i, v) {
+        object.each(function (i) {
           // 如果这个奖杯有Tips，就设置左边框为绿色，否则就为底色（边框颜色和底色一致）
           if (
             $(this).parent().parent().next()
@@ -2066,12 +2123,12 @@
     }
 
     /*
-         * 功能：降低没有白金的游戏的图标亮度
-         * @param  alpha  无白金游戏图标透明度
-         */
+    * 功能：降低没有白金的游戏的图标亮度
+    * @param  alpha  无白金游戏图标透明度
+    */
     const filterNonePlatinum = (alpha) => {
       if (alpha < 1) {
-        $('tr').map((i, el) => {
+        $('tr').each((i, el) => {
           // 读取白金数量
           const platinumNum = $(el)
             .find('.pd1015.title.lh180 > em > .text-platinum').eq(0)
@@ -2086,13 +2143,11 @@
     };
 
     /*
-         * 功能：悬浮图标显示自己的游戏的完成度
-         */
+    * 功能：悬浮图标显示自己的游戏的完成度
+    */
     const getMyCompletion = () => {
-      $('.imgbgnb').map((i, el) => {
+      $('.imgbgnb').each((i, el) => {
         $(el).attr('id', `game${i}`);
-        // 从cookie中取出psnid
-        const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
         if (psnidCookie) {
           const psnid = psnidCookie[1];
           let myGameUrl = $(el).parent().attr('href');
@@ -2118,7 +2173,7 @@
 
     // 游戏页面优化
     if (
-      /psngame/.test(window.location.href) & !/psnid/.test(window.location.href)
+      /psngame/.test(window.location.href) && !/psnid/.test(window.location.href)
     ) {
       // 降低没有白金的游戏的图标亮度
       filterNonePlatinum(settings.filterNonePlatinumAlpha);
@@ -2148,8 +2203,6 @@
       // 检查游戏页
       window.onpageshow = (e) => {
         const backTrigger = e || window.event;
-        // 从cookie中取出psnid
-        const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
         if (!backTrigger.persisted && psnidCookie) {
           if (window.location.href.match(/psngame\/\d+#\d+/)) window.location.href = window.location.href.replace(/#(\d+)($|\/$)/, `?psnid=${psnidCookie[1]}#$1`);
           else window.location.href = window.location.href.replace(/($|\/$)/, `?psnid=${psnidCookie[1]}`);
@@ -2226,72 +2279,83 @@
     }
 
     // P9时间格式转换函数
-    function p9TimeTextParser(timestamp_text) { // returns UTC time
+    function p9TimeTextParser(timestampText) { // returns UTC time
       let array = null;
       // 1小时
-      const unit_time_hour = 60 * 60 * 1000;
-      const relative_description_to_offset = (prune_pattern, unit_time) => -parseInt(timestamp_text.replace(prune_pattern, '')) * unit_time;
-      const relative_timestamp = (offset, replace_pattern) => {
-        if (replace_pattern) {
+      const unitTimeHour = 60 * 60 * 1000;
+      const relativeDescriptionToOffset = (prunePattern, unitTime) => -parseInt(timestampText.replace(prunePattern, ''), 10) * unitTime;
+      const relativeTimestamp = (offset, replacePattern) => {
+        if (replacePattern) {
           return (
-            (new Date((new Date()).getTime() + 8 * unit_time_hour + offset))
+            (new Date((new Date()).getTime() + 8 * unitTimeHour + offset))
               .toLocaleDateString('en-CA', { timeZone: 'Asia/Shanghai' })
               .split('-')
-              .concat(timestamp_text.replace(replace_pattern, '').split(/:/))
+              .concat(timestampText.replace(replacePattern, '').split(/:/))
           );
         }
-        const _array = (new Date((new Date()).getTime() + offset))
+        const timeArrayConverted = (new Date((new Date()).getTime() + offset))
           .toLocaleString('en-CA', { timeZone: 'Asia/Shanghai', hour12: false })
           .split(/-|, |:/);
-        _array.pop();
-        return _array;
+        timeArrayConverted.pop();
+        return timeArrayConverted;
       };
-      const date_string_to_array = (date_string) => date_string.split(/-|\s|:/);
-      if (timestamp_text.match(/[0-9]{4}-[0-9]{2}-[0-9]{2}\s[0-9]{2}:[0-9]{2}/)) {
-        array = date_string_to_array(timestamp_text);
-      } else if (timestamp_text.match(/[0-9]{2}-[0-9]{2}\s[0-9]{2}:[0-9]{2}/)) {
-        array = date_string_to_array(timestamp_text);
+      const dateStringToArray = (dateString) => dateString.split(/-|\s|:/);
+      if (timestampText.match(/[0-9]{4}-[0-9]{2}-[0-9]{2}\s[0-9]{2}:[0-9]{2}/)) {
+        array = dateStringToArray(timestampText);
+      } else if (timestampText.match(/[0-9]{2}-[0-9]{2}\s[0-9]{2}:[0-9]{2}/)) {
+        array = dateStringToArray(timestampText);
         array.unshift((new Date()).getFullYear());
       } else {
-        // if time were not offset by 8 hours, date calculation would be incorrect when description involves '[0-9]+天前'
-        if (timestamp_text.match(/[0-9]+天前\s[0-9]{2}:[0-9]{2}/)) array = relative_timestamp(relative_description_to_offset(/天前.+$/g, unit_time_hour * 24), /[0-9]+天前\s/g);
-        else if (timestamp_text.match(/前天\s[0-9]{2}:[0-9]{2}/)) array = relative_timestamp(-2 * unit_time_hour * 24, /前天\s/g);
-        else if (timestamp_text.match(/昨天\s[0-9]{2}:[0-9]{2}/)) array = relative_timestamp(-unit_time_hour * 24, /昨天\s/g);
-        else if (timestamp_text.match(/今天\s[0-9]{2}:[0-9]{2}/)) array = relative_timestamp(0, /今天\s/g);
-        else if (timestamp_text.match(/[0-9]+小时前/)) array = relative_timestamp(relative_description_to_offset(/小时.+$/g, unit_time_hour));
-        else if (timestamp_text.match(/[0-9]+分钟前/)) array = relative_timestamp(relative_description_to_offset(/分钟.+$/g, 60 * 1000));
-        else if (timestamp_text.match(/刚刚/)) array = relative_timestamp(0);
+        // if time were not offset by 8 hours,
+        // date calculation would be incorrect when description involves '[0-9]+天前'
+        // eslint-disable-next-line no-lonely-if
+        if (timestampText.match(/[0-9]+天前\s[0-9]{2}:[0-9]{2}/)) {
+          array = relativeTimestamp(relativeDescriptionToOffset(/天前.+$/g, unitTimeHour * 24), /[0-9]+天前\s/g);
+        } else if (timestampText.match(/前天\s[0-9]{2}:[0-9]{2}/)) {
+          array = relativeTimestamp(-2 * unitTimeHour * 24, /前天\s/g);
+        } else if (timestampText.match(/昨天\s[0-9]{2}:[0-9]{2}/)) {
+          array = relativeTimestamp(-unitTimeHour * 24, /昨天\s/g);
+        } else if (timestampText.match(/今天\s[0-9]{2}:[0-9]{2}/)) {
+          array = relativeTimestamp(0, /今天\s/g);
+        } else if (timestampText.match(/[0-9]+小时前/)) {
+          array = relativeTimestamp(relativeDescriptionToOffset(/小时.+$/g, unitTimeHour));
+        } else if (timestampText.match(/[0-9]+分钟前/)) {
+          array = relativeTimestamp(relativeDescriptionToOffset(/分钟.+$/g, 60 * 1000));
+        } else if (timestampText.match(/刚刚/)) {
+          array = relativeTimestamp(0);
+        }
       }
       if (array) {
-        for (let i = array.length - 1; i >= 0; i--) {
+        for (let i = array.length - 1; i >= 0; i -= 1) {
           if (array[i] === '') {
             array.splice(i, 1);
             continue;
           }
-          array[i] = parseInt(array[i]);
-          if (i === 1) // Everything else is normal except month starts from 0
-          { array[i]--; }
+          array[i] = parseInt(array[i], 10);
+          if (i === 1) { // Everything else is normal except month starts from 0
+            array[i] -= 1;
+          }
         }
-        return Date.UTC(...array) - 8 * unit_time_hour;
+        return Date.UTC(...array) - 8 * unitTimeHour;
       }
-      console.log(`not parsed: ${timestamp_text}`);
+      console.log(`not parsed: ${timestampText}`);
       return null;
     }
     // 游戏评论页面计算平均分
     function showCriticAverage() {
       if (window.location.href.match(/psngame\/[1-9][0-9]+\/comment/)) {
-        let score_parser; let score_elements; let
-          score_parent_review;
+        let scoreParser; let scoreElements; let
+          scoreParentReview;
         const selectScoreElements = () => {
-          score_elements = $('div.min-inner.mt40 div.box ul.list li div.ml64 div.meta.pb10 span.alert-success.pd5:contains(评分 )');
-          if (score_elements.length > 0) {
-            score_parser = (element) => parseInt(element.text().replace('评分 ', ''));
-            score_parent_review = 'li';
+          scoreElements = $('div.min-inner.mt40 div.box ul.list li div.ml64 div.meta.pb10 span.alert-success.pd5:contains(评分 )');
+          if (scoreElements.length > 0) {
+            scoreParser = (element) => parseInt(element.text().replace('评分 ', ''), 10);
+            scoreParentReview = 'li';
           } else {
-            score_elements = $('div.min-inner.mt40 div.box div.ml64 p.text-success:contains(评分 ) b');
-            if (score_elements.length > 0) {
-              score_parser = (element) => parseInt(element.text());
-              score_parent_review = 'div.post';
+            scoreElements = $('div.min-inner.mt40 div.box div.ml64 p.text-success:contains(评分 ) b');
+            if (scoreElements.length > 0) {
+              scoreParser = (element) => parseInt(element.text(), 10);
+              scoreParentReview = 'div.post';
             } else {
               return false;
             }
@@ -2299,47 +2363,47 @@
           return true;
         };
         if (!selectScoreElements()) return;
-        let reviews_no_score = null; let
-          reviews_no_score_hidden = false;
+        let reviewsNoScore = null; let
+          reviewsNoScoreHidden = false;
         const selectReviewsNoScore = () => {
-          if (reviews_no_score === null) reviews_no_score = $('div.min-inner.mt40 div.box ul.list li div.ml64 div.meta.pb10:not(:has(span.alert-success.pd5))').parents('li');
-          if (reviews_no_score.length === 0) reviews_no_score = $('div.min-inner.mt40 div.box div.ml64:not(:has(p.text-success))').parents('div.post');
+          if (reviewsNoScore === null) reviewsNoScore = $('div.min-inner.mt40 div.box ul.list li div.ml64 div.meta.pb10:not(:has(span.alert-success.pd5))').parents('li');
+          if (reviewsNoScore.length === 0) reviewsNoScore = $('div.min-inner.mt40 div.box div.ml64:not(:has(p.text-success))').parents('div.post');
         };
         const hideReviewsNoScore = () => {
-          if (reviews_no_score_hidden) return;
+          if (reviewsNoScoreHidden) return;
           selectReviewsNoScore();
-          reviews_no_score.hide();
-          reviews_no_score_hidden = true;
+          reviewsNoScore.hide();
+          reviewsNoScoreHidden = true;
         };
         const showReviewsNoScore = () => {
-          if (!reviews_no_score_hidden) return;
+          if (!reviewsNoScoreHidden) return;
           selectReviewsNoScore();
-          reviews_no_score.show();
-          reviews_no_score_hidden = false;
+          reviewsNoScore.show();
+          reviewsNoScoreHidden = false;
         };
-        const hidden_scores = [];
+        const hiddenScores = [];
         const hideSpecificScore = (score) => {
-          if (hidden_scores.indexOf(score) > -1) return;
+          if (hiddenScores.indexOf(score) > -1) return;
           let hidden = 0;
-          score_elements.each(function () {
-            if (score_parser($(this)) === score) {
-              $(this).parents(score_parent_review).hide();
+          scoreElements.each(function () {
+            if (scoreParser($(this)) === score) {
+              $(this).parents(scoreParentReview).hide();
               hidden += 1;
             }
           });
           if (hidden > 0) {
             hideReviewsNoScore();
-            hidden_scores.push(score);
+            hiddenScores.push(score);
           }
         };
         const showSpecificScore = (score) => {
-          const hidden_score_index = hidden_scores.indexOf(score);
-          if (hidden_score_index >= 0) {
-            score_elements.each(function () {
-              if (score_parser($(this)) === score) $(this).parents(score_parent_review).show();
+          const hiddenScoreIndex = hiddenScores.indexOf(score);
+          if (hiddenScoreIndex >= 0) {
+            scoreElements.each(function () {
+              if (scoreParser($(this)) === score) $(this).parents(scoreParentReview).show();
             });
-            hidden_scores.splice(hidden_score_index, 1);
-            if (hidden_scores.length === 0) showReviewsNoScore();
+            hiddenScores.splice(hiddenScoreIndex, 1);
+            if (hiddenScores.length === 0) showReviewsNoScore();
           }
         };
         const scoreOnclick = (chart, seriesEntry, score) => {
@@ -2356,19 +2420,20 @@
               seriesEntry.color = seriesEntry.color.substring(0, 7);
               showSpecificScore(score);
               break;
+            default:
+              break;
           }
           chart.redraw();
         };
-        let gaussian_on = true; const
-          gradient_stops = null;
-        let score_data_barchart; let score_data_barchart_no_gaussian; let
-          score_data_gaussian;
-        let score_axis; let
-          score_axis_no_gaussian;
+        let gaussianOn = true;
+        let scoreDataBarchart; let scoreDataBarchartNoGaussian; let
+          scoreDataGaussian;
+        let scoreAxis; let
+          scoreAxisNoGaussian;
         const scoreBarChartAddLabelOnclick = (chart) => {
           chart.xAxis[0].labelGroup.element.childNodes.forEach((label) => {
             label.onclick = function () {
-              const value = parseInt(this.innerHTML);
+              const value = parseInt(this.innerHTML, 10);
               const pos = chart.series[0].data.find((e) => e.category === value).index;
               scoreOnclick(chart, chart.series[0].data[pos], value);
             };
@@ -2380,10 +2445,16 @@
             backgroundColor: 'rgba(0,0,0,0)',
             events: {
               click(event) {
-                gaussian_on = !gaussian_on;
+                gaussianOn = !gaussianOn;
                 const chart = Highcharts.chart('scoreBarChart', createScoreBarChart(criticsCount, scoreCountMin, scoreCountMax));
                 scoreBarChartAddLabelOnclick(chart);
-                hidden_scores.forEach((s) => scoreOnclick(chart, chart.series[0].data[chart.xAxis[0].categories.indexOf(s)], s));
+                hiddenScores.forEach((s) => {
+                  scoreOnclick(
+                    chart,
+                    chart.series[0].data[chart.xAxis[0].categories.indexOf(s)],
+                    s,
+                  );
+                });
               },
             },
           };
@@ -2396,11 +2467,11 @@
             style: { fontSize: '9px', color: '#808080' },
           };
           const scoreXaxis = [{
-            categories: gaussian_on ? score_axis : score_axis_no_gaussian,
+            categories: gaussianOn ? scoreAxis : scoreAxisNoGaussian,
             crosshair: true,
           }];
           const scoreYaxis = [{
-            tickInterval: gaussian_on ? 2 : 1,
+            tickInterval: gaussianOn ? 2 : 1,
             min: scoreCountMin < 3 ? 0 : scoreCountMin,
             max: scoreCountMax,
             title: { text: '点评人数' },
@@ -2435,12 +2506,12 @@
             yAxis: 0,
             zIndex: 1,
             baseSeries: 0,
-            data: gaussian_on ? score_data_barchart : score_data_barchart_no_gaussian,
+            data: gaussianOn ? scoreDataBarchart : scoreDataBarchartNoGaussian,
           }];
           const scoreCredits = {
             text: `点评总人数：${criticsCount}`,
           };
-          if (gaussian_on) {
+          if (gaussianOn) {
             scoreXaxis.push({
               min: 0.5,
               max: 10.5,
@@ -2464,7 +2535,7 @@
               yAxis: 1,
               zIndex: 0,
               baseSeries: 1,
-              data: score_data_gaussian,
+              data: scoreDataGaussian,
               enableMouseTracking: false,
             });
           }
@@ -2483,99 +2554,117 @@
           return scoreBarChart;
         };
         const weekOfYear = (date) => { // https://stackoverflow.com/a/6117889
-          const start_of_day = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-          const day_of_week = start_of_day.getUTCDay() || 7;
-          start_of_day.setUTCDate(start_of_day.getUTCDate() + 4 - day_of_week);
-          const start_of_year = new Date(Date.UTC(start_of_day.getUTCFullYear(), 0, 1));
-          return Math.ceil((((start_of_day - start_of_year) / 86400000/* milliseconds of a day */) + 1) / 7);
+          const startOfDay = new Date(
+            Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
+          );
+          const dayOfWeek = startOfDay.getUTCDay() || 7;
+          startOfDay.setUTCDate(startOfDay.getUTCDate() + 4 - dayOfWeek);
+          const startOfYear = new Date(Date.UTC(startOfDay.getUTCFullYear(), 0, 1));
+          return Math.ceil(
+            (((startOfDay - startOfYear) / 86400000/* milliseconds of a day */) + 1) / 7,
+          );
         };
         const weeksOfYearCache = {};
         const weeksOfYear = (year) => {
           let weeks = weeksOfYearCache[year];
           if (weeks === undefined) {
-            const last_week = weekOfYear(new Date(year, 11, 31));
-            if (last_week === 1) weeks = weekOfYear(new Date(year, 11, 24));
-            else weeks = last_week;
+            const lastWeek = weekOfYear(new Date(year, 11, 31));
+            if (lastWeek === 1) weeks = weekOfYear(new Date(year, 11, 24));
+            else weeks = lastWeek;
             weeksOfYearCache[year] = weeks;
           }
           return weeks;
         };
         const yearOfWeek = (date, week = null) => {
-          const real_year = date.getUTCFullYear();
+          const realYear = date.getUTCFullYear();
           if (week === null) week = weekOfYear(date);
           if (date.getUTCMonth() === 0) {
-            if (week > 5) return real_year - 1;
-          } else if (week === 1) return real_year + 1;
-          return real_year;
+            if (week > 5) return realYear - 1;
+          } else if (week === 1) return realYear + 1;
+          return realYear;
         };
         const weekToTimestamp = (year, week, day = 4) => {
-          let start_of_year = new Date(Date.UTC(year, 0, 1));
-          if (weekOfYear(start_of_year) > 1) start_of_year = new Date(Date.UTC(year, 0, 8));
-          return start_of_year.getTime() + (-((start_of_year.getUTCDay() || 7) - 1) + (7 * (week - 1) + (day - 1))) * 86400000/* milliseconds of a day */;
+          let startOfYear = new Date(Date.UTC(year, 0, 1));
+          if (weekOfYear(startOfYear) > 1) startOfYear = new Date(Date.UTC(year, 0, 8));
+          return (
+            startOfYear.getTime()
+            + (-((startOfYear.getUTCDay() || 7) - 1)
+            + (7 * (week - 1) + (day - 1))) * 86400000/* milliseconds of a day */
+          );
         };
-        const weekDifference = (date_1, date_2) => {
-          const week_of_year_1 = weekOfYear(date_1); const year_of_week_1 = yearOfWeek(date_1, week_of_year_1); const
-            week_start_1 = weekToTimestamp(year_of_week_1, week_of_year_1, 1);
-          const week_of_year_2 = weekOfYear(date_2); const year_of_week_2 = yearOfWeek(date_2, week_of_year_2); const
-            week_start_2 = weekToTimestamp(year_of_week_2, week_of_year_2, 1);
-          return (week_start_1 - week_start_2) / 604800000/* milliseconds of a week */;
+        const weekDifference = (date1, date2) => {
+          const weekOfYear1 = weekOfYear(date1);
+          const yearOfWeek1 = yearOfWeek(date1, weekOfYear1);
+          const weekStart1 = weekToTimestamp(yearOfWeek1, weekOfYear1, 1);
+          const weekOfYear2 = weekOfYear(date2);
+          const yearOfWeek2 = yearOfWeek(date2, weekOfYear2);
+          const weekStart2 = weekToTimestamp(yearOfWeek2, weekOfYear2, 1);
+          return (weekStart1 - weekStart2) / 604800000/* milliseconds of a week */;
         };
         const createScoreTrendChart = () => {
-          const score_trend = []; const comment_trend = []; let min_score = Number.MAX_SAFE_INTEGER; let max_score = Number.MIN_SAFE_INTEGER; let first_week; let
-            last_week;
+          const scoreTrend = [];
+          const commentTrend = [];
+          let minScore = Number.MAX_SAFE_INTEGER;
+          let maxScore = Number.MIN_SAFE_INTEGER;
+          let firstWeek;
+          let lastWeek;
           const createScoreTrendChartData = () => {
-            const scoreElementTime = (score_element) => { // must be single element
-              let timestamp_element = $(score_element).parents('div.ml64').find('div.meta:not(.pb10) > span:nth-child(2)');
-              if (timestamp_element.length > 0) {
-                return p9TimeTextParser(timestamp_element.text().replace(/(^\s)|(\s$)|(修改)/g, ''));
+            const scoreElementTime = (scoreElement) => { // must be single element
+              let timestampElement = $(scoreElement).parents('div.ml64').find('div.meta:not(.pb10) > span:nth-child(2)');
+              if (timestampElement.length > 0) {
+                return p9TimeTextParser(timestampElement.text().replace(/(^\s)|(\s$)|(修改)/g, ''));
               }
-              timestamp_element = $(score_element).parents('div.ml64').find('div.meta');
-              if (timestamp_element.length > 0) {
-                const text_array = timestamp_element.text().split(/\r?\n/);
+              timestampElement = $(scoreElement).parents('div.ml64').find('div.meta');
+              if (timestampElement.length > 0) {
+                const textArray = timestampElement.text().split(/\r?\n/);
                 let index = -1; let
                   text;
                 do {
-                  text = text_array[text_array.length + index].replace(/(^\s)|(\s$)|(修改)/g, '');
-                  index--;
+                  text = textArray[textArray.length + index].replace(/(^\s)|(\s$)|(修改)/g, '');
+                  index -= 1;
                 } while (text === '');
                 return p9TimeTextParser(text);
               }
               return null;
             };
-            score_elements.each(function () {
+            scoreElements.each(function () {
               const timestamp = scoreElementTime($(this));
               if (timestamp !== null) {
-                const score_date = new Date(timestamp);
-                const week_of_year = weekOfYear(score_date);
-                const year_of_week = yearOfWeek(score_date, week_of_year);
-                score_trend.push([timestamp, score_parser($(this)), year_of_week, week_of_year]);
+                const scoreDate = new Date(timestamp);
+                const weekOfYearValue = weekOfYear(scoreDate);
+                const yearOfWeekValue = yearOfWeek(scoreDate, weekOfYearValue);
+                scoreTrend.push([
+                  timestamp, scoreParser($(this)), yearOfWeekValue, weekOfYearValue,
+                ]);
               }
             });
-            score_trend.sort((e1, e2) => (e1[0] - e2[0]));
-            let accumulated_score = 0;
-            for (let i = 0; i < score_trend.length; i++) {
-              accumulated_score += score_trend[i][1];
-              const updated_average_score = accumulated_score / (i + 1);
-              score_trend[i][1] = updated_average_score;
-              if (updated_average_score < min_score) min_score = updated_average_score;
-              if (updated_average_score > max_score) max_score = updated_average_score;
+            scoreTrend.sort((e1, e2) => (e1[0] - e2[0]));
+            let accumulatedScore = 0;
+            for (let i = 0; i < scoreTrend.length; i += 1) {
+              accumulatedScore += scoreTrend[i][1];
+              const updatedAverageScore = accumulatedScore / (i + 1);
+              scoreTrend[i][1] = updatedAverageScore;
+              if (updatedAverageScore < minScore) minScore = updatedAverageScore;
+              if (updatedAverageScore > maxScore) maxScore = updatedAverageScore;
             }
-            const comment_count_by_week = {};
-            const first_score = score_trend[0]; const
-              last_score = score_trend[score_trend.length - 1];
-            first_week = [first_score[2], first_score[3]], last_week = [last_score[2], last_score[3]];
-            score_trend.forEach((score) => {
+            const commentCountByWeek = {};
+            const firstScore = scoreTrend[0]; const
+              lastScore = scoreTrend[scoreTrend.length - 1];
+            firstWeek = [firstScore[2], firstScore[3]], lastWeek = [lastScore[2], lastScore[3]];
+            scoreTrend.forEach((score) => {
               const week = `${score[2]}/${score[3]}`;
-              if (comment_count_by_week[week] === undefined) comment_count_by_week[week] = 1;
-              else comment_count_by_week[week]++;
+              if (commentCountByWeek[week] === undefined) commentCountByWeek[week] = 1;
+              else commentCountByWeek[week] += 1;
               score.splice(2, 2);
             });
-            for (let year = first_week[0]; year <= last_week[0]; year++) {
-              const first = year === first_week[0] ? first_week[1] : 1;
-              const last = year === last_week[0] ? last_week[1] : weeksOfYear(year);
-              for (let week = first; week <= last; week++) {
-                const count = comment_count_by_week[`${year}/${week}`];
-                comment_trend.push([weekToTimestamp(year, week, 7.5), count === undefined ? 0 : count]);
+            for (let year = firstWeek[0]; year <= lastWeek[0]; year += 1) {
+              const first = year === firstWeek[0] ? firstWeek[1] : 1;
+              const last = year === lastWeek[0] ? lastWeek[1] : weeksOfYear(year);
+              for (let week = first; week <= last; week += 1) {
+                const count = commentCountByWeek[`${year}/${week}`];
+                commentTrend.push([
+                  weekToTimestamp(year, week, 7.5), count === undefined ? 0 : count,
+                ]);
               }
             }
           };
@@ -2601,13 +2690,14 @@
             },
           };
           // 绘图数据
-          const first_week_date = new Date(weekToTimestamp(first_week[0], first_week[1])); const last_week_date = new Date(weekToTimestamp(last_week[0], last_week[1])); const
-            total_weeks_passed = weekDifference(last_week_date, first_week_date) + 1;
+          const firstWeekDate = new Date(weekToTimestamp(firstWeek[0], firstWeek[1]));
+          const lastWeekDate = new Date(weekToTimestamp(lastWeek[0], lastWeek[1]));
+          const totalWeeksPassed = weekDifference(lastWeekDate, firstWeekDate) + 1;
           const scoreTrendSeries = [
             {
               name: '平均分',
               yAxis: 0,
-              data: score_trend,
+              data: scoreTrend,
               showInLegend: false,
               color: '#7CB5EC',
               opacity: 1,
@@ -2619,23 +2709,23 @@
             }, {
               name: '周增评分次数',
               yAxis: 1,
-              data: comment_trend,
+              data: commentTrend,
               showInLegend: false,
               color: '#E41A1C',
               opacity: 0.5,
               tooltip: {
                 headerFormat: '', // tooltip.formatter doesn't work, using this hack to suppress default xAxis label
                 pointFormatter() {
-                  let week_str;
-                  if (total_weeks_passed > 26) {
-                    const week_date = new Date(this.x);
-                    const week_of_year = weekOfYear(week_date);
-                    const year_of_week = yearOfWeek(week_date, week_of_year);
-                    week_str = `<span>${year_of_week}年 第${week_of_year}周</span><br/>`;
+                  let weekStr;
+                  if (totalWeeksPassed > 26) {
+                    const weekDate = new Date(this.x);
+                    const weekOfYearNewValue = weekOfYear(weekDate);
+                    const yearOfWeekNewValue = yearOfWeek(weekDate, weekOfYearNewValue);
+                    weekStr = `<span>${weekOfYearNewValue}年 第${yearOfWeekNewValue}周</span><br/>`;
                   } else {
-                    week_str = `<span>第${weekDifference(new Date(this.x), first_week_date) + 1}周</span><br/>`;
+                    weekStr = `<span>第${weekDifference(new Date(this.x), firstWeekDate) + 1}周</span><br/>`;
                   }
-                  return week_str + (this.y > 0 ? `<b>${this.y}</b>` : '<b>无评论</b>');
+                  return weekStr + (this.y > 0 ? `<b>${this.y}</b>` : '<b>无评论</b>');
                 },
               },
             },
@@ -2663,8 +2753,8 @@
                   color: '#7CB5EC',
                 },
               },
-              min: min_score - 0.2 > 0 ? min_score - 0.2 : min_score,
-              max: max_score + 0.2 < 10 ? max_score + 0.2 : 10,
+              min: minScore - 0.2 > 0 ? minScore - 0.2 : minScore,
+              max: maxScore + 0.2 < 10 ? maxScore + 0.2 : 10,
               endOnTick: true,
               tickInterval: 0.1,
               opposite: false,
@@ -2675,8 +2765,8 @@
                   color: '#F28D8F',
                 },
               },
-              min: Math.min.apply(Math, comment_trend.map((i) => i[1])),
-              max: Math.max.apply(Math, comment_trend.map((i) => i[1])),
+              min: Math.min.apply(Math, commentTrend.map((i) => i[1])),
+              max: Math.max.apply(Math, commentTrend.map((i) => i[1])),
               endOnTick: true,
               tickInterval: 1,
               opposite: true,
@@ -2707,61 +2797,62 @@
           };
           return scoreTrendChartData;
         };
-        let score_total = 0;
-        score_data_barchart = new Array(10).fill(0);
-        score_data_gaussian = [];
-        score_elements.each(function () {
-          const score = score_parser($(this));
-          score_data_gaussian.push(score);
-          score_total += score;
-          score_data_barchart[score - 1]++;
+        let scoreTotal = 0;
+        scoreDataBarchart = new Array(10).fill(0);
+        scoreDataGaussian = [];
+        scoreElements.each(function () {
+          const score = scoreParser($(this));
+          scoreDataGaussian.push(score);
+          scoreTotal += score;
+          scoreDataBarchart[score - 1] += 1;
         });
-        const score_average = (score_total / score_elements.length).toFixed(2);
-        let score_stddev = 0;
-        score_data_gaussian.forEach((score) => {
-          const dev = score - score_average;
-          score_stddev += dev * dev;
+        const scoreAverage = (scoreTotal / scoreElements.length).toFixed(2);
+        let scoreStddev = 0;
+        scoreDataGaussian.forEach((score) => {
+          const dev = score - scoreAverage;
+          scoreStddev += dev * dev;
         });
-        score_stddev = Math.sqrt(score_stddev) / Math.sqrt(score_elements.length);
+        scoreStddev = Math.sqrt(scoreStddev) / Math.sqrt(scoreElements.length);
         // adding score average to stats
-        $('div.min-inner.mt40 div.box.pd10').append(`<em>&nbsp<span class="alert-success pd5" align="right">均分 ${score_average}</span></em><p/>`);
+        $('div.min-inner.mt40 div.box.pd10').append(`<em>&nbsp<span class="alert-success pd5" align="right">均分 ${scoreAverage}</span></em><p/>`);
         $('div.min-inner.mt40 div.box.pd10').append('<div id="scoreChartContainer" style="float: left; width: 100%;"></div>');
-        const psnine_stats = $('#scoreChartContainer');
-        score_axis = [];
-        score_axis_no_gaussian = [];
-        let score_count_min = Number.MAX_SAFE_INTEGER; let
-          score_count_max = Number.MIN_SAFE_INTEGER;
-        score_data_barchart_no_gaussian = score_data_barchart.slice(0);
+        const psnineStats = $('#scoreChartContainer');
+        scoreAxis = [];
+        scoreAxisNoGaussian = [];
+        let scoreCountMin = Number.MAX_SAFE_INTEGER; let
+          scoreCountMax = Number.MIN_SAFE_INTEGER;
+        scoreDataBarchartNoGaussian = scoreDataBarchart.slice(0);
         // 评分人数最高区间（分数）
-        const max_score_count_index = score_data_barchart.indexOf(Math.max(...score_data_barchart));
+        const maxScoreCountIndex = scoreDataBarchart.indexOf(Math.max(...scoreDataBarchart));
         // 柱状图颜色
-        const score_colors = new Array(10).fill('#3890ff'); // do not assign transparency! otherwise scoreOnclick() will break
-        score_colors[max_score_count_index] = '#da314b';
-        for (let score = 10; score >= 1; score--) {
+        const scoreColors = new Array(10).fill('#3890ff'); // do not assign transparency! otherwise scoreOnclick() will break
+        scoreColors[maxScoreCountIndex] = '#da314b';
+        for (let score = 10; score >= 1; score -= 1) {
           const index = score - 1;
-          const score_count = score_data_barchart[index];
-          if (score_count === 0) {
-            score_data_barchart_no_gaussian.splice(index, 1);
+          const scoreCount = scoreDataBarchart[index];
+          if (scoreCount === 0) {
+            scoreDataBarchartNoGaussian.splice(index, 1);
           } else {
-            if (score_count < score_count_min) {
-              score_count_min = score_count;
+            if (scoreCount < scoreCountMin) {
+              scoreCountMin = scoreCount;
             }
-            if (score_count > score_count_max) {
-              score_count_max = score_count;
+            if (scoreCount > scoreCountMax) {
+              scoreCountMax = scoreCount;
             }
-            score_data_barchart_no_gaussian[index] = { y: score_count, color: score_colors[index] };
-            score_axis_no_gaussian.unshift(score);
+            scoreDataBarchartNoGaussian[index] = { y: scoreCount, color: scoreColors[index] };
+            scoreAxisNoGaussian.unshift(score);
           }
-          score_data_barchart[index] = { y: score_count, color: score_colors[index] };
-          score_axis.unshift(score);
+          scoreDataBarchart[index] = { y: scoreCount, color: scoreColors[index] };
+          scoreAxis.unshift(score);
         }
-        psnine_stats.append('<div id="scoreBarChart" align="left" style="height: 200px;width: 50%;display: inline-block"/>');
-        psnine_stats.append('<div id="scoreTrendChart" align="right" style="height: 200px;width: 50%;display: inline-block"/>');
-        const charts = Highcharts.chart('scoreBarChart', createScoreBarChart(score_elements.length, score_count_min, score_count_max));
+        psnineStats.append('<div id="scoreBarChart" align="left" style="height: 200px;width: 50%;display: inline-block"/>');
+        psnineStats.append('<div id="scoreTrendChart" align="right" style="height: 200px;width: 50%;display: inline-block"/>');
+        const charts = Highcharts.chart('scoreBarChart', createScoreBarChart(scoreElements.length, scoreCountMin, scoreCountMax));
         scoreBarChartAddLabelOnclick(charts);
         Highcharts.chart('scoreTrendChart', createScoreTrendChart());
       }
     }
+    showCriticAverage();
 
     // 右上角头像下拉框中增加插件设定按钮
     if (window.localStorage) {
@@ -2794,7 +2885,7 @@
       // 点击打开设置面板
       $('#psnine-enhanced-version-opensetting').on('click', () => {
         $('.setting-panel-box').addClass('show');
-        ['#highlightSpecificID', '#blockList'].map((item) => {
+        ['#highlightSpecificID', '#blockList'].forEach((item) => {
           tippy(item, {
             content: 'ID以英文逗号隔开，不区分大小写',
             zIndex: 10000,
@@ -2804,7 +2895,7 @@
           content: '屏蔽词以逗号隔开，支持正则表达式',
           zIndex: 10000,
         });
-        switchSettings.map((name, i) => {
+        switchSettings.forEach((name) => {
           const newSetting = newSettings[name];
           const option = $(`#${name}`);
           const optionValue = () => JSON.parse(option.children('option:selected').val());
