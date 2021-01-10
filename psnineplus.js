@@ -506,7 +506,7 @@
          * 功能：对关注用户进行ID高亮功能函数
          */
     const addHighlightOnID = () => {
-      settings.highlightSpecificID.map((i, n) => {
+      settings.highlightSpecificID.map((i) => {
         $(`.meta>[href="${window.location.href.match('(.*)\\.com')[0]}/psnid/${i}"]`).css({
           'background-color': settings.highlightSpecificBack,
           color: settings.highlightSpecificFront,
@@ -1125,7 +1125,7 @@
          */
     const addHoverProfile = () => {
       if (settings.hoverHomepage) {
-        $("a[href*='psnid/'] > img").parent().map(function (i, v) {
+        $("a[href*='psnid/'] > img").parent().map(function (i) {
           const url = $(this).attr('href');
           $(this).attr('id', `profile${i}`);
           tippy(`#profile${i}`, {
@@ -1993,7 +1993,7 @@
         $('#trophyChartContainer').append(
           `<div class='${className}'><p class='trophyCount' style='${trophyTitleStyle}'></p><div class='trophyContainer' style='padding:5px;'></div></div>`,
         );
-        object.map(function (i, v) {
+        object.map(function (i) {
           // 如果这个奖杯有Tips，就设置左边框为绿色，否则就为底色（边框颜色和底色一致）
           if (
             $(this).parent().parent().next()
@@ -2364,7 +2364,6 @@
           chart.redraw();
         };
         let gaussianOn = true;
-        const gradientStops = null;
         let scoreDataBarchart; let scoreDataBarchartNoGaussian; let
           scoreDataGaussian;
         let scoreAxis; let
@@ -2815,7 +2814,7 @@
           content: '屏蔽词以逗号隔开，支持正则表达式',
           zIndex: 10000,
         });
-        switchSettings.map((name, i) => {
+        switchSettings.map((name) => {
           const newSetting = newSettings[name];
           const option = $(`#${name}`);
           const optionValue = () => JSON.parse(option.children('option:selected').val());
