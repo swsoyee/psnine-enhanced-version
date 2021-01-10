@@ -19,7 +19,6 @@ module.exports = {
     'prefer-spread': 'off',
     'no-continue': 'off',
     'no-useless-escape': 'off',
-    'no-empty': 'off',
     'no-use-before-define': 'off',
     'array-callback-return': 'off',
     'no-shadow': 'off',

@@ -1517,20 +1517,18 @@
       };
       // 着色
       $('.dd_box').each((i, el) => {
-        try {
-          const offPercent = Number(
-            $(el).find('.dd_pic > div[class^="dd_tag"] ').text()
-              .match('省(.+)%')[1],
-          );
-          for (const key in priceTitleColorDict) {
-            if (offPercent < key) {
-              $('.dd_title.mb10>a').eq(i).css({
-                color: priceTitleColorDict[key],
-              });
-              break;
-            }
+        const offPercent = Number(
+          $(el).find('.dd_pic > div[class^="dd_tag"] ').text()
+            .match('省(.+)%')[1],
+        );
+        for (const key in priceTitleColorDict) {
+          if (offPercent < key) {
+            $('.dd_title.mb10>a').eq(i).css({
+              color: priceTitleColorDict[key],
+            });
+            break;
           }
-        } catch (e) { }
+        }
       });
     };
 
