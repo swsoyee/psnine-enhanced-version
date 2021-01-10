@@ -20,7 +20,6 @@ module.exports = {
     'no-continue': 'off',
     'no-use-before-define': 'off',
     'array-callback-return': 'off',
-    'no-shadow': 'off',
     'consistent-return': 'off',
     'no-plusplus': 'off',
     'prefer-destructuring': 'off',

@@ -535,10 +535,10 @@
     */
     const truncateHtml = (elem, length) => {
       // 递归获取 DOM 里的纯文本
-      const truncateElem = (elem, reqCount) => {
+      const truncateElem = (e, reqCount) => {
         let grabText = '';
         let missCount = reqCount;
-        $(elem).contents().each(function () {
+        $(e).contents().each(function () {
           switch (this.nodeType) {
             case Node.TEXT_NODE: {
               // Get node text, limited to missCount.
@@ -564,7 +564,7 @@
         });
         return {
           // Wrap text using current elem tag.
-          text: `${elem.outerHTML.match(/^<[^>]+>/m)[0] + grabText}</${elem.localName}>`,
+          text: `${e.outerHTML.match(/^<[^>]+>/m)[0] + grabText}</${e.localName}>`,
           count: reqCount - missCount,
         };
       };
@@ -726,8 +726,8 @@
         const reversedBlock = $($(block).find('li').get().reverse());
         $(block).find('.sonlist').remove();
         $(block).append('<ul class="sonlist">');
-        reversedBlock.each((index, li) => {
-          if (index === 0) {
+        reversedBlock.each((i, li) => {
+          if (i === 0) {
             $(li).attr({ style: 'border-top:none;' });
           } else {
             $(li).attr({ style: '' });
