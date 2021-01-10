@@ -12,7 +12,6 @@ module.exports = {
   },
   rules: {
     'func-names': ['error', 'never'],
-    'max-len': 'off',
     'no-console': 'off',
     'no-unused-vars': 'off',
     'no-param-reassign': 'off',
