@@ -532,8 +532,8 @@
     const truncateHtml = (elem, length) => {
       // 递归获取 DOM 里的纯文本
       const truncateElem = (elem, reqCount) => {
-        let grabText = ''; let
-          missCount = reqCount;
+        let grabText = '';
+        let missCount = reqCount;
         $(elem).contents().each(function () {
           switch (this.nodeType) {
             case Node.TEXT_NODE: {
@@ -759,7 +759,7 @@
       * 功能：载入全部问答答案
       * @param  isOn  是否开启该功能
       */
-      const showAllAnsers = (isOn, reverseOrder, allSubReply) => {
+      const showAllAnsers = (isOn, isReverseOrder, isAllSubReply) => {
         if (!isOn) return 0;
         const answerList = $('body > div.inner.mt40 > div.main > div.box.mt20 > ul.list');
         const pageList = $('body > div.inner.mt40 > div.main > div.box.mt20 > div.page > ul');
@@ -800,8 +800,8 @@
               qaPageData[pageNumber - 2] = $('<div />').html(data);
               appendAnswers();
               if ((--qaPagesToLoad) === 0) { // 在载入全部答案之后运行
-                reverseAnwsers(reverseOrder);
-                showHiddenSubReply(allSubReply);
+                reverseAnwsers(isReverseOrder);
+                showHiddenSubReply(isAllSubReply);
                 pageList.remove();
               }
             },
@@ -855,7 +855,9 @@
         const windowHref = window.location.href;
         const userListLowerCase = [];
         settings.blockList.forEach((user) => { userListLowerCase.push(user.toLowerCase()); });
-        const FilterRegular = (psnnode, parent) => Filter(psnnode, parent, userListLowerCase, (el) => el.html().toLowerCase(), (user, psnid) => user === psnid);
+        const FilterRegular = (psnnode, parent) => {
+          Filter(psnnode, parent, userListLowerCase, (el) => el.html().toLowerCase(), (user, psnid) => user === psnid);
+        };
         if (windowHref.match(/\/gen(e\/|e)$/)) {
           FilterRegular('.touchclick .psnnode', '.touchclick'); // 机因一览
         } else if (windowHref.indexOf('gene') > -1) {
@@ -1409,11 +1411,21 @@
         };
         repeatUntilSuccessful(() => {
           // Wait until HTTP GET SUCCESSFULL or TIMEOUT
-          if ((httpReq.status !== 200) && (httpReq.readyState !== XMLHttpRequest.DONE) && (Date.now() - startTime) < 3000) return false;
+          if ((httpReq.status !== 200)
+            && (httpReq.readyState !== XMLHttpRequest.DONE)
+            && (Date.now() - startTime) < 3000) {
+            return false;
+          }
           let rawExchangeRate = null;
-          if ((httpReq.status === 200) && (httpReq.readyState === XMLHttpRequest.DONE)) rawExchangeRate = JSON.parse(httpReq.response);
-          if (rawExchangeRate)// HTTP GET SUCCESSFULL
-          { ['HKD', 'USD', 'GBP', 'JPY'].forEach((currency) => exchangeRate[currency] = rawExchangeRate.rates.CNY / rawExchangeRate.rates[currency]); }
+          if ((httpReq.status === 200)
+            && (httpReq.readyState === XMLHttpRequest.DONE)) {
+            rawExchangeRate = JSON.parse(httpReq.response);
+          }
+          if (rawExchangeRate) { // HTTP GET SUCCESSFULL
+            ['HKD', 'USD', 'GBP', 'JPY'].forEach((currency) => {
+              exchangeRate[currency] = rawExchangeRate.rates.CNY / rawExchangeRate.rates[currency];
+            });
+          }
           callbackSuccess(exchangeRate);
           return true;
         }, 50);
@@ -1862,9 +1874,13 @@
       const earliestValidTimeIndex = getTimeArray.findIndex((t) => t[0] !== 0);
       if (earliestValidTimeIndex >= 0) {
         getTimeArray.forEach((t) => {
-          if (t[0] === 0) t[0] = getTimeArray[earliestValidTimeIndex][0];
+          if (t[0] === 0) {
+            t[0] = getTimeArray[earliestValidTimeIndex][0];
+          }
         });
-      } else getTimeArray.forEach((t) => t[0] = Number.NaN);
+      } else {
+        getTimeArray.forEach((t) => t[0] = Number.NaN);
+      }
       const data = getTimeArray.map((x, y) => [x[0], y + 1]);
       // 调整最终数据点
       // data[data.length - 1][1] -= 1;
@@ -2509,11 +2525,15 @@
           return scoreBarChart;
         };
         const weekOfYear = (date) => { // https://stackoverflow.com/a/6117889
-          const startOfDay = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+          const startOfDay = new Date(
+            Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
+          );
           const dayOfWeek = startOfDay.getUTCDay() || 7;
           startOfDay.setUTCDate(startOfDay.getUTCDate() + 4 - dayOfWeek);
           const startOfYear = new Date(Date.UTC(startOfDay.getUTCFullYear(), 0, 1));
-          return Math.ceil((((startOfDay - startOfYear) / 86400000/* milliseconds of a day */) + 1) / 7);
+          return Math.ceil(
+            (((startOfDay - startOfYear) / 86400000/* milliseconds of a day */) + 1) / 7,
+          );
         };
         const weeksOfYearCache = {};
         const weeksOfYear = (year) => {
@@ -2568,7 +2588,7 @@
                   text;
                 do {
                   text = textArray[textArray.length + index].replace(/(^\s)|(\s$)|(修改)/g, '');
-                  index--;
+                  index -= 1;
                 } while (text === '');
                 return p9TimeTextParser(text);
               }
@@ -2578,9 +2598,11 @@
               const timestamp = scoreElementTime($(this));
               if (timestamp !== null) {
                 const scoreDate = new Date(timestamp);
-                const weekOfYear = weekOfYear(scoreDate);
-                const yearOfWeek = yearOfWeek(scoreDate, weekOfYear);
-                scoreTrend.push([timestamp, scoreParser($(this)), yearOfWeek, weekOfYear]);
+                const weekOfYearValue = weekOfYear(scoreDate);
+                const yearOfWeekValue = yearOfWeek(scoreDate, weekOfYearValue);
+                scoreTrend.push([
+                  timestamp, scoreParser($(this)), yearOfWeekValue, weekOfYearValue,
+                ]);
               }
             });
             scoreTrend.sort((e1, e2) => (e1[0] - e2[0]));
@@ -2599,7 +2621,7 @@
             scoreTrend.forEach((score) => {
               const week = `${score[2]}/${score[3]}`;
               if (commentCountByWeek[week] === undefined) commentCountByWeek[week] = 1;
-              else commentCountByWeek[week]++;
+              else commentCountByWeek[week] += 1;
               score.splice(2, 2);
             });
             for (let year = firstWeek[0]; year <= lastWeek[0]; year++) {
@@ -2607,7 +2629,9 @@
               const last = year === lastWeek[0] ? lastWeek[1] : weeksOfYear(year);
               for (let week = first; week <= last; week++) {
                 const count = commentCountByWeek[`${year}/${week}`];
-                commentTrend.push([weekToTimestamp(year, week, 7.5), count === undefined ? 0 : count]);
+                commentTrend.push([
+                  weekToTimestamp(year, week, 7.5), count === undefined ? 0 : count,
+                ]);
               }
             }
           };
@@ -2662,9 +2686,9 @@
                   let weekStr;
                   if (totalWeeksPassed > 26) {
                     const weekDate = new Date(this.x);
-                    const weekOfYear = weekOfYear(weekDate);
-                    const yearOfWeek = yearOfWeek(weekDate, weekOfYear);
-                    weekStr = `<span>${yearOfWeek}年 第${weekOfYear}周</span><br/>`;
+                    const weekOfYearNewValue = weekOfYear(weekDate);
+                    const yearOfWeekNewValue = yearOfWeek(weekDate, weekOfYearNewValue);
+                    weekStr = `<span>${weekOfYearNewValue}年 第${yearOfWeekNewValue}周</span><br/>`;
                   } else {
                     weekStr = `<span>第${weekDifference(new Date(this.x), firstWeekDate) + 1}周</span><br/>`;
                   }
@@ -2747,7 +2771,7 @@
           const score = scoreParser($(this));
           scoreDataGaussian.push(score);
           scoreTotal += score;
-          scoreDataBarchart[score - 1]++;
+          scoreDataBarchart[score - 1] += 1;
         });
         const scoreAverage = (scoreTotal / scoreElements.length).toFixed(2);
         let scoreStddev = 0;
@@ -2827,7 +2851,7 @@
       // 点击打开设置面板
       $('#psnine-enhanced-version-opensetting').on('click', () => {
         $('.setting-panel-box').addClass('show');
-        ['#highlightSpecificID', '#blockList'].map((item) => {
+        ['#highlightSpecificID', '#blockList'].forEach((item) => {
           tippy(item, {
             content: 'ID以英文逗号隔开，不区分大小写',
             zIndex: 10000,
@@ -2837,7 +2861,7 @@
           content: '屏蔽词以逗号隔开，支持正则表达式',
           zIndex: 10000,
         });
-        switchSettings.map((name) => {
+        switchSettings.forEach((name) => {
           const newSetting = newSettings[name];
           const option = $(`#${name}`);
           const optionValue = () => JSON.parse(option.children('option:selected').val());
