@@ -874,7 +874,7 @@
           FilterRegular('div.ml64>.meta>.psnnode', 'div.post'); // 主页帖回复、交易帖回复、约战帖回复
         } else if (windowHref.match(/\/my\/notice/)) {
           FilterRegular('.psnnode', 'li'); // 消息通知
-        } else if (windowHref.indexOf('trophy') > -1 || windowHref.match(/\/psnid\/[^\/]+\/comment/) !== null) {
+        } else if (windowHref.indexOf('trophy') > -1 || windowHref.match(/\/psnid\/[^/]+\/comment/) !== null) {
           FilterRegular('div.ml64>.meta.pb10>.psnnode', 'li'); // 奖杯TIPS、个人主页留言
           FilterRegular('ul.sonlist .content>.psnnode', 'ul.sonlist>li'); // 奖杯TIPS二级回复、个人主页留言二级回复
         } else if (windowHref.match(/\/psngame\/[1-9][0-9]+\/comment/) !== null) {
@@ -913,7 +913,7 @@
                 || windowHref.indexOf('qa') > -1 // 问答回复
                 || windowHref.indexOf('trade') > -1 // 交易回复
                 || windowHref.match(/\/battle\/[1-9][0-9]+/) !== null // 约战回复
-                || windowHref.match(/\/psnid\/[^\/]+\/comment/) !== null // 个人主页留言
+                || windowHref.match(/\/psnid\/[^/]+\/comment/) !== null // 个人主页留言
       ) {
         FilterWordRegular('div.ml64>div.content.pb10');
       }
@@ -923,7 +923,7 @@
 
     const fixLinksOnThePage = () => {
       // 检测纯文本中的链接
-      const untaggedUrlRegex = /(?<!((href|src)=\"|<a( [^<]+?)?>))(https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([A-Za-z0-9\-._~:/?#[\]@!$&'()*+,;=%]*))(?!(\"|<\/a>))/g;// https://stackoverflow.com/a/3809435 & https://stackoverflow.com/a/1547940
+      const untaggedUrlRegex = /(?<!((href|src)="|<a( [^<]+?)?>))(https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([A-Za-z0-9\-._~:/?#[\]@!$&'()*+,;=%]*))(?!("|<\/a>))/g;// https://stackoverflow.com/a/3809435 & https://stackoverflow.com/a/1547940
       const fixTextLinksOnThePage = (isOn) => {
         if (isOn && /(\/(topic|gene|qa|battle|trade)\/\d+)|(\/psnid\/.+?\/comment)|(\/my\/notice)|(\/psngame\/\d+\/comment)|(\/trophy\/\d+)/.test(window.location.href)) $('div.content').each((i, e) => { e.innerHTML = e.innerHTML.replace(untaggedUrlRegex, '<a href="$4" target="_blank">$4</a>'); });
       };

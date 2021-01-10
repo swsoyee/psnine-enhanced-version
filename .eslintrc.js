@@ -18,7 +18,6 @@ module.exports = {
     'no-param-reassign': 'off',
     'prefer-spread': 'off',
     'no-continue': 'off',
-    'no-useless-escape': 'off',
     'no-use-before-define': 'off',
     'array-callback-return': 'off',
     'no-shadow': 'off',
