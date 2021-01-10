@@ -101,6 +101,9 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', onDOMContentReady);
   else onDOMContentReady();
 
+  // 获取自己的PSN ID
+  const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
+
   // 全局优化
   function onDocumentStart() { // run before anything is downloaded
     // 站内使用HTTPS链接
@@ -471,8 +474,6 @@
       return resultSet;
     };
 
-    // 在攻略页面增加自己奖杯的获得状况
-    const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
     if (/topic\//.test(window.location.href) && psnidCookie) {
       const games = {};
       $('.imgbgnb').parent().map((index, el) => {
@@ -1699,7 +1700,7 @@
       const rareArray = [0, 0, 0, 0, 0]; // 个数统计
       const rareStandard = [0, 5, 10, 20, 50]; // 区间定义
       for (const rareIndex of [1, 2, 3, 4]) {
-        $(`.twoge.t${rareIndex}.h-p`).map((i, ev) => {
+        $(`.twoge.t${rareIndex}.h-p`).each((i, ev) => {
           // 获取稀有度
           const rarity = Number($(ev).eq(0).text().split('%')[0]
             .replace('%', ''));
@@ -1930,7 +1931,7 @@
       };
       // Credits设置
       const trophyGetTimeCreditsText = [];
-      $('div.main>.box.pd10>em:eq(0)>span').map((i, el) => {
+      $('div.main>.box.pd10>em:eq(0)>span').each((i, el) => {
         trophyGetTimeCreditsText.push($(el).text());
       });
       const trophyGetTimeCredits = {
@@ -1958,13 +1959,16 @@
     const sortTrophiesByTimestamp = () => {
       const trophyTableEntries = $('table.list').eq(0).children().find('tr');
       const trophies = trophyTableEntries.filter((i, e) => e.id !== '');
-      if (trophies.eq(0).hasClass('t1'))// Platinum
-      { trophyTableEntries.filter((i, e) => e.id === '').eq(0).after(trophyGetTimeData.trophyElements); } else trophies.eq(0).after(trophyGetTimeData.trophyElements);
+      if (trophies.eq(0).hasClass('t1')) { // Platinum
+        trophyTableEntries.filter((i, e) => e.id === '').eq(0).after(trophyGetTimeData.trophyElements);
+      } else {
+        trophies.eq(0).after(trophyGetTimeData.trophyElements);
+      }
     };
 
     /*
-         * 功能：奖杯筛选功能
-         */
+    * 功能：奖杯筛选功能
+    */
     const addTrophyFilter = () => {
       $('.dropmenu').append('<li style="color:#B8C4CE;"></em>只显示未获得</em><label class="switch" style="line-height:1.3;"><input id="filterEarned" type="checkbox"><span class="slider round"></span></label></li>');
       const toggle = $('#filterEarned');
@@ -1984,8 +1988,8 @@
     };
 
     /*
-         * 功能：汇总以获得和未获得奖杯
-         */
+    * 功能：汇总以获得和未获得奖杯
+    */
     const addEarnedTrophiesSummary = () => {
       const trophyTitleStyle = `border-radius: 2px; padding:5px; background-color:${$('li.current').css('background-color')};`;
       // tippy弹出框的样式
@@ -1998,7 +2002,7 @@
         $('#trophyChartContainer').append(
           `<div class='${className}'><p class='trophyCount' style='${trophyTitleStyle}'></p><div class='trophyContainer' style='padding:5px;'></div></div>`,
         );
-        object.map(function (i) {
+        object.each(function (i) {
           // 如果这个奖杯有Tips，就设置左边框为绿色，否则就为底色（边框颜色和底色一致）
           if (
             $(this).parent().parent().next()
@@ -2075,12 +2079,12 @@
     }
 
     /*
-         * 功能：降低没有白金的游戏的图标亮度
-         * @param  alpha  无白金游戏图标透明度
-         */
+    * 功能：降低没有白金的游戏的图标亮度
+    * @param  alpha  无白金游戏图标透明度
+    */
     const filterNonePlatinum = (alpha) => {
       if (alpha < 1) {
-        $('tr').map((i, el) => {
+        $('tr').each((i, el) => {
           // 读取白金数量
           const platinumNum = $(el)
             .find('.pd1015.title.lh180 > em > .text-platinum').eq(0)
@@ -2095,13 +2099,11 @@
     };
 
     /*
-         * 功能：悬浮图标显示自己的游戏的完成度
-         */
+    * 功能：悬浮图标显示自己的游戏的完成度
+    */
     const getMyCompletion = () => {
-      $('.imgbgnb').map((i, el) => {
+      $('.imgbgnb').each((i, el) => {
         $(el).attr('id', `game${i}`);
-        // 从cookie中取出psnid
-        const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
         if (psnidCookie) {
           const psnid = psnidCookie[1];
           let myGameUrl = $(el).parent().attr('href');
@@ -2127,7 +2129,7 @@
 
     // 游戏页面优化
     if (
-      /psngame/.test(window.location.href) & !/psnid/.test(window.location.href)
+      /psngame/.test(window.location.href) && !/psnid/.test(window.location.href)
     ) {
       // 降低没有白金的游戏的图标亮度
       filterNonePlatinum(settings.filterNonePlatinumAlpha);
@@ -2157,8 +2159,6 @@
       // 检查游戏页
       window.onpageshow = (e) => {
         const backTrigger = e || window.event;
-        // 从cookie中取出psnid
-        const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
         if (!backTrigger.persisted && psnidCookie) {
           if (window.location.href.match(/psngame\/\d+#\d+/)) window.location.href = window.location.href.replace(/#(\d+)($|\/$)/, `?psnid=${psnidCookie[1]}#$1`);
           else window.location.href = window.location.href.replace(/($|\/$)/, `?psnid=${psnidCookie[1]}`);
@@ -2249,11 +2249,11 @@
               .concat(timestampText.replace(replacePattern, '').split(/:/))
           );
         }
-        const _array = (new Date((new Date()).getTime() + offset))
+        const timeArrayConverted = (new Date((new Date()).getTime() + offset))
           .toLocaleString('en-CA', { timeZone: 'Asia/Shanghai', hour12: false })
           .split(/-|, |:/);
-        _array.pop();
-        return _array;
+        timeArrayConverted.pop();
+        return timeArrayConverted;
       };
       const dateStringToArray = (dateString) => dateString.split(/-|\s|:/);
       if (timestampText.match(/[0-9]{4}-[0-9]{2}-[0-9]{2}\s[0-9]{2}:[0-9]{2}/)) {
@@ -2364,6 +2364,8 @@
             case 9:// has alpha, score is being hidden
               seriesEntry.color = seriesEntry.color.substring(0, 7);
               showSpecificScore(score);
+              break;
+            default:
               break;
           }
           chart.redraw();
