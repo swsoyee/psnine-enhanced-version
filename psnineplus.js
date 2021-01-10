@@ -139,10 +139,12 @@
           else darkThemeQuery.addListener((e) => setNightMode(e.matches)); // deprecated
           break;
         }
-      case 'TIME':
+      // eslint-disable-next-line no-fallthrough
+      case 'TIME': {
         const hour = (new Date()).getHours();
         setNightMode(hour > 18 || hour < 7);// TODO: time selector in settings panel
         break;
+      }
       default:
         toggleNightMode();
     }
@@ -200,6 +202,7 @@
     // eslint-disable-next-line camelcase
     function GM_addStyle(css) {
       const style = document.getElementById('GM_addStyleBy8626') || (function () {
+        // eslint-disable-next-line no-shadow
         const style = document.createElement('style');
         style.type = 'text/css';
         style.id = 'GM_addStyleBy8626';
@@ -241,8 +244,8 @@
                 background: url('data:image/svg+xml;utf8,<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="coins" class="svg-inline--fa fa-coins fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="%23bf6a3a" d="M0 405.3V448c0 35.3 86 64 192 64s192-28.7 192-64v-42.7C342.7 434.4 267.2 448 192 448S41.3 434.4 0 405.3zM320 128c106 0 192-28.7 192-64S426 0 320 0 128 28.7 128 64s86 64 192 64zM0 300.4V352c0 35.3 86 64 192 64s192-28.7 192-64v-51.6c-41.3 34-116.9 51.6-192 51.6S41.3 334.4 0 300.4zm416 11c57.3-11.1 96-31.7 96-55.4v-42.7c-23.2 16.4-57.3 27.6-96 34.5v63.6zM192 160C86 160 0 195.8 0 240s86 80 192 80 192-35.8 192-80-86-80-192-80zm219.3 56.3c60-10.8 100.7-32 100.7-56.3v-42.7c-35.5 25.1-96.5 38.6-160.7 41.8 29.5 14.3 51.2 33.5 60 57.2z"></path></svg>') no-repeat center;
             }`);
     /*
-         * 页面右下角追加点击跳转到页面底部按钮
-         */
+    * 页面右下角追加点击跳转到页面底部按钮
+    */
     const toPageBottom = () => {
       $('.bottombar').append("<a id='scrollbottom' class='yuan mt10'>B</a>");
       $('#scrollbottom').click(() => {
@@ -257,12 +260,15 @@
 
     // 功能0-2：夜间模式
     const nightModeStyle = document.getElementById('nightModeStyle');
-    if (nightModeStyle) document.head.appendChild(nightModeStyle);// ensures that night mode css is after native psnine css
+    // ensures that night mode css is after native psnine css
+    if (nightModeStyle) {
+      document.head.appendChild(nightModeStyle);
+    }
 
     /*
-         * 功能：黑条文字鼠标悬浮显示
-         * param:  isOn  是否开启功能
-         */
+    * 功能：黑条文字鼠标悬浮显示
+    * param:  isOn  是否开启功能
+    */
     const showMarkMessage = (isOn) => {
       if (isOn) {
         window.addEventListener('load', () => {
@@ -281,9 +287,9 @@
     showMarkMessage(settings.hoverUnmark);
 
     /*
-         * 自动签到功能
-         * @param  isOn  是否开启功能
-         */
+    * 自动签到功能
+    * @param  isOn  是否开启功能
+    */
     const automaticSignIn = (isOn) => {
       // 如果签到按钮存在页面上
       if (isOn && $('[class$=yuan]').length > 0) {
@@ -292,10 +298,11 @@
     };
     automaticSignIn(settings.autoCheckIn);
 
-    /* 获取当前页面的后一页页码和链接
-         *  @return  nextPage      后一页页码
-         *  @return  nextPageLink  后一页的链接
-         */
+    /*
+    * 获取当前页面的后一页页码和链接
+    * @return  nextPage      后一页页码
+    * @return  nextPageLink  后一页的链接
+    */
     const getNextPageInfo = () => {
       // 获取下一页页码
       const nextPage = Number($('.page > ul > .current:last').text()) + 1;
@@ -324,9 +331,9 @@
     );
 
     /*
-         * 功能：自动翻页
-         * @param  pagingSetting  自动翻页的页数
-         */
+    * 功能：自动翻页
+    * @param  pagingSetting  自动翻页的页数
+    */
     const autoPaging = (pagingSetting) => {
       if (pagingSetting > 0) {
         let isbool = true; // 触发开关，防止多次调用事件
@@ -421,11 +428,11 @@
     }
     // 帖子优化
     /*
-         * 功能：对发帖楼主增加“楼主”标志
-         * @param  userId  用户（楼主）ID
-         */
+    * 功能：对发帖楼主增加“楼主”标志
+    * @param  userId  用户（楼主）ID
+    */
     const addOPBadge = (userId) => {
-      $('.psnnode').map((i, n) => {
+      $('.psnnode').each((i, n) => {
         // 匹配楼主ID，变更CSS
         if ($(n).text() === userId) {
           $(n).after('<span class="badge badge-1">楼主</span>');
@@ -434,8 +441,8 @@
     };
 
     /*
-         * AJAX获取页面
-         */
+    * AJAX获取页面
+    */
     const fetchOtherPage = (url, successFunction) => {
       let resultSet;
       $.ajax({
@@ -496,7 +503,7 @@
 
     if (
       /(gene|trade|topic)\//.test(window.location.href)
-            & !/comment/.test(window.location.href)
+            && !/comment/.test(window.location.href)
     ) {
       // 获取楼主ID
       const authorId = $('.title2').text();
@@ -504,10 +511,10 @@
     }
 
     /*
-         * 功能：对关注用户进行ID高亮功能函数
-         */
+    * 功能：对关注用户进行ID高亮功能函数
+    */
     const addHighlightOnID = () => {
-      settings.highlightSpecificID.map((i) => {
+      settings.highlightSpecificID.forEach((i) => {
         $(`.meta>[href="${window.location.href.match('(.*)\\.com')[0]}/psnid/${i}"]`).css({
           'background-color': settings.highlightSpecificBack,
           color: settings.highlightSpecificFront,
@@ -517,11 +524,11 @@
     addHighlightOnID();
 
     /*
-         * 功能：根据纯文本的长度截断DOM
-         * @param elem 需要截断的DOM
-         * @param length 需要保留的纯文本长度
-         * @return 截断后的 html 文本
-         */
+    * 功能：根据纯文本的长度截断DOM
+    * @param elem 需要截断的DOM
+    * @param length 需要保留的纯文本长度
+    * @return 截断后的 html 文本
+    */
     const truncateHtml = (elem, length) => {
       // 递归获取 DOM 里的纯文本
       const truncateElem = (elem, reqCount) => {
@@ -529,17 +536,22 @@
           missCount = reqCount;
         $(elem).contents().each(function () {
           switch (this.nodeType) {
-            case Node.TEXT_NODE:
+            case Node.TEXT_NODE: {
               // Get node text, limited to missCount.
               grabText += this.data.substr(0, missCount);
               missCount -= Math.min(this.data.length, missCount);
               break;
-            case Node.ELEMENT_NODE:
+            }
+            case Node.ELEMENT_NODE: {
               // Explore current child:
-              var childPart = truncateElem(this, missCount);
+              const childPart = truncateElem(this, missCount);
               grabText += childPart.text;
               missCount -= childPart.count;
               break;
+            }
+            default: {
+              break;
+            }
           }
           if (missCount === 0) {
             // We got text enough, stop looping.
@@ -547,20 +559,17 @@
           }
         });
         return {
-          text:
-                        // Wrap text using current elem tag.
-                        `${elem.outerHTML.match(/^<[^>]+>/m)[0]
-                        + grabText
-                        }</${elem.localName}>`,
+          // Wrap text using current elem tag.
+          text: `${elem.outerHTML.match(/^<[^>]+>/m)[0] + grabText}</${elem.localName}>`,
           count: reqCount - missCount,
         };
       };
       return truncateElem(elem, length).text;
     };
     /*
-         * 功能：回复内容回溯，仅支持机因、主题
-         * @param  isOn  是否开启功能
-         */
+    * 功能：回复内容回溯，仅支持机因、主题
+    * @param  isOn  是否开启功能
+    */
     const showReplyContent = (isOn) => {
       if (isOn) {
         GM_addStyle(
@@ -628,24 +637,25 @@
                     replyContentTruncatedText += '......';
                   }
                   const avatorImg = avator.eq(outputID).find('img:eq(0)').attr('src');
-                  allSource.eq(floor).before(`
-                                        <div class=replyTraceback>
-                                            <span class="badge">
-                                                <img src="${avatorImg}" height="15" width="15" style="margin-right: 5px; border-radius: 8px;vertical-align:sub;"/>
-                                                    ${linkContent[1]}
-                                            </span>
-                                            <span class="responserContent_${floor}_${outputID}" style="padding-left: 10px;">
-                                                ${replyContentTruncatedText}
-                                            </span>
-                                        </div>`);
+                  allSource.eq(floor).before(
+                    `<div class=replyTraceback>
+                      <span class="badge">
+                          <img src="${avatorImg}" height="15" width="15" style="margin-right: 5px; border-radius: 8px;vertical-align:sub;"/>
+                              ${linkContent[1]}
+                      </span>
+                      <span class="responserContent_${floor}_${outputID}" style="padding-left: 10px;">
+                          ${replyContentTruncatedText}
+                      </span>
+                    </div>`,
+                  );
                   // 如果内容超过45个字符，则增加悬浮显示全文内容功能
-                  replyContentPlainText.length > 45
-                    ? tippy(`.responserContent_${floor}_${outputID}`, {
+                  if (replyContentPlainText.length > 45) {
+                    tippy(`.responserContent_${floor}_${outputID}`, {
                       content: replyContentText,
                       animateFill: false,
                       maxWidth: '500px',
-                    })
-                    : null;
+                    });
+                  }
                 }
               }
             }
@@ -664,13 +674,15 @@
         if (i > 0) {
           if ($(el).attr('class') === 'r') {
             $(el).children('a:last')
-              .after(`&nbsp&nbsp<span>#${++baseFloorIndex}</span>`);
+              .after(`&nbsp&nbsp<span>#${baseFloorIndex}</span>`);
+            baseFloorIndex += 1;
             subFloorIndex = -1;
           } else {
             $(el).children('a:last')
               .after(
-                `&nbsp&nbsp<span>#${baseFloorIndex}${subFloorIndex--}</span>`,
+                `&nbsp&nbsp<span>#${baseFloorIndex}${subFloorIndex}</span>`,
               );
+            subFloorIndex -= 1;
           }
         }
       });
@@ -699,18 +711,18 @@
     addHotTag();
 
     /*
-         * 功能：层内逆序显示
-         * @param  isOn  是否开启该功能
-         */
+    * 功能：层内逆序显示
+    * @param  isOn  是否开启该功能
+    */
     const reverseSubReply = (isOn) => {
       if (!isOn || !/(\/trophy\/\d+)|(\/psngame\/\d+\/comment)|(\/psnid\/.+?\/comment)/.test(window.location.href)) return;
       $('div.btn.btn-white.font12').click();
       const blocks = $('div.sonlistmark.ml64.mt10:not([style="display:none;"])');
-      blocks.map((index, block) => {
+      blocks.each((index, block) => {
         const reversedBlock = $($(block).find('li').get().reverse());
         $(block).find('.sonlist').remove();
         $(block).append('<ul class="sonlist">');
-        reversedBlock.map((index, li) => {
+        reversedBlock.each((index, li) => {
           if (index === 0) {
             $(li).attr({ style: 'border-top:none;' });
           } else {
@@ -724,9 +736,9 @@
     const enhanceQAPage = (loadAll, reverseOrder, allSubReply) => {
       if (!(loadAll || reverseOrder || allSubReply) || !/\/qa\/\d+($|(\/$))/.test(window.location.href)) return;
       /*
-             * 功能：答案按时间顺序排列
-             * @param  isOn  是否开启该功能
-             */
+      * 功能：答案按时间顺序排列
+      * @param  isOn  是否开启该功能
+      */
       const reverseAnwsers = (isOn) => {
         if (!isOn) return;
         const answerList = $('body > div.inner.mt40 > div.main > div.box.mt20 > ul.list');
@@ -736,17 +748,17 @@
       };
 
       /*
-             * 功能：展开隐藏的二级回复
-             * @param  isOn  是否开启该功能
-             */
+      * 功能：展开隐藏的二级回复
+      * @param  isOn  是否开启该功能
+      */
       const showHiddenSubReply = (isOn) => {
         if (isOn) $('body > div.inner.mt40 > div.main > div.box.mt20 > ul.list div.btn.btn-white.font12').click();
       };
 
       /*
-             * 功能：载入全部问答答案
-             * @param  isOn  是否开启该功能
-             */
+      * 功能：载入全部问答答案
+      * @param  isOn  是否开启该功能
+      */
       const showAllAnsers = (isOn, reverseOrder, allSubReply) => {
         if (!isOn) return 0;
         const answerList = $('body > div.inner.mt40 > div.main > div.box.mt20 > ul.list');
@@ -807,7 +819,11 @@
       }
     };
 
-    enhanceQAPage(settings.showAllQAAnswers, settings.listQAAnswersByOld, settings.showHiddenQASubReply);
+    enhanceQAPage(
+      settings.showAllQAAnswers,
+      settings.listQAAnswersByOld,
+      settings.showHiddenQASubReply,
+    );
     reverseSubReply(true);
     addFloorIndex();
 
