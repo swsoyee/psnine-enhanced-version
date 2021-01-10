@@ -19,6 +19,7 @@
 // @grant        GM_addStyle
 // @run-at       document-start
 // ==/UserScript==
+/* globals $, Highcharts, tippy */
 
 (function () {
   const settings = {
