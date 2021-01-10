@@ -121,10 +121,14 @@
         node.appendChild(document.createTextNode(`
                     li[style="background:#f5faec"]{background:#344836!important}li[style="background:#fdf7f7"]{background:#4f3945!important}li[style="background:#faf8f0"]{background:#4e4c39!important}li[style="background:#f4f8fa"]{background:#505050!important}span[style="color:blue;"]{color:#64a5ff!important}span[style="color:red;"],span[style="color:#a10000"]{color:#ff6464!important}span[style="color:brown;"]{color:#ff8864!important}.tit3{color:white!important}.mark{background:#bbb!important;color:#bbb}body.bg{background:#2b2b2b!important}.list li,.box .post,td,th{border-bottom:1px solid #333}.psnnode{background:#656565}.box{background:#3d3d3d!important}.title a{color:#bbb}.text-strong,strong,.storeinfo,.content{color:#bbb!important}.alert-warning,.alert-error,.alert-success,.alert-info{background:#4b4b4b!important}h1,.title2{color:#fff!important}.twoge{color:#fff!important}.inav{background:#3d3d3d!important}.inav li.current{background:#4b4b4b!important}.ml100 p{color:#fff!important}.t1{background:#657caf!important}.t2{background:#845e2f!important}.t3{background:#707070!important}.t4{background:#8b4d2d!important}blockquote{background:#bababa!important}.text-gray{color:#bbb!important}.tradelist li{color:white!important}.tbl{background:#3c3c3c!important}.genelist li:hover,.touchclick:hover{background:#333!important}.showbar{background:radial-gradient(at center top,#7b8492,#3c3c3c)}.darklist,.cloud{background-color:#3c3c3c}.side .hd3,.header,.dropdown ul{background-color:#222}.list li .sonlist li{background-color:#333}.node{background-color:#3b4861}.rep{background-color:#3b4861}.btn-gray{background-color:#666}`));
         const heads = document.getElementsByTagName('head');
-        if (heads.length > 0) heads[0].appendChild(node);
-        else // no head yet, stick it whereever
-        { document.documentElement.appendChild(node); }
-      } else $('#nightModeStyle').remove();
+        if (heads.length > 0) {
+          heads[0].appendChild(node);
+        } else { // no head yet, stick it whereever
+          document.documentElement.appendChild(node);
+        }
+      } else {
+        $('#nightModeStyle').remove();
+      }
     };
     const setNightMode = (isOn) => {
       settings.nightMode = isOn;
@@ -469,7 +473,7 @@
       $(html).find('tbody>tr[id]').find('.imgbg.earned').parent()
         .parent()
         .parent()
-        .map((index, el) => {
+        .each((index, el) => {
           const earnedTime = $(el).find('em.lh180.alert-success.pd5.r');
           const earnedTimeCopy = earnedTime.clone();
           earnedTimeCopy.find('br').replaceWith(' ');
@@ -483,7 +487,7 @@
 
     if (/topic\//.test(window.location.href) && psnidCookie) {
       const games = {};
-      $('.imgbgnb').parent().map((index, el) => {
+      $('.imgbgnb').parent().each((index, el) => {
         const href = $(el).attr('href');
         const gameId = href.slice(href.lastIndexOf('/') + 1, -3);
         // 根据具体游戏获取对应自己页面的信息
@@ -856,7 +860,9 @@
         const userListLowerCase = [];
         settings.blockList.forEach((user) => { userListLowerCase.push(user.toLowerCase()); });
         const FilterRegular = (psnnode, parent) => {
-          Filter(psnnode, parent, userListLowerCase, (el) => el.html().toLowerCase(), (user, psnid) => user === psnid);
+          Filter(psnnode, parent, userListLowerCase,
+            (el) => el.html().toLowerCase(),
+            (user, psnid) => user === psnid);
         };
         if (windowHref.match(/\/gen(e\/|e)$/)) {
           FilterRegular('.touchclick .psnnode', '.touchclick'); // 机因一览
@@ -913,7 +919,6 @@
       }
     };
     filterBlockWorld();
-    showCriticAverage();
     filterUserPost();
 
     const fixLinksOnThePage = () => {
@@ -923,12 +928,17 @@
         if (isOn && /(\/(topic|gene|qa|battle|trade)\/\d+)|(\/psnid\/.+?\/comment)|(\/my\/notice)|(\/psngame\/\d+\/comment)|(\/trophy\/\d+)/.test(window.location.href)) $('div.content').each((i, e) => { e.innerHTML = e.innerHTML.replace(untaggedUrlRegex, '<a href="$4">$4</a>'); });
       };
       // 修复D7VG链接
-      const linkReplace = (link, substr, newSubstr) => { link.href = (link.href === link.innerText) ? (link.innerText = link.innerText.replace(substr, newSubstr)) : link.href.replace(substr, newSubstr); };
+      const linkReplace = (link, substr, newSubstr) => {
+        link.href = (link.href === link.innerText)
+          ? (link.innerText = link.innerText.replace(substr, newSubstr))
+          : link.href.replace(substr, newSubstr);
+      };
       const fixD7VGLinksOnThePage = (isOn) => {
         if (isOn) {
           $("a[href*='//d7vg.com'], a[href*='//www.d7vg.com']").each((i, a) => {
-            if (!/d7vg\.com($|\/$)/.test(a.href)) // 排除可能特意指向d7vg.com的链接
-            { linkReplace(a, 'd7vg.com', 'psnine.com'); }
+            if (!/d7vg\.com($|\/$)/.test(a.href)) { // 排除可能特意指向d7vg.com的链接
+              linkReplace(a, 'd7vg.com', 'psnine.com');
+            }
           });
         }
       };
@@ -974,24 +984,25 @@
     * @return  str  转换后的html代码
     */
     const replaceAll = (str, mapObj) => {
-      for (const i in mapObj) {
+      let newStr = str;
+      Object.keys(mapObj).forEach((i) => {
         const re = new RegExp(i, 'g');
-        str = str.replace(re, mapObj[i]);
-      }
-      return str;
+        newStr = str.replace(re, mapObj[i]);
+      });
+      return newStr;
     };
     /*
     * BBCode和html标签对应表
     */
     const bbcode = {
-      '\\[quote\\](.+?)\\[\/quote\\]': '<blockquote>$1</blockquote>',
-      '\\[mark\\](.+?)\\[\/mark\\]': '<span class="mark">$1</span>',
-      '\\[img\\](.+?)\\[\/img\\]': '<img src="$1"></img>',
-      '\\[b\\](.+?)\\[\/b\\]': '<b>$1</b>',
-      '\\[s\\](.+?)\\[\/s\\]': '<s>$1</s>',
-      '\\[center\\](.+?)\\[\/center\\]': '<center>$1</center>',
-      '\\[\\](.+?)\\[\/b\\]': '<b>$1</b>',
-      '\\[color=(.+?)\\](.+?)\\[\/color\\]': '<span style="color:$1;">$2</span>',
+      '\\[quote\\](.+?)\\[/quote\\]': '<blockquote>$1</blockquote>',
+      '\\[mark\\](.+?)\\[/mark\\]': '<span class="mark">$1</span>',
+      '\\[img\\](.+?)\\[/img\\]': '<img src="$1"></img>',
+      '\\[b\\](.+?)\\[/b\\]': '<b>$1</b>',
+      '\\[s\\](.+?)\\[/s\\]': '<s>$1</s>',
+      '\\[center\\](.+?)\\[/center\\]': '<center>$1</center>',
+      '\\[\\](.+?)\\[/b\\]': '<b>$1</b>',
+      '\\[color=(.+?)\\](.+?)\\[/color\\]': '<span style="color:$1;">$2</span>',
       '\\[url\\](.+)\\[/url\\]': '<a href="$1">$1</a>',
       '\\[url=(.+)\\](.+)\\[/url\\]': '<a href="$1">$2</a>',
       // '\\[trophy=(.+)\\]\\[/trophy\\]': '<a href="$1">$2</a>',
@@ -1226,19 +1237,20 @@
     * @return  [dataArray]  修改后的[datetime, price]数据
     */
     const fixTheLastElement = (data) => {
+      const newData = data;
       const today = new Date();
       const todayArray = Date.UTC(
         today.getYear() + 1900,
         today.getMonth(),
         today.getDate(),
       );
-      if (data[data.length - 1][0] > todayArray) {
-        data.pop();
-        data[data.length - 1][0] = todayArray;
+      if (newData[newData.length - 1][0] > todayArray) {
+        newData.pop();
+        newData[newData.length - 1][0] = todayArray;
       } else {
-        data.push([todayArray, data[data.length - 1][1]]);
+        newData.push([todayArray, newData[newData.length - 1][1]]);
       }
-      return data;
+      return newData;
     };
 
     /*
@@ -1735,7 +1747,7 @@
           // 计算该稀有度的奖杯数量
           rareArray[[...rareStandard, rarity]
             .sort((a, b) => a - b)
-            .indexOf(rarity) - 1]++;
+            .indexOf(rarity) - 1] += 1;
         });
       }
       return rareArray;
@@ -2294,14 +2306,24 @@
         array = dateStringToArray(timestampText);
         array.unshift((new Date()).getFullYear());
       } else {
-        // if time were not offset by 8 hours, date calculation would be incorrect when description involves '[0-9]+天前'
-        if (timestampText.match(/[0-9]+天前\s[0-9]{2}:[0-9]{2}/)) array = relativeTimestamp(relativeDescriptionToOffset(/天前.+$/g, unitTimeHour * 24), /[0-9]+天前\s/g);
-        else if (timestampText.match(/前天\s[0-9]{2}:[0-9]{2}/)) array = relativeTimestamp(-2 * unitTimeHour * 24, /前天\s/g);
-        else if (timestampText.match(/昨天\s[0-9]{2}:[0-9]{2}/)) array = relativeTimestamp(-unitTimeHour * 24, /昨天\s/g);
-        else if (timestampText.match(/今天\s[0-9]{2}:[0-9]{2}/)) array = relativeTimestamp(0, /今天\s/g);
-        else if (timestampText.match(/[0-9]+小时前/)) array = relativeTimestamp(relativeDescriptionToOffset(/小时.+$/g, unitTimeHour));
-        else if (timestampText.match(/[0-9]+分钟前/)) array = relativeTimestamp(relativeDescriptionToOffset(/分钟.+$/g, 60 * 1000));
-        else if (timestampText.match(/刚刚/)) array = relativeTimestamp(0);
+        // if time were not offset by 8 hours,
+        // date calculation would be incorrect when description involves '[0-9]+天前'
+        // eslint-disable-next-line no-lonely-if
+        if (timestampText.match(/[0-9]+天前\s[0-9]{2}:[0-9]{2}/)) {
+          array = relativeTimestamp(relativeDescriptionToOffset(/天前.+$/g, unitTimeHour * 24), /[0-9]+天前\s/g);
+        } else if (timestampText.match(/前天\s[0-9]{2}:[0-9]{2}/)) {
+          array = relativeTimestamp(-2 * unitTimeHour * 24, /前天\s/g);
+        } else if (timestampText.match(/昨天\s[0-9]{2}:[0-9]{2}/)) {
+          array = relativeTimestamp(-unitTimeHour * 24, /昨天\s/g);
+        } else if (timestampText.match(/今天\s[0-9]{2}:[0-9]{2}/)) {
+          array = relativeTimestamp(0, /今天\s/g);
+        } else if (timestampText.match(/[0-9]+小时前/)) {
+          array = relativeTimestamp(relativeDescriptionToOffset(/小时.+$/g, unitTimeHour));
+        } else if (timestampText.match(/[0-9]+分钟前/)) {
+          array = relativeTimestamp(relativeDescriptionToOffset(/分钟.+$/g, 60 * 1000));
+        } else if (timestampText.match(/刚刚/)) {
+          array = relativeTimestamp(0);
+        }
       }
       if (array) {
         for (let i = array.length - 1; i >= 0; i -= 1) {
@@ -2310,8 +2332,9 @@
             continue;
           }
           array[i] = parseInt(array[i], 10);
-          if (i === 1) // Everything else is normal except month starts from 0
-          { array[i] -= 1; }
+          if (i === 1) { // Everything else is normal except month starts from 0
+            array[i] -= 1;
+          }
         }
         return Date.UTC(...array) - 8 * unitTimeHour;
       }
@@ -2425,7 +2448,13 @@
                 gaussianOn = !gaussianOn;
                 const chart = Highcharts.chart('scoreBarChart', createScoreBarChart(criticsCount, scoreCountMin, scoreCountMax));
                 scoreBarChartAddLabelOnclick(chart);
-                hiddenScores.forEach((s) => scoreOnclick(chart, chart.series[0].data[chart.xAxis[0].categories.indexOf(s)], s));
+                hiddenScores.forEach((s) => {
+                  scoreOnclick(
+                    chart,
+                    chart.series[0].data[chart.xAxis[0].categories.indexOf(s)],
+                    s,
+                  );
+                });
               },
             },
           };
@@ -2557,7 +2586,11 @@
         const weekToTimestamp = (year, week, day = 4) => {
           let startOfYear = new Date(Date.UTC(year, 0, 1));
           if (weekOfYear(startOfYear) > 1) startOfYear = new Date(Date.UTC(year, 0, 8));
-          return startOfYear.getTime() + (-((startOfYear.getUTCDay() || 7) - 1) + (7 * (week - 1) + (day - 1))) * 86400000/* milliseconds of a day */;
+          return (
+            startOfYear.getTime()
+            + (-((startOfYear.getUTCDay() || 7) - 1)
+            + (7 * (week - 1) + (day - 1))) * 86400000/* milliseconds of a day */
+          );
         };
         const weekDifference = (date1, date2) => {
           const weekOfYear1 = weekOfYear(date1);
@@ -2819,6 +2852,7 @@
         Highcharts.chart('scoreTrendChart', createScoreTrendChart());
       }
     }
+    showCriticAverage();
 
     // 右上角头像下拉框中增加插件设定按钮
     if (window.localStorage) {
