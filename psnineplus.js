@@ -1626,7 +1626,11 @@
       toggle.change(() => {
         $('li.dd_box').each((i, el) => {
           if ($(el).children('.dd_status.dd_status_best').length === 0) {
-            toggle[0].checked === true ? $(el).hide() : $(el).show();
+            if (toggle[0].checked === true) {
+              $(el).hide();
+            } else {
+              $(el).show();
+            }
           }
         });
       });
@@ -2639,9 +2643,10 @@
               if (updatedAverageScore > maxScore) maxScore = updatedAverageScore;
             }
             const commentCountByWeek = {};
-            const firstScore = scoreTrend[0]; const
-              lastScore = scoreTrend[scoreTrend.length - 1];
-            firstWeek = [firstScore[2], firstScore[3]], lastWeek = [lastScore[2], lastScore[3]];
+            const firstScore = scoreTrend[0];
+            const lastScore = scoreTrend[scoreTrend.length - 1];
+            firstWeek = [firstScore[2], firstScore[3]];
+            lastWeek = [lastScore[2], lastScore[3]];
             scoreTrend.forEach((score) => {
               const week = `${score[2]}/${score[3]}`;
               if (commentCountByWeek[week] === undefined) commentCountByWeek[week] = 1;

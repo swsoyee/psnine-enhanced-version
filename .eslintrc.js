@@ -22,7 +22,6 @@ module.exports = {
     'prefer-destructuring': 'off',
     'no-sequences': 'off',
     'no-return-assign': 'off',
-    'no-unused-expressions': 'off',
     'no-prototype-builtins': 'off',
   },
 };
