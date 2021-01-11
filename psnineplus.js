@@ -497,7 +497,7 @@
           const resultSet = fetchOtherPage(gamePageUrl, getEarnedTrophiesInfo);
           games[gameId] = resultSet;
         }
-        games[gameId].map((element) => {
+        games[gameId].forEach((element) => {
           if (element.trophy === $(el).attr('href')) {
             $(el).next().find('a').slice(0, 1)
               .append(`<div class="fa-check-circle"></div>&nbsp;<em class="alert-success pd5" style="border-radius: 3px;">${element.earned}</em>`);
