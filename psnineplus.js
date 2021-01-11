@@ -98,10 +98,6 @@
     console.log('浏览器不支持localStorage,使用默认配置项');
   }
 
-  onDocumentStart();
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', onDOMContentReady);
-  else onDOMContentReady();
-
   // 获取自己的PSN ID
   const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
 
@@ -203,6 +199,11 @@
         weekdays: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
       },
     });
+
+    onDocumentStart();
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', onDOMContentReady);
+    else onDOMContentReady();
+
     // 暴力猴中已经删掉了GM_addStyle函数，因此需要自己定义
     // eslint-disable-next-line camelcase
     function GM_addStyle(css) {
@@ -334,58 +335,6 @@
                 color    : white;
             }`,
     );
-
-    /*
-    * 功能：自动翻页
-    * @param  pagingSetting  自动翻页的页数
-    */
-    const autoPaging = (pagingSetting) => {
-      if (pagingSetting > 0) {
-        let isbool = true; // 触发开关，防止多次调用事件
-        let autoPagingLimitCount = 0;
-        $(window).scroll(function () {
-          // 当内容滚动到底部时加载新的内容
-          if (
-            $(this).scrollTop() + $(window).height() + 700
-                        >= $(document).height()
-                        && $(this).scrollTop() > 700
-                        && isbool === true
-                        && autoPagingLimitCount < settings.autoPaging
-          ) {
-            isbool = false;
-            // 获取下一页页码和链接
-            const { nextPage, nextPageLink } = getNextPageInfo();
-            // 加载页面并且插入
-            $('#loadingMessage').text(`加载第${nextPage}页...`).show();
-            $('.page:last').after(`<div class='loadPage${nextPage}'></div>`);
-            $.get(
-              nextPageLink,
-              {},
-              (data) => {
-                const $response = $('<div />').html(data);
-                $(`.loadPage${nextPage}`)
-                  .append($response.find('.list'))
-                  .append($response.find('.page'));
-                isbool = true;
-                autoPagingLimitCount += 1;
-                // 各个页面的功能追加
-                if (/\/qa/.test(window.location.href)) {
-                  changeQaStatus(settings.newQaStatus);
-                }
-                addHighlightOnID();
-                filterUserPost();
-                addHoverProfile();
-                addHotTag();
-              },
-              'html',
-            );
-            setTimeout(() => {
-              $('#loadingMessage').fadeOut();
-            }, 2000);
-          }
-        });
-      }
-    };
 
     // 功能0-7：个人主页下显示所有游戏
     if (settings.autoPagingInHomepage) {
@@ -1661,6 +1610,57 @@
       });
     };
 
+    /*
+    * 功能：自动翻页
+    * @param  pagingSetting  自动翻页的页数
+    */
+    const autoPaging = (pagingSetting) => {
+      if (pagingSetting > 0) {
+        let isbool = true; // 触发开关，防止多次调用事件
+        let autoPagingLimitCount = 0;
+        $(window).scroll(function () {
+        // 当内容滚动到底部时加载新的内容
+          if (
+            $(this).scrollTop() + $(window).height() + 700
+                      >= $(document).height()
+                      && $(this).scrollTop() > 700
+                      && isbool === true
+                      && autoPagingLimitCount < settings.autoPaging
+          ) {
+            isbool = false;
+            // 获取下一页页码和链接
+            const { nextPage, nextPageLink } = getNextPageInfo();
+            // 加载页面并且插入
+            $('#loadingMessage').text(`加载第${nextPage}页...`).show();
+            $('.page:last').after(`<div class='loadPage${nextPage}'></div>`);
+            $.get(
+              nextPageLink,
+              {},
+              (data) => {
+                const $response = $('<div />').html(data);
+                $(`.loadPage${nextPage}`)
+                  .append($response.find('.list'))
+                  .append($response.find('.page'));
+                isbool = true;
+                autoPagingLimitCount += 1;
+                // 各个页面的功能追加
+                if (/\/qa/.test(window.location.href)) {
+                  changeQaStatus(settings.newQaStatus);
+                }
+                addHighlightOnID();
+                filterUserPost();
+                addHoverProfile();
+                addHotTag();
+              },
+              'html',
+            );
+            setTimeout(() => {
+              $('#loadingMessage').fadeOut();
+            }, 2000);
+          }
+        });
+      }
+    };
     // 综合页面：一览
     if (/((gene|qa|topic|trade)($|\?))/.test(window.location.href)) {
       autoPaging(settings.autoPaging);
