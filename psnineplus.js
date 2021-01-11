@@ -151,6 +151,8 @@
     }
   }
 
+  onDocumentStart();
+
   function onDOMContentReady() { // run when DOM is loaded
     Highcharts.setOptions({
       lang: {
@@ -200,7 +202,6 @@
       },
     });
 
-    onDocumentStart();
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', onDOMContentReady);
     else onDOMContentReady();
 
