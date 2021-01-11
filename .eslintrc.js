@@ -19,7 +19,6 @@ module.exports = {
     'no-continue': 'off',
     'no-use-before-define': 'off',
     'consistent-return': 'off',
-    'no-plusplus': 'off',
     'prefer-destructuring': 'off',
     'no-sequences': 'off',
     'no-return-assign': 'off',

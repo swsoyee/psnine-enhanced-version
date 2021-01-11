@@ -804,7 +804,8 @@
             (data) => {
               qaPageData[pageNumber - 2] = $('<div />').html(data);
               appendAnswers();
-              if ((--qaPagesToLoad) === 0) { // 在载入全部答案之后运行
+              qaPagesToLoad -= 1;
+              if (qaPagesToLoad === 0) { // 在载入全部答案之后运行
                 reverseAnwsers(isReverseOrder);
                 showHiddenSubReply(isAllSubReply);
                 pageList.remove();
