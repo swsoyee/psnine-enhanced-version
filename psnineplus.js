@@ -1522,14 +1522,7 @@
           $(el).find('.dd_pic > div[class^="dd_tag"] ').text()
             .match('省(.+)%')[1],
         );
-        for (const key in priceTitleColorDict) {
-          if (offPercent < key) {
-            $('.dd_title.mb10>a').eq(i).css({
-              color: priceTitleColorDict[key],
-            });
-            break;
-          }
-        }
+        $('.dd_title.mb10>a').eq(i).css({ color: priceTitleColorDict[offPercent] });
       });
     };
 
@@ -1738,17 +1731,14 @@
     const getTrophyRarity = () => {
       const rareArray = [0, 0, 0, 0, 0]; // 个数统计
       const rareStandard = [0, 5, 10, 20, 50]; // 区间定义
-      for (const rareIndex of [1, 2, 3, 4]) {
+      [1, 2, 3, 4].forEach((rareIndex) => {
         $(`.twoge.t${rareIndex}.h-p`).each((i, ev) => {
           // 获取稀有度
-          const rarity = Number($(ev).eq(0).text().split('%')[0]
-            .replace('%', ''));
+          const rarity = Number($(ev).eq(0).text().split('%')[0].replace('%', ''));
           // 计算该稀有度的奖杯数量
-          rareArray[[...rareStandard, rarity]
-            .sort((a, b) => a - b)
-            .indexOf(rarity) - 1] += 1;
+          rareArray[[...rareStandard, rarity].sort((a, b) => a - b).indexOf(rarity) - 1] += 1;
         });
-      }
+      });
       return rareArray;
     };
     /*

@@ -25,6 +25,5 @@ module.exports = {
     'no-return-assign': 'off',
     'no-unused-expressions': 'off',
     'no-prototype-builtins': 'off',
-    'no-restricted-syntax': 'off',
   },
 };
