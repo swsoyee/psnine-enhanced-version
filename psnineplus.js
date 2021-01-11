@@ -2076,9 +2076,9 @@
           '.t4': ['text-bronze', '铜'],
         };
         let trophySubText = '';
-        for (const i in summaryTrophyDict) {
+        Object.keys(summaryTrophyDict).forEach((i) => {
           trophySubText += `<span class=${summaryTrophyDict[i][0]}> ${summaryTrophyDict[i][1]}${object.parent().parent(i).length}</span>`;
-        }
+        });
         $(`.${className}> .trophyCount`).append(
           `<span style='color:#808080;'>${title}：${trophySubText}<span class='text-strong'> 总${object.length}</span></span>`,
         );
