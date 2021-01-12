@@ -2871,7 +2871,7 @@
         'fixTextLinks',
         'fixD7VGLinks',
         'fixHTTPLinks',
-      ]; // 只有true / false的设置项
+      ]; // 只有true/false或者enum的设置项
       $('.header .dropdown ul').append(`
                 <li><a href="javascript:void(0);" id="psnine-enhanced-version-opensetting">插件设置</a></li>`);
       const visiblePageHeight = $(window.top).height();
