@@ -15,9 +15,7 @@ module.exports = {
     'no-console': 'off',
     'no-unused-vars': 'off',
     'no-param-reassign': 'off',
-    'prefer-spread': 'off',
     'no-continue': 'off',
     'prefer-destructuring': 'off',
-    'no-sequences': 'off',
   },
 };
