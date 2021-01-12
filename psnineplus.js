@@ -98,12 +98,12 @@
     console.log('浏览器不支持localStorage,使用默认配置项');
   }
 
+  // 获取自己的PSN ID
+  const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
+
   onDocumentStart();
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', onDOMContentReady);
   else onDOMContentReady();
-
-  // 获取自己的PSN ID
-  const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
 
   // 全局优化
   function onDocumentStart() { // run before anything is downloaded
@@ -1886,7 +1886,7 @@
           }
         });
       } else {
-        getTimeArray.forEach((t) => t[0] = Number.NaN);
+        getTimeArray[0] = Number.NaN;
       }
       const data = getTimeArray.map((x, y) => [x[0], y + 1]);
       // 调整最终数据点
@@ -2898,11 +2898,11 @@
           if (typeof newSetting === 'object') {
             $(`#${name} option:nth-child(${newSetting.enum.findIndex((e) => e === newSetting.value) + 1})`)
               .attr('selected', 'true');
-            option.change(() => newSetting.value = optionValue());
+            option.change(() => { newSetting.value = optionValue(); });
           } else {
             $(`#${name} option:nth-child(${newSetting ? '1' : '2'})`)
               .attr('selected', 'true');
-            option.change(() => newSettings[name] = optionValue());
+            option.change(() => { newSettings[name] = optionValue(); });
           }
         });
         // 降低无白金透明度设置

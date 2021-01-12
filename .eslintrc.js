@@ -21,7 +21,6 @@ module.exports = {
     'consistent-return': 'off',
     'prefer-destructuring': 'off',
     'no-sequences': 'off',
-    'no-return-assign': 'off',
     'no-prototype-builtins': 'off',
   },
 };
