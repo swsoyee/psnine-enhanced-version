@@ -1879,7 +1879,8 @@
       if (earliestValidTimeIndex >= 0) {
         getTimeArray.forEach((t) => {
           if (t[0] === 0) {
-            t[0] = getTimeArray[earliestValidTimeIndex][0];
+            const earliestValidTime = getTimeArray[earliestValidTimeIndex][0];
+            t[0] = earliestValidTime;
           }
         });
       } else {

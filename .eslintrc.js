@@ -14,6 +14,5 @@ module.exports = {
     'func-names': ['error', 'never'],
     'no-console': 'off',
     'no-param-reassign': 'off',
-    'prefer-destructuring': 'off',
   },
 };
