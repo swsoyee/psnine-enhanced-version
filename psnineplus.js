@@ -2319,13 +2319,13 @@
       }
       if (array) {
         for (let i = array.length - 1; i >= 0; i -= 1) {
-          if (array[i] === '') {
+          if (array[i] !== '') {
+            array[i] = parseInt(array[i], 10);
+            if (i === 1) { // Everything else is normal except month starts from 0
+              array[i] -= 1;
+            }
+          } else {
             array.splice(i, 1);
-            continue;
-          }
-          array[i] = parseInt(array[i], 10);
-          if (i === 1) { // Everything else is normal except month starts from 0
-            array[i] -= 1;
           }
         }
         return Date.UTC(...array) - 8 * unitTimeHour;
