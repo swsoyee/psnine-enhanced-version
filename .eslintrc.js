@@ -19,6 +19,5 @@ module.exports = {
     'no-continue': 'off',
     'prefer-destructuring': 'off',
     'no-sequences': 'off',
-    'no-prototype-builtins': 'off',
   },
 };

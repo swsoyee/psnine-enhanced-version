@@ -439,7 +439,7 @@
         const href = $(el).attr('href');
         const gameId = href.slice(href.lastIndexOf('/') + 1, -3);
         // 根据具体游戏获取对应自己页面的信息
-        if (!games.hasOwnProperty(gameId)) {
+        if (!Object.prototype.hasOwnProperty.call(games, 'gameId')) {
           const gamePageUrl = `${document.URL.match(/^.+?\.com/)[0]}/psngame/${gameId}?psnid=${psnidCookie[1]}`;
           const resultSet = fetchOtherPage(gamePageUrl, getEarnedTrophiesInfo);
           games[gameId] = resultSet;
