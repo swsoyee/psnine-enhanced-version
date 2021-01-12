@@ -509,6 +509,7 @@
             // We got text enough, stop looping.
             return false;
           }
+          return true;
         });
         return {
           // Wrap text using current elem tag.
@@ -1393,8 +1394,6 @@
       if (typeof value === 'number') {
         if (value > 0) {
           text = `¥${value.toFixed(2)}`;
-        } else {
-          return;
         }
       }
       return `<span class=${className} style="float:right;${styleString}">${text}</span>`;

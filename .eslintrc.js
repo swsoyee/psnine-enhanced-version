@@ -17,7 +17,6 @@ module.exports = {
     'no-param-reassign': 'off',
     'prefer-spread': 'off',
     'no-continue': 'off',
-    'consistent-return': 'off',
     'prefer-destructuring': 'off',
     'no-sequences': 'off',
     'no-prototype-builtins': 'off',
