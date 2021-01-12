@@ -2570,10 +2570,17 @@
         };
         const yearOfWeek = (date, week = null) => {
           const realYear = date.getUTCFullYear();
-          if (week === null) week = weekOfYear(date);
+          let newWeek = week;
+          if (week === null) {
+            newWeek = weekOfYear(date);
+          }
           if (date.getUTCMonth() === 0) {
-            if (week > 5) return realYear - 1;
-          } else if (week === 1) return realYear + 1;
+            if (newWeek > 5) {
+              return realYear - 1;
+            }
+          } else if (newWeek === 1) {
+            return realYear + 1;
+          }
           return realYear;
         };
         const weekToTimestamp = (year, week, day = 4) => {

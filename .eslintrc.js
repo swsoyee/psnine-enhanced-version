@@ -13,6 +13,6 @@ module.exports = {
   rules: {
     'func-names': ['error', 'never'],
     'no-console': 'off',
-    'no-param-reassign': 'off',
+    'no-param-reassign': ['error', { props: false }],
   },
 };
