@@ -745,7 +745,7 @@
               lastAppendedPage = latestReadyPage;
             }
           };
-          const pageUrl = lastPageUrl.replace(lastPageNumber, pageNumber);
+          const pageUrl = lastPageUrl.replace(`?page=${lastPageNumber}`, `?page=${pageNumber}`);
           $.get(
             pageUrl,
             { retryLimit: 3 },
