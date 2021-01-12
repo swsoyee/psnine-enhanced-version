@@ -13,7 +13,6 @@ module.exports = {
   rules: {
     'func-names': ['error', 'never'],
     'no-console': 'off',
-    'no-unused-vars': 'off',
     'no-param-reassign': 'off',
     'prefer-destructuring': 'off',
   },

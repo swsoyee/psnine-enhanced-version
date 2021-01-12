@@ -2436,7 +2436,7 @@
             type: 'column',
             backgroundColor: 'rgba(0,0,0,0)',
             events: {
-              click(event) {
+              click() {
                 gaussianOn = !gaussianOn;
                 const chart = Highcharts.chart('scoreBarChart', createScoreBarChart(criticsCount, scoreCountMin, scoreCountMax));
                 scoreBarChartAddLabelOnclick(chart);
@@ -2800,12 +2800,6 @@
           scoreDataBarchart[score - 1] += 1;
         });
         const scoreAverage = (scoreTotal / scoreElements.length).toFixed(2);
-        let scoreStddev = 0;
-        scoreDataGaussian.forEach((score) => {
-          const dev = score - scoreAverage;
-          scoreStddev += dev * dev;
-        });
-        scoreStddev = Math.sqrt(scoreStddev) / Math.sqrt(scoreElements.length);
         // adding score average to stats
         $('div.min-inner.mt40 div.box.pd10').append(`<em>&nbsp<span class="alert-success pd5" align="right">均分 ${scoreAverage}</span></em><p/>`);
         $('div.min-inner.mt40 div.box.pd10').append('<div id="scoreChartContainer" style="float: left; width: 100%;"></div>');
