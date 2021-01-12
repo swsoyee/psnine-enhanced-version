@@ -336,58 +336,6 @@
             }`,
     );
 
-    /*
-    * 功能：自动翻页
-    * @param  pagingSetting  自动翻页的页数
-    */
-    const autoPaging = (pagingSetting) => {
-      if (pagingSetting > 0) {
-        let isbool = true; // 触发开关，防止多次调用事件
-        let autoPagingLimitCount = 0;
-        $(window).scroll(function () {
-          // 当内容滚动到底部时加载新的内容
-          if (
-            $(this).scrollTop() + $(window).height() + 700
-                        >= $(document).height()
-                        && $(this).scrollTop() > 700
-                        && isbool === true
-                        && autoPagingLimitCount < settings.autoPaging
-          ) {
-            isbool = false;
-            // 获取下一页页码和链接
-            const { nextPage, nextPageLink } = getNextPageInfo();
-            // 加载页面并且插入
-            $('#loadingMessage').text(`加载第${nextPage}页...`).show();
-            $('.page:last').after(`<div class='loadPage${nextPage}'></div>`);
-            $.get(
-              nextPageLink,
-              {},
-              (data) => {
-                const $response = $('<div />').html(data);
-                $(`.loadPage${nextPage}`)
-                  .append($response.find('.list'))
-                  .append($response.find('.page'));
-                isbool = true;
-                autoPagingLimitCount += 1;
-                // 各个页面的功能追加
-                if (/\/qa/.test(window.location.href)) {
-                  changeQaStatus(settings.newQaStatus);
-                }
-                addHighlightOnID();
-                filterUserPost();
-                addHoverProfile();
-                addHotTag();
-              },
-              'html',
-            );
-            setTimeout(() => {
-              $('#loadingMessage').fadeOut();
-            }, 2000);
-          }
-        });
-      }
-    };
-
     // 功能0-7：个人主页下显示所有游戏
     if (settings.autoPagingInHomepage) {
       let isbool2 = true; // 触发开关，防止多次调用事件
@@ -1184,6 +1132,58 @@
       }
     };
     addHoverProfile();
+
+    /*
+    * 功能：自动翻页
+    * @param  pagingSetting  自动翻页的页数
+    */
+    const autoPaging = (pagingSetting) => {
+      if (pagingSetting > 0) {
+        let isbool = true; // 触发开关，防止多次调用事件
+        let autoPagingLimitCount = 0;
+        $(window).scroll(function () {
+        // 当内容滚动到底部时加载新的内容
+          if (
+            $(this).scrollTop() + $(window).height() + 700
+                      >= $(document).height()
+                      && $(this).scrollTop() > 700
+                      && isbool === true
+                      && autoPagingLimitCount < settings.autoPaging
+          ) {
+            isbool = false;
+            // 获取下一页页码和链接
+            const { nextPage, nextPageLink } = getNextPageInfo();
+            // 加载页面并且插入
+            $('#loadingMessage').text(`加载第${nextPage}页...`).show();
+            $('.page:last').after(`<div class='loadPage${nextPage}'></div>`);
+            $.get(
+              nextPageLink,
+              {},
+              (data) => {
+                const $response = $('<div />').html(data);
+                $(`.loadPage${nextPage}`)
+                  .append($response.find('.list'))
+                  .append($response.find('.page'));
+                isbool = true;
+                autoPagingLimitCount += 1;
+                // 各个页面的功能追加
+                if (/\/qa/.test(window.location.href)) {
+                  changeQaStatus(settings.newQaStatus);
+                }
+                addHighlightOnID();
+                filterUserPost();
+                addHoverProfile();
+                addHotTag();
+              },
+              'html',
+            );
+            setTimeout(() => {
+              $('#loadingMessage').fadeOut();
+            }, 2000);
+          }
+        });
+      }
+    };
 
     /*
     * 日期转换函数，将（XX年XX月XX日）形式切割成UTC时间
