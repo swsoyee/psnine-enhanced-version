@@ -2722,7 +2722,7 @@
                     const weekDate = new Date(this.x);
                     const weekOfYearNewValue = weekOfYear(weekDate);
                     const yearOfWeekNewValue = yearOfWeek(weekDate, weekOfYearNewValue);
-                    weekStr = `<span>${weekOfYearNewValue}年 第${yearOfWeekNewValue}周</span><br/>`;
+                    weekStr = `<span>${yearOfWeekNewValue}年 第${weekOfYearNewValue}周</span><br/>`;
                   } else {
                     weekStr = `<span>第${weekDifference(new Date(this.x), firstWeekDate) + 1}周</span><br/>`;
                   }
