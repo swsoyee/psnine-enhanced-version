@@ -101,10 +101,6 @@
   // 获取自己的PSN ID
   const psnidCookie = document.cookie.match(/__Psnine_psnid=(\w+);/);
 
-  onDocumentStart();
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', onDOMContentReady);
-  else onDOMContentReady();
-
   // 全局优化
   function onDocumentStart() { // run before anything is downloaded
     // 站内使用HTTPS链接
@@ -154,6 +150,8 @@
         toggleNightMode();
     }
   }
+
+  onDocumentStart();
 
   function onDOMContentReady() { // run when DOM is loaded
     Highcharts.setOptions({
@@ -2975,5 +2973,11 @@
         window.location.reload();
       });
     }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', onDOMContentReady);
+  } else {
+    onDOMContentReady();
   }
 }());
