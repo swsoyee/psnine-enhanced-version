@@ -106,7 +106,7 @@
     // 站内使用HTTPS链接
     if (settings.fixHTTPLinks && /^http:\/\//.test(window.location.href)) window.location.href = window.location.href.replace('http://', 'https://');
     // 机因、问答页面按最新排序
-    if (settings.listPostsByNew && /(?<!\/set)\/(gene|qa)\/?$/.test(window.location.href)) {
+    if (settings.listPostsByNew && /\.com\/(gene|qa)\/?$/.test(window.location.href)) {
       window.location.href += '?ob=date';
     }
     // 功能0-2：夜间模式
