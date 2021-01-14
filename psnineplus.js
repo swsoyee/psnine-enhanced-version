@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.9.51
+// @version      0.9.52
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // eslint-disable-next-line max-len
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
@@ -1547,7 +1547,6 @@
       );
     };
     const colorAddedButtonReady = '#d9534f';
-    addButtonStyle('selectUnget', '#3498db'); // 未获得
     addButtonStyle('selectOriginalPrice', colorAddedButtonReady); // 原币种价格
 
     GM_addStyle(`
@@ -2003,18 +2002,6 @@
       }
     };
 
-    /*
-    * 功能：奖杯筛选功能
-    */
-    const addTrophyFilter = () => {
-      $('.dropmenu').append('<li style="color:#B8C4CE;"></em>只显示未获得</em><label class="switch" style="line-height:1.3;"><input id="filterEarned" type="checkbox"><span class="slider round"></span></label></li>');
-      const toggle = $('#filterEarned');
-      toggle[0].checked = false;
-      toggle.change(() => {
-        $('.lh180.alert-success.pd5.r').parent().parent().toggle('slow');
-      });
-    };
-
     const addTrophySortByTimestamp = () => {
       $('div.main ul.dropmenu > li.dropdown > ul').eq(0).append('<li id="sortTrophiesByTimestamp"><a>获得时间</a></li>');
       $('#sortTrophiesByTimestamp').click(() => {
@@ -2111,8 +2098,6 @@
       addTrophySortByTimestamp();
       // 汇总以获得和未获得奖杯
       addEarnedTrophiesSummary();
-      // 追加奖杯筛选功能
-      addTrophyFilter();
     }
 
     /*
