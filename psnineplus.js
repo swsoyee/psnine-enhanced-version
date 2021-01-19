@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.9.52
+// @version      0.9.53
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // eslint-disable-next-line max-len
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
@@ -401,17 +401,24 @@
         type: 'GET',
         url,
         dataType: 'html',
-        async: false,
+        async: true,
         success(data, status) {
           if (status === 'success') {
             resultSet = successFunction(data);
+            $('.imgbgnb').parent().each((index, el) => {
+              resultSet.forEach((element) => {
+                if (element.trophy === $(el).attr('href')) {
+                  $(el).next().find('a').slice(0, 1)
+                    .append(`<div class="fa-check-circle"></div>&nbsp;<em class="alert-success pd5" style="border-radius: 3px;">${element.earned}</em>`);
+                }
+              });
+            });
           }
         },
         error: () => {
           console.log('无法获取页面信息');
         },
       });
-      return resultSet;
     };
 
     const getEarnedTrophiesInfo = (data) => {
@@ -436,20 +443,15 @@
     if (/topic\//.test(window.location.href) && psnidCookie) {
       const games = {};
       $('.imgbgnb').parent().each((index, el) => {
+        if (!/(^| |")(pd10|t3)($| |")/.test($(el).parent().get()[0].className)) return;
         const href = $(el).attr('href');
         const gameId = href.slice(href.lastIndexOf('/') + 1, -3);
         // 根据具体游戏获取对应自己页面的信息
-        if (!Object.prototype.hasOwnProperty.call(games, 'gameId')) {
+        if (!Object.prototype.hasOwnProperty.call(games, gameId)) {
           const gamePageUrl = `${document.URL.match(/^.+?\.com/)[0]}/psngame/${gameId}?psnid=${psnidCookie[1]}`;
-          const resultSet = fetchOtherPage(gamePageUrl, getEarnedTrophiesInfo);
-          games[gameId] = resultSet;
+          fetchOtherPage(gamePageUrl, getEarnedTrophiesInfo);
+          games[gameId] = true;
         }
-        games[gameId].forEach((element) => {
-          if (element.trophy === $(el).attr('href')) {
-            $(el).next().find('a').slice(0, 1)
-              .append(`<div class="fa-check-circle"></div>&nbsp;<em class="alert-success pd5" style="border-radius: 3px;">${element.earned}</em>`);
-          }
-        });
       });
     }
 
