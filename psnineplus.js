@@ -401,17 +401,24 @@
         type: 'GET',
         url,
         dataType: 'html',
-        async: false,
+        async: true,
         success(data, status) {
           if (status === 'success') {
             resultSet = successFunction(data);
+            $('.imgbgnb').parent().each((index, el) => {
+              resultSet.forEach((element) => {
+                if (element.trophy === $(el).attr('href')) {
+                  $(el).next().find('a').slice(0, 1)
+                    .append(`<div class="fa-check-circle"></div>&nbsp;<em class="alert-success pd5" style="border-radius: 3px;">${element.earned}</em>`);
+                }
+              });
+            });
           }
         },
         error: () => {
           console.log('无法获取页面信息');
         },
       });
-      return resultSet;
     };
 
     const getEarnedTrophiesInfo = (data) => {
@@ -436,20 +443,15 @@
     if (/topic\//.test(window.location.href) && psnidCookie) {
       const games = {};
       $('.imgbgnb').parent().each((index, el) => {
+        if (!/(^| |")(pd10|t3)($| |")/.test($(el).parent().get()[0].className)) return;
         const href = $(el).attr('href');
         const gameId = href.slice(href.lastIndexOf('/') + 1, -3);
         // 根据具体游戏获取对应自己页面的信息
-        if (!Object.prototype.hasOwnProperty.call(games, 'gameId')) {
+        if (!Object.prototype.hasOwnProperty.call(games, gameId)) {
           const gamePageUrl = `${document.URL.match(/^.+?\.com/)[0]}/psngame/${gameId}?psnid=${psnidCookie[1]}`;
-          const resultSet = fetchOtherPage(gamePageUrl, getEarnedTrophiesInfo);
-          games[gameId] = resultSet;
+          fetchOtherPage(gamePageUrl, getEarnedTrophiesInfo);
+          games[gameId] = true;
         }
-        games[gameId].forEach((element) => {
-          if (element.trophy === $(el).attr('href')) {
-            $(el).next().find('a').slice(0, 1)
-              .append(`<div class="fa-check-circle"></div>&nbsp;<em class="alert-success pd5" style="border-radius: 3px;">${element.earned}</em>`);
-          }
-        });
       });
     }
 
