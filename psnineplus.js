@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.9.53
+// @version      0.9.54
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // eslint-disable-next-line max-len
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
@@ -334,15 +334,16 @@
             }`,
     );
 
-    // 功能0-7：个人主页下显示所有游戏
-    if (settings.autoPagingInHomepage) {
-      let isbool2 = true; // 触发开关，防止多次调用事件
-      // 插入加载提示信息
-      $('body').append("<div id='loadingMessage'/>");
-      if (
-        /psnid\/[A-Za-z0-9_-]+$/.test(window.location.href)
-                && $('tbody').length > 2
-      ) {
+    if (
+      /psnid\/[A-Za-z0-9_-]+\/?$/.test(window.location.href)
+              && $('tbody').length > 2
+    ) {
+      const windowLocationHref = window.location.href.replace(/\/$/g, '');
+      // 功能0-7：个人主页下显示所有游戏
+      if (settings.autoPagingInHomepage) {
+        let isbool2 = true; // 触发开关，防止多次调用事件
+        // 插入加载提示信息
+        $('body').append("<div id='loadingMessage'/>");
         let gamePageIndex = 2;
         $(window).scroll(function () {
           if (
@@ -352,7 +353,7 @@
                         && isbool2 === true
           ) {
             isbool2 = false;
-            const gamePage = `${window.location.href}/psngame?page=${gamePageIndex}`;
+            const gamePage = `${windowLocationHref}/psngame?page=${gamePageIndex}`;
             // 加载页面并且插入
             $('#loadingMessage').text(`加载第${gamePageIndex}页...`).show();
             $.get(
@@ -377,7 +378,15 @@
           }
         });
       }
+      // 功能：未注册用户的PSN主页添加更新按钮
+      const updateButtonForm = $('div.psnzz > div.inner > div.psnbtn.psnbtnright > form');
+      if (updateButtonForm.find('a').length === 0) {
+        const upbase = `<a href="${windowLocationHref}/upbase">等级同步</a>`;
+        const upgame = `<a href="${windowLocationHref}/upgame">游戏同步</a>`;
+        updateButtonForm.append(upbase, upgame);
+      }
     }
+
     // 帖子优化
     /*
     * 功能：对发帖楼主增加“楼主”标志
