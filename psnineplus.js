@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      0.9.56
+// @version      0.9.57
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // eslint-disable-next-line max-len
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
@@ -149,6 +149,23 @@
       default:
         toggleNightMode();
     }
+
+    /*
+    * 功能：黑条文字鼠标悬浮显示
+    * param:  isOn  是否开启功能
+    */
+    const showMarkMessage = (isOn) => {
+      if (isOn) {
+        $(document).on('mouseenter', '.mark', function () {
+          $(this).css({ color: settings.nightMode ? 'rgb(0,0,0)' : 'rgb(255,255,255)' });
+        });
+        $(document).on('mouseleave', '.mark', function () {
+          $(this).css({ color: '' });
+        });
+      }
+    };
+
+    showMarkMessage(settings.hoverUnmark);
   }
 
   onDocumentStart();
@@ -268,27 +285,6 @@
     if (nightModeStyle) {
       document.head.appendChild(nightModeStyle);
     }
-
-    /*
-    * 功能：黑条文字鼠标悬浮显示
-    * param:  isOn  是否开启功能
-    */
-    const showMarkMessage = (isOn) => {
-      if (isOn) {
-        window.addEventListener('load', () => {
-          $('.mark').hover(
-            function () {
-              $(this).css({ color: 'rgb(255,255,255)' });
-            },
-            function () {
-              $(this).css({ color: $(this).css('background-color') });
-            },
-          );
-        });
-      }
-    };
-
-    showMarkMessage(settings.hoverUnmark);
 
     /*
     * 自动签到功能
