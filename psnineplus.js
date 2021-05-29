@@ -1881,6 +1881,8 @@
     };
     const createTrophyGetTimeData = (className) => {
       const timeElements = $(className);
+      if(timeElements.length == 0)
+        return null;
       const getTimeArray = [];
       timeElements.each((i, el) => {
         const xTime = trophyGetTimeElementParser(el);
@@ -1912,7 +1914,7 @@
     const addTrophyGetTimeLineChart = () => {
       // 奖杯获得时间年月统计
       trophyGetTimeData = createTrophyGetTimeData('em.lh180.alert-success.pd5.r');
-      const { data } = trophyGetTimeData;
+      const data = trophyGetTimeData === null ? [] : trophyGetTimeData.data;
       const totalTrophyCount = Number($('div.main>.box.pd10>em>.text-strong')
         .text().replace('总', ''));
       const receivedTrophyCount = data.length;
