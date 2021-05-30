@@ -1881,8 +1881,7 @@
     };
     const createTrophyGetTimeData = (className) => {
       const timeElements = $(className);
-      if(timeElements.length == 0)
-        return null;
+      if (timeElements.length === 0) return null;
       const getTimeArray = [];
       timeElements.each((i, el) => {
         const xTime = trophyGetTimeElementParser(el);
