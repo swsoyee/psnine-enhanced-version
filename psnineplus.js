@@ -908,7 +908,46 @@
         }
       };
       // 站内使用HTTPS链接
-      const fixHTTPLinksOnThePage = (isOn) => { if (isOn) $("a[href*='http://psnine.com'], a[href*='http://www.psnine.com'], link[href*='http://psnine.com'], link[href*='http://www.psnine.com'], script[src*='http://psnine.com'], script[src*='http://www.psnine.com']").each((i, a) => linkReplace(a, 'http://', 'https://')); };
+      const fixHTTPLinksOnThePage = (isOn) => {
+        if (isOn) {
+          $("a[href*='http://psnine.com'], a[href*='http://www.psnine.com'], link[href*='http://psnine.com'], link[href*='http://www.psnine.com']").each((i, a) => linkReplace(a, 'http://', 'https://'));
+          const scriptSources = [];
+          $("script[src*='http://psnine.com'], script[src*='http://www.psnine.com']").each((i, s) => {
+            scriptSources.push(s.src.replace('http://', 'https://'));
+            s.remove();
+          });
+          $('head').find('script').each((i, s) => {
+            if (/^\s*var u\s*=\s*'http:\/\/(www\.)?psnine\.com';\s*$/.test(s.text)) {
+              s.remove();
+              const replacement = document.createElement('script');
+              replacement.type = 'text/javascript';
+              replacement.text = `var u = '${window.location.href.match(/^.+?\.com/)[0]}'`;
+              document.head.appendChild(replacement);
+              return false;
+            }
+            return true;
+          });
+          const scripts = [];
+          scriptSources.forEach((src) => {
+            $.ajax({ method: 'GET', dataType: 'text', url: src }).then((data) => {
+              const replacement = document.createElement('script');
+              replacement.type = 'text/javascript';
+              replacement.text = data;
+              scripts.push({
+                source: src,
+                script: replacement,
+              });
+              if (scripts.length === scriptSources.length) {
+                scriptSources.forEach((originalSrc) => {
+                  const index = scripts.findIndex((s) => originalSrc.replace('http://', 'https://') === s.source);
+                  document.head.appendChild(scripts[index].script);
+                  scripts.splice(index, 1);
+                });
+              }
+            });
+          });
+        }
+      };
       fixTextLinksOnThePage(settings.fixTextLinks);
       fixD7VGLinksOnThePage(settings.fixD7VGLinks);
       fixHTTPLinksOnThePage(settings.fixHTTPLinks);
