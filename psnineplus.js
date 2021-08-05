@@ -910,7 +910,7 @@
       // 站内使用HTTPS链接
       const fixHTTPLinksOnThePage = (isOn) => {
         if (isOn) {
-          $("a[href*='http://psnine.com'], a[href*='http://www.psnine.com'], link[href*='http://psnine.com'], link[href*='http://www.psnine.com']").each((i, a) => linkReplace(a, 'http://', 'https://'));
+          $("a[href*='http://psnine.com'], a[href*='http://www.psnine.com'], link[href*='http://psnine.com'], link[href*='http://www.psnine.com'], img[src*='http://psnine.com'], img[src*='http://www.psnine.com']").each((i, a) => linkReplace(a, 'http://', 'https://'));
           const scriptSources = [];
           $("script[src*='http://psnine.com'], script[src*='http://www.psnine.com']").each((i, s) => {
             scriptSources.push(s.src.replace('http://', 'https://'));
