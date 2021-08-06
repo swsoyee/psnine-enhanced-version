@@ -171,6 +171,9 @@
   onDocumentStart();
 
   function onDOMContentReady() { // run when DOM is loaded
+    let numberOfHttpCSS = 0;
+    let numberOfHttpsCSSLoaded = 0;
+    const httpCSSFixed = () => numberOfHttpsCSSLoaded === numberOfHttpCSS;
     const fixLinksOnThePage = () => {
       // 检测纯文本中的链接
       const untaggedUrlRegex = /(?<!((href|src)="|<a( [^<]+?)?>))(https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([A-Za-z0-9\-._~:/?#[\]@!$&'()*+,;=%]*))(?!("|<\/a>))/g;// https://stackoverflow.com/a/3809435 & https://stackoverflow.com/a/1547940
@@ -197,6 +200,16 @@
       // 站内使用HTTPS链接
       const fixHTTPLinksOnThePage = (isOn) => {
         if (isOn) {
+          numberOfHttpCSS = $("link[href*='http://psnine.com'], link[href*='http://www.psnine.com']").length;
+          $("link[href*='http://psnine.com'], link[href*='http://www.psnine.com']").each((i, l) => {
+            const replacement = document.createElement('link');
+            replacement.addEventListener('load', () => { numberOfHttpsCSSLoaded += 1; }, false);
+            replacement.type = 'text/css';
+            replacement.rel = 'stylesheet';
+            replacement.href = l.href.replace('http://', 'https://');
+            l.remove();
+            document.head.appendChild(replacement);
+          });
           $("a[href*='http://psnine.com'], a[href*='http://www.psnine.com'], link[href*='http://psnine.com'], link[href*='http://www.psnine.com'], img[src*='http://psnine.com'], img[src*='http://www.psnine.com']").each((i, a) => linkReplace(a, 'http://', 'https://'));
           const scriptSources = [];
           $("script[src*='http://psnine.com'], script[src*='http://www.psnine.com']").each((i, s) => {
@@ -1766,9 +1779,15 @@
       /\/dd\//.test(window.location.href)
             || /game\/[0-9]+\/dd$/.test(window.location.href)
     ) {
-      addPriceLinePlot();
-      // 外币转人民币
-      foreignCurrencyConversion();
+      repeatUntilSuccessful(() => {
+        console.log(httpCSSFixed());
+        if (httpCSSFixed()) {
+          addPriceLinePlot();
+          // 外币转人民币
+          foreignCurrencyConversion();
+          return true;
+        } return false;
+      }, 100);
     }
     // 页面：活动
     if (/huodong/.test(window.location.href)) {
@@ -2160,14 +2179,19 @@
             )
     ) {
       $('.box.pd10').append('<div id="trophyChartContainer" style="float: left"></div>');
-      // 追加奖杯统计扇形图
-      addTrophyPieChart();
-      // 追加奖杯获得时间线形图
-      addTrophyGetTimeLineChart();
-      // 追加奖杯获得时间排序
-      addTrophySortByTimestamp();
-      // 汇总以获得和未获得奖杯
-      addEarnedTrophiesSummary();
+      repeatUntilSuccessful(() => {
+        if (httpCSSFixed()) {
+          // 追加奖杯统计扇形图
+          addTrophyPieChart();
+          // 追加奖杯获得时间线形图
+          addTrophyGetTimeLineChart();
+          // 追加奖杯获得时间排序
+          addTrophySortByTimestamp();
+          // 汇总以获得和未获得奖杯
+          addEarnedTrophiesSummary();
+          return true;
+        } return false;
+      }, 100);
     }
 
     /*
@@ -2902,7 +2926,12 @@
         Highcharts.chart('scoreTrendChart', createScoreTrendChart());
       }
     }
-    showCriticAverage();
+    repeatUntilSuccessful(() => {
+      if (httpCSSFixed()) {
+        showCriticAverage();
+        return true;
+      } return false;
+    }, 100);
 
     // 右上角头像下拉框中增加插件设定按钮
     if (window.localStorage) {
