@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      1.0.3
+// @version      1.0.4
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // eslint-disable-next-line max-len
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
@@ -171,6 +171,76 @@
   onDocumentStart();
 
   function onDOMContentReady() { // run when DOM is loaded
+    const fixLinksOnThePage = () => {
+      // 检测纯文本中的链接
+      const untaggedUrlRegex = /(?<!((href|src)="|<a( [^<]+?)?>))(https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([A-Za-z0-9\-._~:/?#[\]@!$&'()*+,;=%]*))(?!("|<\/a>))/g;// https://stackoverflow.com/a/3809435 & https://stackoverflow.com/a/1547940
+      const fixTextLinksOnThePage = (isOn) => {
+        if (isOn && /(\/(topic|gene|qa|battle|trade)\/\d+)|(\/psnid\/.+?\/comment)|(\/my\/notice)|(\/psngame\/\d+\/comment)|(\/trophy\/\d+)/.test(window.location.href)) $('div.content').each((i, e) => { e.innerHTML = e.innerHTML.replace(untaggedUrlRegex, '<a href="$4" target="_blank">$4</a>'); });
+      };
+      // 修复D7VG链接
+      const linkReplace = (link, substr, newSubstr) => {
+        if (link.href) {
+          link.href = (link.href === link.innerText)
+            ? (link.innerText = link.innerText.replace(substr, newSubstr))
+            : link.href.replace(substr, newSubstr);
+        } else if (link.src) link.src = link.src.replace(substr, newSubstr);
+      };
+      const fixD7VGLinksOnThePage = (isOn) => {
+        if (isOn) {
+          $("a[href*='//d7vg.com'], a[href*='//www.d7vg.com']").each((i, a) => {
+            if (!/d7vg\.com($|\/$)/.test(a.href)) { // 排除可能特意指向d7vg.com的链接
+              linkReplace(a, 'd7vg.com', 'psnine.com');
+            }
+          });
+        }
+      };
+      // 站内使用HTTPS链接
+      const fixHTTPLinksOnThePage = (isOn) => {
+        if (isOn) {
+          $("a[href*='http://psnine.com'], a[href*='http://www.psnine.com'], link[href*='http://psnine.com'], link[href*='http://www.psnine.com'], img[src*='http://psnine.com'], img[src*='http://www.psnine.com']").each((i, a) => linkReplace(a, 'http://', 'https://'));
+          const scriptSources = [];
+          $("script[src*='http://psnine.com'], script[src*='http://www.psnine.com']").each((i, s) => {
+            scriptSources.push(s.src.replace('http://', 'https://'));
+            s.remove();
+          });
+          $('head').find('script').each((i, s) => {
+            if (/^\s*var u\s*=\s*'http:\/\/(www\.)?psnine\.com';\s*$/.test(s.text)) {
+              s.remove();
+              const replacement = document.createElement('script');
+              replacement.type = 'text/javascript';
+              replacement.text = `var u = '${window.location.href.match(/^.+?\.com/)[0]}'`;
+              document.head.appendChild(replacement);
+              return false;
+            }
+            return true;
+          });
+          const scripts = [];
+          scriptSources.forEach((src) => {
+            $.ajax({ method: 'GET', dataType: 'text', url: src }).then((data) => {
+              const replacement = document.createElement('script');
+              replacement.type = 'text/javascript';
+              replacement.text = data;
+              scripts.push({
+                source: src,
+                script: replacement,
+              });
+              if (scripts.length === scriptSources.length) {
+                scriptSources.forEach((originalSrc) => {
+                  const index = scripts.findIndex((s) => originalSrc.replace('http://', 'https://') === s.source);
+                  document.head.appendChild(scripts[index].script);
+                  scripts.splice(index, 1);
+                });
+              }
+            });
+          });
+        }
+      };
+      fixTextLinksOnThePage(settings.fixTextLinks);
+      fixD7VGLinksOnThePage(settings.fixD7VGLinks);
+      fixHTTPLinksOnThePage(settings.fixHTTPLinks);
+    };
+    fixLinksOnThePage();
+
     Highcharts.setOptions({
       lang: {
         contextButtonTitle: '图表导出菜单',
@@ -290,16 +360,28 @@
     * 自动签到功能
     * @param  isOn  是否开启功能
     */
+    const repeatUntilSuccessful = (functionPtr, interval) => {
+      if (!functionPtr()) {
+        setTimeout(() => {
+          repeatUntilSuccessful(functionPtr, interval);
+        }, interval);
+      }
+    };
     const automaticSignIn = (isOn) => {
       // 如果签到按钮存在页面上
       if (isOn && $('[class$=yuan]').length > 0) {
-        let signed = false;
-        $('[class$=yuan]').each((i, e) => {
-          if (!signed && /^\s*签\s*$/.test(e.innerText)) {
-            e.click();
-            signed = true;
-          }
-        });
+        repeatUntilSuccessful(() => {
+          try {
+            let signed = false;
+            $('[class$=yuan]').each((i, e) => {
+              if (!signed && /^\s*签\s*$/.test(e.innerText)) {
+                e.click();
+                signed = true;
+              }
+            });
+            return true;
+          } catch (e) { return false; }
+        }, 200);
       }
     };
     automaticSignIn(settings.autoCheckIn);
@@ -682,21 +764,26 @@
     */
     const reverseSubReply = (isOn) => {
       if (!isOn || !/(\/trophy\/\d+)|(\/psngame\/\d+\/comment)|(\/psnid\/.+?\/comment)/.test(window.location.href)) return;
-      $('div.btn.btn-white.font12').click();
-      const blocks = $('div.sonlistmark.ml64.mt10:not([style="display:none;"])');
-      blocks.each((index, block) => {
-        const reversedBlock = $($(block).find('li').get().reverse());
-        $(block).find('.sonlist').remove();
-        $(block).append('<ul class="sonlist">');
-        reversedBlock.each((i, li) => {
-          if (i === 0) {
-            $(li).attr({ style: 'border-top:none;' });
-          } else {
-            $(li).attr({ style: '' });
-          }
-          $(block).find('.sonlist').append(li);
-        });
-      });
+      repeatUntilSuccessful(() => {
+        try {
+          $('div.btn.btn-white.font12').click();
+          const blocks = $('div.sonlistmark.ml64.mt10:not([style="display:none;"])');
+          blocks.each((index, block) => {
+            const reversedBlock = $($(block).find('li').get().reverse());
+            $(block).find('.sonlist').remove();
+            $(block).append('<ul class="sonlist">');
+            reversedBlock.each((i, li) => {
+              if (i === 0) {
+                $(li).attr({ style: 'border-top:none;' });
+              } else {
+                $(li).attr({ style: '' });
+              }
+              $(block).find('.sonlist').append(li);
+            });
+          });
+          return true;
+        } catch (e) { return false; }
+      }, 200);
     };
 
     const enhanceQAPage = (loadAll, reverseOrder, allSubReply) => {
@@ -718,7 +805,12 @@
       * @param  isOn  是否开启该功能
       */
       const showHiddenSubReply = (isOn) => {
-        if (isOn) $('body > div.inner.mt40 > div.main > div.box.mt20 > ul.list div.btn.btn-white.font12').click();
+        repeatUntilSuccessful(() => {
+          try {
+            if (isOn) $('body > div.inner.mt40 > div.main > div.box.mt20 > ul.list div.btn.btn-white.font12').click();
+            return true;
+          } catch (e) { return false; }
+        }, 200);
       };
 
       /*
@@ -883,76 +975,6 @@
     };
     filterBlockWorld();
     filterUserPost();
-
-    const fixLinksOnThePage = () => {
-      // 检测纯文本中的链接
-      const untaggedUrlRegex = /(?<!((href|src)="|<a( [^<]+?)?>))(https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([A-Za-z0-9\-._~:/?#[\]@!$&'()*+,;=%]*))(?!("|<\/a>))/g;// https://stackoverflow.com/a/3809435 & https://stackoverflow.com/a/1547940
-      const fixTextLinksOnThePage = (isOn) => {
-        if (isOn && /(\/(topic|gene|qa|battle|trade)\/\d+)|(\/psnid\/.+?\/comment)|(\/my\/notice)|(\/psngame\/\d+\/comment)|(\/trophy\/\d+)/.test(window.location.href)) $('div.content').each((i, e) => { e.innerHTML = e.innerHTML.replace(untaggedUrlRegex, '<a href="$4" target="_blank">$4</a>'); });
-      };
-      // 修复D7VG链接
-      const linkReplace = (link, substr, newSubstr) => {
-        if (link.href) {
-          link.href = (link.href === link.innerText)
-            ? (link.innerText = link.innerText.replace(substr, newSubstr))
-            : link.href.replace(substr, newSubstr);
-        } else if (link.src) link.src = link.src.replace(substr, newSubstr);
-      };
-      const fixD7VGLinksOnThePage = (isOn) => {
-        if (isOn) {
-          $("a[href*='//d7vg.com'], a[href*='//www.d7vg.com']").each((i, a) => {
-            if (!/d7vg\.com($|\/$)/.test(a.href)) { // 排除可能特意指向d7vg.com的链接
-              linkReplace(a, 'd7vg.com', 'psnine.com');
-            }
-          });
-        }
-      };
-      // 站内使用HTTPS链接
-      const fixHTTPLinksOnThePage = (isOn) => {
-        if (isOn) {
-          $("a[href*='http://psnine.com'], a[href*='http://www.psnine.com'], link[href*='http://psnine.com'], link[href*='http://www.psnine.com'], img[src*='http://psnine.com'], img[src*='http://www.psnine.com']").each((i, a) => linkReplace(a, 'http://', 'https://'));
-          const scriptSources = [];
-          $("script[src*='http://psnine.com'], script[src*='http://www.psnine.com']").each((i, s) => {
-            scriptSources.push(s.src.replace('http://', 'https://'));
-            s.remove();
-          });
-          $('head').find('script').each((i, s) => {
-            if (/^\s*var u\s*=\s*'http:\/\/(www\.)?psnine\.com';\s*$/.test(s.text)) {
-              s.remove();
-              const replacement = document.createElement('script');
-              replacement.type = 'text/javascript';
-              replacement.text = `var u = '${window.location.href.match(/^.+?\.com/)[0]}'`;
-              document.head.appendChild(replacement);
-              return false;
-            }
-            return true;
-          });
-          const scripts = [];
-          scriptSources.forEach((src) => {
-            $.ajax({ method: 'GET', dataType: 'text', url: src }).then((data) => {
-              const replacement = document.createElement('script');
-              replacement.type = 'text/javascript';
-              replacement.text = data;
-              scripts.push({
-                source: src,
-                script: replacement,
-              });
-              if (scripts.length === scriptSources.length) {
-                scriptSources.forEach((originalSrc) => {
-                  const index = scripts.findIndex((s) => originalSrc.replace('http://', 'https://') === s.source);
-                  document.head.appendChild(scripts[index].script);
-                  scripts.splice(index, 1);
-                });
-              }
-            });
-          });
-        }
-      };
-      fixTextLinksOnThePage(settings.fixTextLinks);
-      fixD7VGLinksOnThePage(settings.fixD7VGLinks);
-      fixHTTPLinksOnThePage(settings.fixHTTPLinks);
-    };
-    fixLinksOnThePage();
 
     // 功能1-8：回复按钮hover触发显示
     /*
@@ -1468,13 +1490,6 @@
         httpReq.open('GET', 'https://api.exchangeratesapi.io/latest', false);
         httpReq.send(null);
         const startTime = Date.now();
-        const repeatUntilSuccessful = (functionPtr, interval) => {
-          if (!functionPtr()) {
-            setTimeout(() => {
-              repeatUntilSuccessful(functionPtr, interval);
-            }, interval);
-          }
-        };
         repeatUntilSuccessful(() => {
           // Wait until HTTP GET SUCCESSFULL or TIMEOUT
           if ((httpReq.status !== 200)
