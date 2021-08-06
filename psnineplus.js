@@ -1780,7 +1780,6 @@
             || /game\/[0-9]+\/dd$/.test(window.location.href)
     ) {
       repeatUntilSuccessful(() => {
-        console.log(httpCSSFixed());
         if (httpCSSFixed()) {
           addPriceLinePlot();
           // 外币转人民币
