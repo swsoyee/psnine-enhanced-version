@@ -200,8 +200,9 @@
       // 站内使用HTTPS链接
       const fixHTTPLinksOnThePage = (isOn) => {
         if (isOn) {
-          numberOfHttpCSS = $("link[href*='http://psnine.com'], link[href*='http://www.psnine.com']").length;
-          $("link[href*='http://psnine.com'], link[href*='http://www.psnine.com']").each((i, l) => {
+          const httpCSS = $("link[href*='http://psnine.com'], link[href*='http://www.psnine.com']");
+          numberOfHttpCSS = httpCSS.length;
+          httpCSS.each((i, l) => {
             const replacement = document.createElement('link');
             replacement.addEventListener('load', () => { numberOfHttpsCSSLoaded += 1; }, false);
             replacement.type = 'text/css';
@@ -210,7 +211,7 @@
             l.remove();
             document.head.appendChild(replacement);
           });
-          $("a[href*='http://psnine.com'], a[href*='http://www.psnine.com'], link[href*='http://psnine.com'], link[href*='http://www.psnine.com'], img[src*='http://psnine.com'], img[src*='http://www.psnine.com']").each((i, a) => linkReplace(a, 'http://', 'https://'));
+          $("a[href*='http://psnine.com'], a[href*='http://www.psnine.com'], img[src*='http://psnine.com'], img[src*='http://www.psnine.com']").each((i, a) => linkReplace(a, 'http://', 'https://'));
           const scriptSources = [];
           $("script[src*='http://psnine.com'], script[src*='http://www.psnine.com']").each((i, s) => {
             scriptSources.push(s.src.replace('http://', 'https://'));
