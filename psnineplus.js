@@ -726,6 +726,8 @@
                     const currentTop = $(this).get(0).getBoundingClientRect().top;
                     window.scrollBy({ top: targetTop - currentTop, behavior: 'smooth' });
                   });
+                  // 鼠标悬浮变手形样式
+                  $(`.responserContent_${floor}_${outputID}`).css('cursor', 'pointer');
                 }
               }
             }
