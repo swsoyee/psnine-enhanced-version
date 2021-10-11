@@ -721,9 +721,9 @@
                     });
                   }
                   // 增加点击回复内容跳转功能
-                  $(`.responserContent_${floor}_${outputID}`).click(function () {
+                  $(`.responserContent_${floor}_${outputID}`).click(() => {
                     const targetTop = replyContentObjectOriginal.get(0).getBoundingClientRect().top;
-                    window.scrollTo({ top : targetTop + window.pageYOffset - (window.innerHeight / 2) + 150, behavior: 'smooth'});
+                    window.scrollTo({ top: targetTop + window.pageYOffset - (window.innerHeight / 2) + 150, behavior: 'smooth' });
                     $(replyContentObjectOriginal)
                       .fadeOut(500)
                       .fadeIn(500)
