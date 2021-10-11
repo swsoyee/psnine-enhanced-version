@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      1.0.5
+// @version      1.0.6
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // eslint-disable-next-line max-len
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
@@ -176,9 +176,11 @@
     const httpCSSFixed = () => numberOfHttpsCSSLoaded === numberOfHttpCSS;
     const fixLinksOnThePage = () => {
       // 检测纯文本中的链接
+      const duplicatedSchemeRegex1 = /((href|src)=")((https?:\/\/)+)/g;
+      const duplicatedSchemeRegex2 = /(<a( [^<]+?)?>)((https?:\/\/)+)/g;
       const untaggedUrlRegex = /(?<!((href|src)="|<a( [^<]+?)?>))(https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([A-Za-z0-9\-._~:/?#[\]@!$&'()*+,;=%]*))(?!("|<\/a>))/g;// https://stackoverflow.com/a/3809435 & https://stackoverflow.com/a/1547940
       const fixTextLinksOnThePage = (isOn) => {
-        if (isOn && /(\/(topic|gene|qa|battle|trade)\/\d+)|(\/psnid\/.+?\/comment)|(\/my\/notice)|(\/psngame\/\d+\/comment)|(\/trophy\/\d+)/.test(window.location.href)) $('div.content').each((i, e) => { e.innerHTML = e.innerHTML.replace(untaggedUrlRegex, '<a href="$4" target="_blank">$4</a>'); });
+        if (isOn && /(\/(topic|gene|qa|battle|trade)\/\d+)|(\/psnid\/.+?\/comment)|(\/my\/notice)|(\/psngame\/\d+\/comment)|(\/trophy\/\d+)/.test(window.location.href)) $('div.content').each((i, e) => { e.innerHTML = e.innerHTML.replace(duplicatedSchemeRegex1, '$1$4').replace(duplicatedSchemeRegex2, '$1$4').replace(untaggedUrlRegex, '<a href="$4" target="_blank">$4</a>'); });
       };
       // 修复D7VG链接
       const linkReplace = (link, substr, newSubstr) => {
@@ -689,7 +691,8 @@
                 }
                 // 输出
                 if (outputID !== -1) {
-                  const replyContentObject = allSource.eq(outputID).clone();
+                  const replyContentObjectOriginal = allSource.eq(outputID);
+                  const replyContentObject = replyContentObjectOriginal.clone();
                   const replyContentPlainText = replyContentObject.text();
                   replyContentObject.find('.mark').text((index, text) => `<span class="mark">${text}</span>`);
                   const replyContentText = replyContentObject.text();
@@ -717,6 +720,18 @@
                       maxWidth: '500px',
                     });
                   }
+                  // 增加点击回复内容跳转功能
+                  $(`.responserContent_${floor}_${outputID}`).click(() => {
+                    const targetTop = replyContentObjectOriginal.get(0).getBoundingClientRect().top;
+                    window.scrollTo({ top: targetTop + window.pageYOffset - (window.innerHeight / 2) + 150, behavior: 'smooth' });
+                    $(replyContentObjectOriginal)
+                      .fadeOut(500)
+                      .fadeIn(500)
+                      .fadeOut(500)
+                      .fadeIn(500);
+                  });
+                  // 鼠标悬浮变手形样式
+                  $(`.responserContent_${floor}_${outputID}`).css('cursor', 'pointer');
                 }
               }
             }
