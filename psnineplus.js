@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      1.0.6
+// @version      1.0.7
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // eslint-disable-next-line max-len
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
@@ -721,9 +721,19 @@
                     });
                   }
                   // 增加点击回复内容跳转功能
-                  $(`.responserContent_${floor}_${outputID}`).click(() => {
-                    const targetTop = replyContentObjectOriginal.get(0).getBoundingClientRect().top;
-                    window.scrollTo({ top: targetTop + window.pageYOffset - (window.innerHeight / 2) + 150, behavior: 'smooth' });
+                  const responserContent = $(`.responserContent_${floor}_${outputID}`);
+                  responserContent.click(() => {
+                    const targetBounds = replyContentObjectOriginal.get(0).getBoundingClientRect();
+                    const currentBoundsTop = responserContent.get(0).getBoundingClientRect().top;
+                    if (targetBounds.top < 0) { // 回复内容顶部不在窗口内
+                      // 回复内容顶部滚动到当前元素顶部处无法完整显示时
+                      if (currentBoundsTop + targetBounds.height > window.innerHeight) {
+                        // 回复内容比窗口高度更长时，回复内容顶部滚动至窗口顶部，否则回复内容底部滚动至窗口底部
+                        if (targetBounds.height > window.innerHeight) window.scrollBy({ top: targetBounds.top, behavior: 'smooth' });
+                        else window.scrollBy({ top: targetBounds.bottom - window.innerHeight, behavior: 'smooth' });
+                      } else if (currentBoundsTop < 0) window.scrollBy({ top: targetBounds.top, behavior: 'smooth' }); // 当前元素顶部在窗口外时
+                      else window.scrollBy({ top: targetBounds.top - currentBoundsTop, behavior: 'smooth' }); // 默认滚动至当前元素顶部
+                    }
                     $(replyContentObjectOriginal)
                       .fadeOut(500)
                       .fadeIn(500)
@@ -731,7 +741,7 @@
                       .fadeIn(500);
                   });
                   // 鼠标悬浮变手形样式
-                  $(`.responserContent_${floor}_${outputID}`).css('cursor', 'pointer');
+                  responserContent.css('cursor', 'pointer');
                 }
               }
             }
