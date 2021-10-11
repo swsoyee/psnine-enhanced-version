@@ -725,6 +725,7 @@
                     const targetTop = replyContentObjectOriginal.get(0).getBoundingClientRect().top;
                     const currentTop = $(this).get(0).getBoundingClientRect().top;
                     window.scrollBy({ top: targetTop - currentTop, behavior: 'smooth' });
+                    $(replyContentObjectOriginal).fadeOut(500).fadeIn(500).fadeOut(500).fadeIn(500);
                   });
                   // 鼠标悬浮变手形样式
                   $(`.responserContent_${floor}_${outputID}`).css('cursor', 'pointer');
