@@ -2567,9 +2567,9 @@
             crosshair: true,
           }];
           const scoreYaxis = [{
-            tickInterval: gaussianOn ? 2 : 1,
             min: 0,
-            max: scoreCountMax,
+            max: 5 * Math.ceil(scoreCountMax / 5),
+            tickInterval: Math.ceil(scoreCountMax / 5),
             title: { text: '点评人数' },
           }];
           const scoreTooltip = {
