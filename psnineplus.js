@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      1.0.9
+// @version      1.0.10
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // eslint-disable-next-line max-len
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
@@ -2715,15 +2715,15 @@
             const scoreElementTime = (scoreElement) => { // must be single element
               let timestampElement = $(scoreElement).parents('div.ml64').find('div.meta:not(.pb10) > span:nth-child(2)');
               if (timestampElement.length > 0) {
-                return p9TimeTextParser(timestampElement.text().replace(/(^\s)|(\s$)|(修改)/g, ''));
+                return p9TimeTextParser(timestampElement.text().replace(/(^\s+)|(\s+$)|(修改)/g, ''));
               }
               timestampElement = $(scoreElement).parents('div.ml64').find('div.meta');
               if (timestampElement.length > 0) {
                 const textArray = timestampElement.text().split(/\r?\n/);
-                let index = -1; let
-                  text;
+                let index = -1;
+                let text;
                 do {
-                  text = textArray[textArray.length + index].replace(/(^\s)|(\s$)|(修改)/g, '');
+                  text = textArray[textArray.length + index].replace(/(^\s+)|(\s+$)|(修改)/g, '');
                   index -= 1;
                 } while (text === '');
                 return p9TimeTextParser(text);
@@ -2849,6 +2849,83 @@
             },
           ];
           // Y轴设置
+          // ratings: min, max and range
+          let scoreTrendYAxisScoreMin = Math.floor(minScore);
+          let scoreTrendYAxisScoreMax = Math.ceil(maxScore);
+          let scoreTrendYAxisScoreRange = scoreTrendYAxisScoreMax - scoreTrendYAxisScoreMin;
+          if (scoreTrendYAxisScoreRange === 0) {
+            // when the data range is 0, the minimum tick range seems to be 4
+            if (scoreTrendYAxisScoreMin - 2 < 1) {
+              scoreTrendYAxisScoreMin = 1;
+              scoreTrendYAxisScoreMax = 5;
+            } else if (scoreTrendYAxisScoreMax + 2 > 10) {
+              scoreTrendYAxisScoreMin = 6;
+              scoreTrendYAxisScoreMax = 10;
+            } else {
+              scoreTrendYAxisScoreMin -= 2;
+              scoreTrendYAxisScoreMax += 2;
+            }
+            scoreTrendYAxisScoreRange = 4;
+          } else if (scoreTrendYAxisScoreRange < 2) {
+            // when the data range is not 0, the minimum tick range seems to be 2
+            if (scoreTrendYAxisScoreMin + 2 > 10) {
+              scoreTrendYAxisScoreMin = scoreTrendYAxisScoreMax - 2;
+            } else {
+              scoreTrendYAxisScoreMax = scoreTrendYAxisScoreMin + 2;
+            }
+            scoreTrendYAxisScoreRange = 2;
+          }
+          // rating counts: min, max and range
+          let scoreTrendYAxisScoreCountMin = Math.min(...commentTrend.map((i) => i[1]));
+          let scoreTrendYAxisScoreCountMax = Math.max(...commentTrend.map((i) => i[1]));
+          let scoreTrendYAxisScoreCountRange = scoreTrendYAxisScoreCountMax
+            - scoreTrendYAxisScoreCountMin;
+          if (scoreTrendYAxisScoreCountRange === 0) {
+            // when the data range is 0, the minimum tick range seems to be 4
+            if (scoreTrendYAxisScoreCountMin - 2 < 0) {
+              scoreTrendYAxisScoreCountMin = 0;
+              scoreTrendYAxisScoreCountMax = 4;
+            } else {
+              scoreTrendYAxisScoreCountMin -= 2;
+              scoreTrendYAxisScoreCountMax += 2;
+            }
+            scoreTrendYAxisScoreCountRange = 4;
+          } else if (scoreTrendYAxisScoreCountRange < 2) {
+            // when the data range is not 0, the minimum tick range seems to be 2
+            scoreTrendYAxisScoreCountMax = scoreTrendYAxisScoreCountMin + 2;
+            scoreTrendYAxisScoreCountRange = 2;
+          }
+          let scoreTrendYAxisRatingTick;
+          let scoreTrendYAxisRatingCountTick;
+          // adjust min, max, range to ensure that:
+          // 1. both Y axes have the same number of ticks
+          // 2. all ticks are integers
+          if (scoreTrendYAxisScoreRange < scoreTrendYAxisScoreCountRange) {
+            scoreTrendYAxisRatingTick = 1;
+            if (scoreTrendYAxisScoreCountRange % scoreTrendYAxisScoreRange > 0) {
+              scoreTrendYAxisScoreCountRange = scoreTrendYAxisScoreRange
+                * Math.ceil(scoreTrendYAxisScoreCountRange / scoreTrendYAxisScoreRange);
+              scoreTrendYAxisScoreCountMax = scoreTrendYAxisScoreCountMin
+                + scoreTrendYAxisScoreCountRange;
+            }
+            scoreTrendYAxisRatingCountTick = scoreTrendYAxisScoreCountRange
+              / scoreTrendYAxisScoreRange;
+          } else if (scoreTrendYAxisScoreRange > scoreTrendYAxisScoreCountRange) {
+            scoreTrendYAxisRatingCountTick = 1;
+            if (scoreTrendYAxisScoreRange % scoreTrendYAxisScoreCountRange > 0) {
+              scoreTrendYAxisScoreRange = scoreTrendYAxisScoreCountRange
+                * Math.ceil(scoreTrendYAxisScoreRange / scoreTrendYAxisScoreCountRange);
+              scoreTrendYAxisScoreMax = scoreTrendYAxisScoreMin + scoreTrendYAxisScoreRange;
+              if (scoreTrendYAxisScoreMax > 10) {
+                scoreTrendYAxisScoreMax = 10;
+                scoreTrendYAxisScoreMin = 10 - scoreTrendYAxisScoreRange;
+              }
+            }
+            scoreTrendYAxisRatingTick = scoreTrendYAxisScoreRange / scoreTrendYAxisScoreCountRange;
+          } else {
+            scoreTrendYAxisRatingTick = 1;
+            scoreTrendYAxisRatingCountTick = 1;
+          }
           const scoreTrendYAxis = [
             {
               title: {
@@ -2857,10 +2934,10 @@
                   color: '#7CB5EC',
                 },
               },
-              min: minScore - 0.2 > 0 ? minScore - 0.2 : minScore,
-              max: maxScore + 0.2 < 10 ? maxScore + 0.2 : 10,
+              min: scoreTrendYAxisScoreMin,
+              max: scoreTrendYAxisScoreMax,
               endOnTick: true,
-              tickInterval: 0.1,
+              tickInterval: scoreTrendYAxisRatingTick,
               opposite: false,
             }, {
               title: {
@@ -2869,10 +2946,10 @@
                   color: '#F28D8F',
                 },
               },
-              min: Math.min(...commentTrend.map((i) => i[1])),
-              max: Math.max(...commentTrend.map((i) => i[1])),
+              min: scoreTrendYAxisScoreCountMin,
+              max: scoreTrendYAxisScoreCountMax,
               endOnTick: true,
-              tickInterval: 1,
+              tickInterval: scoreTrendYAxisRatingCountTick,
               opposite: true,
             },
           ];
