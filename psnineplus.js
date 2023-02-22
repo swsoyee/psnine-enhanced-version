@@ -2439,7 +2439,7 @@
           if (psngameMatches.length <= 0) return;
           let gameIds = [gameId];
           psngameMatches.each((i, a) => {
-            if (a.innerText !== gameTitle) return;
+            if (a.innerText.trim().replace(/(^《)|(》$)/g, '') !== gameTitle) return;
             gameIds.push(gameIdFromPsngameUrl(a.href));
           });
           gameIds = gameIds.filter((value, index, array) => array.indexOf(value) === index);
@@ -2453,13 +2453,13 @@
         // 在不同页面查找游戏标题
         const findGameTitle = () => {
           if (psngameTrophyListUrlRegex.test(window.location.href)) {
-            return $('div.inner.mt40 > div.main > div.box.pd10 > h1')[0].innerText.replace(/[^《]*《(.+)》[^》]*/, '$1');
+            return $('div.inner.mt40 > div.main > div.box.pd10 > h1')[0].innerText.replace(/[^《]*《(.+)》[^》]*/, '$1').trim().replace(/(^《)|(》$)/g, '');
           }
           if (/\/trophy\/\d+\/?$/.test(window.location.href)) {
-            return $('div.min-inner.mt40 > ul > li > div.ml100 > p > a')[0].innerText;
+            return $('div.min-inner.mt40 > ul > li > div.ml100 > p > a')[0].innerText.trim();
           }
           if (/\/(rank|comment|qa|topic|battle|gamelist)\/?$/.test(window.location.href)) {
-            return $('div.min-inner.mt40 > div.box.pd10 > h1')[0].innerText.replace(/[^《]*《(.+)》[^》]*/, '$1');
+            return $('div.min-inner.mt40 > div.box.pd10 > h1')[0].innerText.replace(/[^《]*《(.+)》[^》]*/, '$1').trim().replace(/(^《)|(》$)/g, '');
           }
           return null;
         };
