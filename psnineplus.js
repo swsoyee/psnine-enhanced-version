@@ -2443,7 +2443,7 @@
             gameIds.push(gameIdFromPsngameUrl(a.href));
           });
           gameIds = gameIds.filter((value, index, array) => array.indexOf(value) === index);
-          gameIds.sort();
+          gameIds.sort((a, b) => a - b);
           gameVariantCacheStore(gameIds);
           referVariantsDelegate(gameId, gameIds);
         });
