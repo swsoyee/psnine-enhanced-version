@@ -18,6 +18,8 @@
 // @compatible   firefox
 // @compatible   edge
 // @grant        GM_addStyle
+// @grant        GM_setValue
+// @grant        GM_getValue
 // @run-at       document-start
 // ==/UserScript==
 /* globals $, Highcharts, tippy */
@@ -81,7 +83,7 @@
     // 站内使用HTTPS链接
     fixHTTPLinks: false,
     // 尝试关联不同版本的游戏
-    referGameMultiVer: true,
+    referGameVariants: true,
   };
   if (window.localStorage) {
     if (window.localStorage['psnine-night-mode-CSS-settings']) {
@@ -2307,7 +2309,7 @@
       };
     }
 
-    const referGameMultiVer = (on) => {
+    const referGameVariants = (on) => {
       if (!on) return;
       const fetchPageAndProcess = (url, func) => {
         $.ajax({
@@ -2327,7 +2329,7 @@
         return -1;
       };
       const gameIdFromTrophyUrl = (url) => {
-        const idMatch = url.match(/\/trophy\/\d+/);
+        const idMatch = url.match(/\/trophy\/\d+\/?$/);
         if (idMatch.length > 0) return Number.parseInt(idMatch[0].replace(/\/trophy\/(\d+)\d{3}/, '$1'), 10);
         return -1;
       };
@@ -2343,27 +2345,31 @@
         referenceA.innerText = text;
         referenceDiv.appendChild(referenceA);
       };
-      const referOtherVersionsOnTrophyList = (gameId, gameIds) => {
+      const referVariantsOnTrophyList = (gameId, gameIds) => {
         const trophySections = $('div.main > div.box > table > tbody > tr').not('.trophy').find('td[colspan="4"]');
         const referenceDiv = createReferenceDiv('其他版本：');
         gameIds.forEach((otherGameId) => {
+          console.log(gameId, otherGameId, gameId === otherGameId);
+          if (gameId === otherGameId) return;
           createReferenceA(referenceDiv, `https://psnine.com/psngame/${otherGameId}`, `#${otherGameId}`);
         });
         trophySections[0].appendChild(referenceDiv);
       };
-      const referOtherVersionsOnTrophyTips = (gameId, gameIds) => {
+      const referVariantsOnTrophyTips = (gameId, gameIds) => {
         const trophy = $('body > div.min-inner.mt40 > div.box.pd5')[0];
         const trophyIdStr = window.location.href.match(/\/trophy\/\d+/)[0].replace(`/trophy/${gameId}`, '');
         const referenceDiv = createReferenceDiv('其他版本：');
         gameIds.forEach((otherGameId) => {
+          if (gameId === otherGameId) return;
           createReferenceA(referenceDiv, `https://psnine.com/trophy/${otherGameId}${trophyIdStr}`, `#${otherGameId}${trophyIdStr}`);
         });
         trophy.appendChild(referenceDiv);
       };
-      const referOtherVersionsOnRankThroughGamelist = (gameId, gameIds) => {
+      const referVariantsOnRankThroughGamelist = (gameId, gameIds) => {
         const psngame = $('body > div.min-inner.mt40 > div.box.pd10')[0];
         const referenceDiv = createReferenceDiv('其他版本：');
         gameIds.forEach((otherGameId) => {
+          if (gameId === otherGameId) return;
           createReferenceA(referenceDiv, window.location.href.replace(`/psngame/${gameId}/`, `/psngame/${otherGameId}/`), `#${otherGameId}`);
         });
         if (/\/comment\/?$/.test(window.location.href)) {
@@ -2371,45 +2377,98 @@
           $(referenceDiv).insertAfter(emMatches[emMatches.length - 1]);
         } else psngame.appendChild(referenceDiv);
       };
-      const fetchGameMetaPage = (url, currentGameId) => {
-        fetchPageAndProcess(url, (page) => {
-          const psngameMatches = $(page).find('div.min-inner.mt20 > ul > li > a[href*="https://psnine.com/psngame/"]').slice(1);
-          const otherGameIds = [];
-          psngameMatches.each((i, a) => {
-            const gameId = gameIdFromPsngameUrl(a.href);
-            if (gameId !== currentGameId) otherGameIds.push(gameId);
-          });
-          if (psngameTrophyListUrlRegex.test(window.location.href)) {
-            referOtherVersionsOnTrophyList(currentGameId, otherGameIds);
-          } else if (/\/trophy\/\d+\/?$/.test(window.location.href)) {
-            referOtherVersionsOnTrophyTips(currentGameId, otherGameIds);
-          } else if (/\/(rank|comment|qa|topic|battle|gamelist)\/?$/.test(window.location.href)) {
-            referOtherVersionsOnRankThroughGamelist(currentGameId, otherGameIds);
-          }
+      const referVariantsDelegate = (gameId, gameIds) => {
+        if (psngameTrophyListUrlRegex.test(window.location.href)) {
+          referVariantsOnTrophyList(gameId, gameIds);
+        } else if (/\/trophy\/\d+\/?$/.test(window.location.href)) {
+          referVariantsOnTrophyTips(gameId, gameIds);
+        } else if (/\/(rank|comment|qa|topic|battle|gamelist)\/?$/.test(window.location.href)) {
+          referVariantsOnRankThroughGamelist(gameId, gameIds);
+        }
+      };
+      const gameVariantCacheID = (gameId) => `psngame-variants-${gameId}`;
+      const gameVariantCacheEncode = (gameId, gameIds) => {
+        const cache = { timestamp: Date.now(), variants: gameIds };
+        return JSON.stringify(cache);
+      };
+      const gameVariantCacheDecode = (cacheText) => {
+        if (!cacheText) return null;
+        const cache = JSON.parse(cacheText);
+        if (Date.now() - cache.timestamp > 60 * 60 * 1000) return null;
+        return cache.variants;
+      };
+      const gameVariantCacheStore = (gameIds) => {
+        gameIds.forEach((gameId) => {
+          // eslint-disable-next-line no-undef
+          GM_setValue(gameVariantCacheID(gameId),
+            gameVariantCacheEncode(gameId, gameIds));
         });
       };
-      const referOtherVersions = (gameId) => {
-        const findGameMetaUrl = (page) => {
-          if ($(page).find('div.side > div.hd3:contains("关联游戏")').length > 0) return $(page).find('div.side > ul > center > a')[0].href;
+      const fetchGameMetaPage = (url, gameId) => {
+        fetchPageAndProcess(url, (page) => {
+          const psngameMatches = $(page).find('div.min-inner.mt20 > ul > li > a[href*="https://psnine.com/psngame/"]').slice(1);
+          const gameIds = [];
+          psngameMatches.each((i, a) => { gameIds.push(gameIdFromPsngameUrl(a.href)); });
+          gameIds.sort();
+          gameVariantCacheStore(gameIds);
+          referVariantsDelegate(gameId, gameIds);
+        });
+      };
+      const searchVariants = (gameId, gameTitle) => {
+        const searchUrl = `https://psnine.com/psngame?title=${encodeURIComponent(gameTitle).replaceAll('%20', '+')}`;
+        fetchPageAndProcess(searchUrl, (page) => {
+          const psngameMatches = $(page).find('div.min-inner.mt40 > div.box > table > tbody > tr > td.pd1015.title.lh180 > a');
+          if (psngameMatches.length <= 0) return;
+          let gameIds = [gameId];
+          psngameMatches.each((i, a) => {
+            if (a.innerText !== gameTitle) return;
+            gameIds.push(gameIdFromPsngameUrl(a.href));
+          });
+          gameIds = gameIds.filter((value, index, array) => array.indexOf(value) === index);
+          gameIds.sort();
+          console.log(gameId);
+          gameVariantCacheStore(gameIds);
+          referVariantsDelegate(gameId, gameIds);
+        });
+      };
+      const findGameVariants = (gameId, page) => {
+        const findGameTitle = () => {
+          if (psngameTrophyListUrlRegex.test(window.location.href)) {
+            return $('div.inner.mt40 > div.main > div.box.pd10 > h1')[0].innerText.replace(/[^《]*《(.+)》[^》]*/, '$1');
+          }
+          if (/\/trophy\/\d+\/?$/.test(window.location.href)) {
+            return $('div.min-inner.mt40 > ul > li > div.ml100 > p > a')[0].innerText;
+          }
+          if (/\/(rank|comment|qa|topic|battle|gamelist)\/?$/.test(window.location.href)) {
+            return $('div.min-inner.mt40 > div.box.pd10 > h1')[0].innerText.replace(/[^《]*《(.+)》[^》]*/, '$1');
+          }
           return null;
         };
-        if (psngameTrophyListUrlRegex.test(window.location.href)) {
-          const gameMetaUrl = findGameMetaUrl(document.body);
-          if (gameMetaUrl) fetchGameMetaPage(gameMetaUrl, gameId);
+        const gameMetaUrl = $(page).find('div.side > div.hd3:contains("关联游戏")').length > 0 ? $(page).find('div.side > ul > center > a')[0].href : null;
+        if (gameMetaUrl) {
+          fetchGameMetaPage(gameMetaUrl, gameId);
         } else {
-          fetchPageAndProcess(`https://psnine.com/psngame/${gameId}`, (page) => {
-            const gameMetaUrl = findGameMetaUrl(page);
-            if (gameMetaUrl) fetchGameMetaPage(gameMetaUrl, gameId);
-          });
+          searchVariants(gameId, findGameTitle());
+        }
+      };
+      const referVariants = (gameId) => {
+        // eslint-disable-next-line no-undef
+        const gameIds = gameVariantCacheDecode(GM_getValue(gameVariantCacheID(gameId), null));
+        if (gameIds) {
+          referVariantsDelegate(gameId, gameIds);
+        } else if (psngameTrophyListUrlRegex.test(window.location.href)) {
+          findGameVariants(gameId, document.body);
+        } else {
+          fetchPageAndProcess(`https://psnine.com/psngame/${gameId}`, (page) => { findGameVariants(gameId, page); });
         }
       };
       if (/\/psngame\//g.test(window.location.href)) {
-        referOtherVersions(gameIdFromPsngameUrl(window.location.href));
+        referVariants(gameIdFromPsngameUrl(window.location.href));
       } else if (/\/trophy\//g.test(window.location.href)) {
-        referOtherVersions(gameIdFromTrophyUrl(window.location.href));
+        referVariants(gameIdFromTrophyUrl(window.location.href));
       }
     };
-    referGameMultiVer(settings.referGameMultiVer);
+    referGameVariants(settings.referGameVariants);
 
     /*
          * 功能：奖杯心得按“顶”的数量排序功能
@@ -3161,14 +3220,14 @@
         'fixTextLinks',
         'fixD7VGLinks',
         'fixHTTPLinks',
-        'referGameMultiVer',
+        'referGameVariants',
       ]; // 只有true/false或者enum的设置项
       $('.header .dropdown ul').append(`
                 <li><a href="javascript:void(0);" id="psnine-enhanced-version-opensetting">插件设置</a></li>`);
       const visiblePageHeight = $(window.top).height();
       $('body').append(`
                 <style>.setting-panel-box{z-index:9999;background-color:#fff;transition:all .4s ease;position:fixed;left:50%;transform:translateX(-50%);top:-5000px;width:500px;box-shadow:0 0 20px rgba(0,0,0,0.3);padding:10px 0;box-sizing:border-box;border-radius:4px;max-height:${visiblePageHeight < 740 ? visiblePageHeight - 40 : 700}px;overflow-y:scroll;scrollbar-color:#dcdcdc #fff;scrollbar-width:thin}.setting-panel-box::-webkit-scrollbar{width:4px;background-color:#fff}.setting-panel-box::-webkit-scrollbar-button{display:none}.setting-panel-box::-webkit-scrollbar-thumb{background-color:#dcdcdc}.setting-panel-box.show{top:20px}.setting-panel-box h2{margin-bottom:10px;padding-left:20px}.setting-panel-box h4{margin-bottom:10px;padding-left:20px;font-weight:400;color:#1f2f3d;font-size:22px}.setting-panel-box .row{display:flex;align-items:center;justify-content:flex-start;width:100%;margin-bottom:5px;padding-left:20px;box-sizing:border-box}.setting-panel-box .row label{line-height:32px;text-align:left;font-size:14px;color:#606266;width:190px}.setting-panel-box .row .mini{line-height:26px;text-align:left;font-size:14px;color:#606266;margin:0 10px 0 0;width:50px}.setting-panel-box .row .normal{line-height:26px;text-align:left;font-size:14px;color:#606266;margin:0 10px 0 0;width:205px}.setting-panel-box .row textarea{resize:vertical;min-height:30px;border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;line-height:26px;box-sizing:border-box;width:227px;padding:0 10px}.setting-panel-box .row input{border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;height:26px;line-height:26px;display:inline-block;width:227px;padding:0 10px}.setting-panel-box .row input.slider{height:6px;background-color:#e4e7ed;margin:16px 0;border-radius:3px;position:relative;cursor:pointer;vertical-align:middle;outline:none;padding:0}.setting-panel-box .row input.slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border:2px solid #409eff;background-color:#fff;border-radius:50%;transition:.2s;user-select:none}.setting-panel-box .row input.slider::-moz-range-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border:2px solid #409eff;background-color:#fff;border-radius:50%;transition:.2s;user-select:none}.setting-panel-box .row .sliderValue{margin-left:5px}.setting-panel-box .row select{border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;height:26px;line-height:26px;display:inline-block;width:227px;padding:0 10px}.setting-panel-box .row span{line-height:32px;text-align:left;font-size:14px;color:#606266;margin-right:10px}.setting-panel-box .btnbox{display:flex;align-items:center;justify-content:center}.setting-panel-box button{-webkit-appearance:button;padding:9px 15px;font-size:12px;border-radius:3px;display:inline-block;line-height:1;white-space:nowrap;cursor:pointer;background:#fff;border:1px solid #dcdfe6;color:#606266;text-align:center;box-sizing:border-box;outline:0;margin:0;transition:.1s;font-weight:500;margin:0 10px}.setting-panel-box button:hover{color:#409eff;border-color:#c6e2ff;background-color:#ecf5ff}.setting-panel-box button.confirm{color:#fff;background-color:#3890ff}.setting-panel-box button.confirm:hover{background-color:#9ec9ff}</style>
-                <div class=setting-panel-box><h2>PSN中文网功能增强插件设置</h2><div class=row><a href=https://github.com/swsoyee/psnine-enhanced-version><img src=https://img.shields.io/github/stars/swsoyee/psnine-enhanced-version.svg?style=social></img></a></div><div class=row><label>夜间模式</label><select id=nightMode><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动夜间模式</label><select id=autoNightMode><option value="&quot;SYSTEM&quot;">跟随系统<option value="&quot;TIME&quot;">跟据时间<option value="&quot;OFF&quot;">关闭</select></div><div class=row><label>高亮用户ID</label><textarea name="" id="highlightSpecificID" cols="30" rows="2"></textarea></div><div class=row><label>黑名单ID</label><textarea name="" id="blockList" cols="30" rows="2"></textarea></div><div class=row><label>关键词屏蔽</label><textarea name="" id="blockWordsList" cols="30" rows="2"></textarea></div><div class=row><label>机因中显示被@的内容</label><select id=replyTraceback><option value=true>启用<option value=false>关闭</select></div><div class=row><label>悬浮显示刮刮卡内容</label><select id=hoverUnmark><option value=true>启用<option value=false>关闭</select></div><div class=row><label>个人主页下显示所有游戏</label><select id=autoPagingInHomepage><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动签到</label><select id=autoCheckIn><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动向后翻页数</label><input type=number class=normal id=autoPaging></div><div class=row><label>问答区状态优化</label><select id=newQaStatus><option value=true>启用<option value=false>关闭</select></div><div class=row><label>悬浮头像显示个人信息</label><select id=hoverHomepage><option value=true>启用<option value=false>关闭</select></div><div class=row><label>奖杯默认折叠</label><select id=foldTrophySummary><option value=true>启用<option value=false>关闭</select></div><div class=row><label>约战页面去掉发起人头像</label><select id=removeHeaderInBattle><option value=true>启用<option value=false>关闭</select></div><div class=row><label>机因、问答页面按最新排序</label><select id=listPostsByNew><option value=true>启用<option value=false>关闭</select></div><div class=row><label>载入全部问答答案</label><select id=showAllQAAnswers><option value=true>启用<option value=false>关闭</select></div><div class=row><label>答案按最新排列</label><select id=listQAAnswersByNew><option value=true>启用<option value=false>关闭</select></div><div class=row><label>答案显示隐藏回复</label><select id=showHiddenQASubReply><option value=true>启用<option value=false>关闭</select></div><div class=row><label>检测纯文本中的链接</label><select id=fixTextLinks><option value=true>启用<option value=false>关闭</select></div><div class=row><label>修复D7VG链接</label><select id=fixD7VGLinks><option value=true>启用<option value=false>关闭</select></div><div class=row><label>站内使用HTTPS链接</label><select id=fixHTTPLinks><option value=true>启用<option value=false>关闭</select></div><div class=row><label>尝试关联不同版本的游戏</label><select id=referGameMultiVer><option value=true>启用<option value=false>关闭</select></div><div class=row><label>无白金游戏图标透明度</label><input id=filterNonePlatinum class=slider type=range min=0 max=1 step=0.1><span id=filterNonePlatinumValue class=sliderValue></span></div><div class=row><label>热门标签回复数阈值</label><input id=hotTagThreshold class=slider type=range min=10 max=100 step=5><span id=hotTagThresholdValue class=sliderValue></span></div><div class=btnbox><button class=confirm>确定</button><button class=cancel>取消</button></div></div>`);
+                <div class=setting-panel-box><h2>PSN中文网功能增强插件设置</h2><div class=row><a href=https://github.com/swsoyee/psnine-enhanced-version><img src=https://img.shields.io/github/stars/swsoyee/psnine-enhanced-version.svg?style=social></img></a></div><div class=row><label>夜间模式</label><select id=nightMode><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动夜间模式</label><select id=autoNightMode><option value="&quot;SYSTEM&quot;">跟随系统<option value="&quot;TIME&quot;">跟据时间<option value="&quot;OFF&quot;">关闭</select></div><div class=row><label>高亮用户ID</label><textarea name="" id="highlightSpecificID" cols="30" rows="2"></textarea></div><div class=row><label>黑名单ID</label><textarea name="" id="blockList" cols="30" rows="2"></textarea></div><div class=row><label>关键词屏蔽</label><textarea name="" id="blockWordsList" cols="30" rows="2"></textarea></div><div class=row><label>机因中显示被@的内容</label><select id=replyTraceback><option value=true>启用<option value=false>关闭</select></div><div class=row><label>悬浮显示刮刮卡内容</label><select id=hoverUnmark><option value=true>启用<option value=false>关闭</select></div><div class=row><label>个人主页下显示所有游戏</label><select id=autoPagingInHomepage><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动签到</label><select id=autoCheckIn><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动向后翻页数</label><input type=number class=normal id=autoPaging></div><div class=row><label>问答区状态优化</label><select id=newQaStatus><option value=true>启用<option value=false>关闭</select></div><div class=row><label>悬浮头像显示个人信息</label><select id=hoverHomepage><option value=true>启用<option value=false>关闭</select></div><div class=row><label>奖杯默认折叠</label><select id=foldTrophySummary><option value=true>启用<option value=false>关闭</select></div><div class=row><label>约战页面去掉发起人头像</label><select id=removeHeaderInBattle><option value=true>启用<option value=false>关闭</select></div><div class=row><label>机因、问答页面按最新排序</label><select id=listPostsByNew><option value=true>启用<option value=false>关闭</select></div><div class=row><label>载入全部问答答案</label><select id=showAllQAAnswers><option value=true>启用<option value=false>关闭</select></div><div class=row><label>答案按最新排列</label><select id=listQAAnswersByNew><option value=true>启用<option value=false>关闭</select></div><div class=row><label>答案显示隐藏回复</label><select id=showHiddenQASubReply><option value=true>启用<option value=false>关闭</select></div><div class=row><label>检测纯文本中的链接</label><select id=fixTextLinks><option value=true>启用<option value=false>关闭</select></div><div class=row><label>修复D7VG链接</label><select id=fixD7VGLinks><option value=true>启用<option value=false>关闭</select></div><div class=row><label>站内使用HTTPS链接</label><select id=fixHTTPLinks><option value=true>启用<option value=false>关闭</select></div><div class=row><label>尝试关联不同版本的游戏</label><select id=referGameVariants><option value=true>启用<option value=false>关闭</select></div><div class=row><label>无白金游戏图标透明度</label><input id=filterNonePlatinum class=slider type=range min=0 max=1 step=0.1><span id=filterNonePlatinumValue class=sliderValue></span></div><div class=row><label>热门标签回复数阈值</label><input id=hotTagThreshold class=slider type=range min=10 max=100 step=5><span id=hotTagThresholdValue class=sliderValue></span></div><div class=btnbox><button class=confirm>确定</button><button class=cancel>取消</button></div></div>`);
       // 点击打开设置面板
       $('#psnine-enhanced-version-opensetting').on('click', () => {
         $('.setting-panel-box').addClass('show');
