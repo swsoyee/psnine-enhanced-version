@@ -2391,6 +2391,7 @@
         } else psngame.appendChild(referenceDiv);
       };
       const referVariantsDelegate = (gameId, gameIds) => {
+        if (gameIds.length === 1) return;
         if (psngameTrophyListUrlRegex.test(window.location.href)) {
           referVariantsOnTrophyList(gameId, gameIds);
         } else if (/\/trophy\/\d+\/?$/.test(window.location.href)) {
