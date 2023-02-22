@@ -2336,7 +2336,9 @@
       const psngameTrophyListUrlRegex = /\/psngame\/\d+\/?($|\?)/;
       const createReferenceDiv = (text) => {
         const referenceDiv = document.createElement('div');
-        referenceDiv.innerText = text;
+        const innerTextEm = document.createElement('em');
+        innerTextEm.innerText = text;
+        referenceDiv.appendChild(innerTextEm);
         return referenceDiv;
       };
       const createReferenceA = (referenceDiv, url, text) => {
@@ -2349,9 +2351,8 @@
         const trophySections = $('div.main > div.box > table > tbody > tr').not('.trophy').find('td[colspan="4"]');
         const referenceDiv = createReferenceDiv('其他版本：');
         gameIds.forEach((otherGameId) => {
-          console.log(gameId, otherGameId, gameId === otherGameId);
           if (gameId === otherGameId) return;
-          createReferenceA(referenceDiv, `https://psnine.com/psngame/${otherGameId}`, `#${otherGameId}`);
+          createReferenceA(referenceDiv, `https://psnine.com/psngame/${otherGameId}`, ` #${otherGameId}`);
         });
         trophySections[0].appendChild(referenceDiv);
       };
@@ -2361,7 +2362,7 @@
         const referenceDiv = createReferenceDiv('其他版本：');
         gameIds.forEach((otherGameId) => {
           if (gameId === otherGameId) return;
-          createReferenceA(referenceDiv, `https://psnine.com/trophy/${otherGameId}${trophyIdStr}`, `#${otherGameId}${trophyIdStr}`);
+          createReferenceA(referenceDiv, `https://psnine.com/trophy/${otherGameId}${trophyIdStr}`, ` #${otherGameId}${trophyIdStr}`);
         });
         trophy.appendChild(referenceDiv);
       };
@@ -2370,11 +2371,20 @@
         const referenceDiv = createReferenceDiv('其他版本：');
         gameIds.forEach((otherGameId) => {
           if (gameId === otherGameId) return;
-          createReferenceA(referenceDiv, window.location.href.replace(`/psngame/${gameId}/`, `/psngame/${otherGameId}/`), `#${otherGameId}`);
+          createReferenceA(referenceDiv, window.location.href.replace(`/psngame/${gameId}/`, `/psngame/${otherGameId}/`), ` #${otherGameId}`);
         });
         if (/\/comment\/?$/.test(window.location.href)) {
-          const emMatches = $(psngame).find('em');
-          $(referenceDiv).insertAfter(emMatches[emMatches.length - 1]);
+          if ($('div.min-inner.mt40 div.box ul.list li div.ml64 div.meta.pb10 span.alert-success.pd5:contains(评分 )').length <= 0 || $('div.min-inner.mt40 div.box div.ml64 p.text-success:contains(评分 ) b').length <= 0) {
+            const emMatches = $(psngame).find('em');
+            $(referenceDiv).insertAfter(emMatches[emMatches.length - 1]);
+          } else {
+            repeatUntilSuccessful(() => {
+              const emMatches = $(psngame).find('em');
+              if (emMatches.length < 3) return false;
+              $(referenceDiv).insertAfter(emMatches[emMatches.length - 1]);
+              return true;
+            }, 100);
+          }
         } else psngame.appendChild(referenceDiv);
       };
       const referVariantsDelegate = (gameId, gameIds) => {
