@@ -2309,6 +2309,7 @@
       };
     }
 
+    // 匹配游戏的不同版本
     const referGameVariants = (on) => {
       if (!on) return;
       const fetchPageAndProcess = (url, func) => {
@@ -2330,10 +2331,12 @@
       };
       const gameIdFromTrophyUrl = (url) => {
         const idMatch = url.match(/\/trophy\/\d+\/?$/);
+        // 奖杯ID除去后三位即为游戏ID
         if (idMatch.length > 0) return Number.parseInt(idMatch[0].replace(/\/trophy\/(\d+)\d{3}/, '$1'), 10);
         return -1;
       };
       const psngameTrophyListUrlRegex = /\/psngame\/\d+\/?($|\?)/;
+      // 创建包含多个游戏版本链接的板块
       const createReferenceDiv = (text) => {
         const referenceDiv = document.createElement('div');
         const innerTextEm = document.createElement('em');
@@ -2347,6 +2350,7 @@
         referenceA.innerText = text;
         referenceDiv.appendChild(referenceA);
       };
+      // 适用于奖杯列表页面
       const referVariantsOnTrophyList = (gameId, gameIds) => {
         const trophySections = $('div.main > div.box > table > tbody > tr').not('.trophy').find('td[colspan="4"]');
         const referenceDiv = createReferenceDiv('其他版本：');
@@ -2356,6 +2360,7 @@
         });
         trophySections[0].appendChild(referenceDiv);
       };
+      // 适用于奖杯TIPS页面
       const referVariantsOnTrophyTips = (gameId, gameIds) => {
         const trophy = $('body > div.min-inner.mt40 > div.box.pd5')[0];
         const trophyIdStr = window.location.href.match(/\/trophy\/\d+/)[0].replace(`/trophy/${gameId}`, '');
@@ -2366,6 +2371,7 @@
         });
         trophy.appendChild(referenceDiv);
       };
+      // 适用于其他游戏子页面
       const referVariantsOnRankThroughGamelist = (gameId, gameIds) => {
         const psngame = $('body > div.min-inner.mt40 > div.box.pd10')[0];
         const referenceDiv = createReferenceDiv('其他版本：');
@@ -2373,18 +2379,15 @@
           if (gameId === otherGameId) return;
           createReferenceA(referenceDiv, window.location.href.replace(`/psngame/${gameId}/`, `/psngame/${otherGameId}/`), ` #${otherGameId}`);
         });
-        if (/\/comment\/?$/.test(window.location.href)) {
-          if ($('div.min-inner.mt40 div.box ul.list li div.ml64 div.meta.pb10 span.alert-success.pd5:contains(评分 )').length <= 0 || $('div.min-inner.mt40 div.box div.ml64 p.text-success:contains(评分 ) b').length <= 0) {
+        // 评论页面若有添加评分与图表需特别处理
+        if (/\/comment\/?$/.test(window.location.href) && ($('div.min-inner.mt40 div.box ul.list li div.ml64 div.meta.pb10 span.alert-success.pd5:contains(评分 )').length > 0 || $('div.min-inner.mt40 div.box div.ml64 p.text-success:contains(评分 ) b').length > 0)) {
+          repeatUntilSuccessful(() => {
             const emMatches = $(psngame).find('em');
+            // 等待评分添加完毕
+            if (emMatches.length < 3) return false;
             $(referenceDiv).insertAfter(emMatches[emMatches.length - 1]);
-          } else {
-            repeatUntilSuccessful(() => {
-              const emMatches = $(psngame).find('em');
-              if (emMatches.length < 3) return false;
-              $(referenceDiv).insertAfter(emMatches[emMatches.length - 1]);
-              return true;
-            }, 100);
-          }
+            return true;
+          }, 100);
         } else psngame.appendChild(referenceDiv);
       };
       const referVariantsDelegate = (gameId, gameIds) => {
@@ -2396,6 +2399,7 @@
           referVariantsOnRankThroughGamelist(gameId, gameIds);
         }
       };
+      // 缓存游戏的多版本信息
       const gameVariantCacheID = (gameId) => `psngame-variants-${gameId}`;
       const gameVariantCacheEncode = (gameId, gameIds) => {
         const cache = { timestamp: Date.now(), variants: gameIds };
@@ -2404,6 +2408,7 @@
       const gameVariantCacheDecode = (cacheText) => {
         if (!cacheText) return null;
         const cache = JSON.parse(cacheText);
+        // 缓存有效时间1小时
         if (Date.now() - cache.timestamp > 60 * 60 * 1000) return null;
         return cache.variants;
       };
@@ -2414,6 +2419,7 @@
             gameVariantCacheEncode(gameId, gameIds));
         });
       };
+      // 查询已由管理员关联的游戏的多版本
       const fetchGameMetaPage = (url, gameId) => {
         fetchPageAndProcess(url, (page) => {
           const psngameMatches = $(page).find('div.min-inner.mt20 > ul > li > a[href*="https://psnine.com/psngame/"]').slice(1);
@@ -2424,6 +2430,7 @@
           referVariantsDelegate(gameId, gameIds);
         });
       };
+      // 查询尚未由管理员关联的游戏是否存在多版本
       const searchVariants = (gameId, gameTitle) => {
         const searchUrl = `https://psnine.com/psngame?title=${encodeURIComponent(gameTitle).replaceAll('%20', '+')}`;
         fetchPageAndProcess(searchUrl, (page) => {
@@ -2436,12 +2443,13 @@
           });
           gameIds = gameIds.filter((value, index, array) => array.indexOf(value) === index);
           gameIds.sort();
-          console.log(gameId);
           gameVariantCacheStore(gameIds);
           referVariantsDelegate(gameId, gameIds);
         });
       };
+      // 查询游戏多版本
       const findGameVariants = (gameId, page) => {
+        // 在不同页面查找游戏标题
         const findGameTitle = () => {
           if (psngameTrophyListUrlRegex.test(window.location.href)) {
             return $('div.inner.mt40 > div.main > div.box.pd10 > h1')[0].innerText.replace(/[^《]*《(.+)》[^》]*/, '$1');
@@ -2454,6 +2462,7 @@
           }
           return null;
         };
+        // 在参数的奖杯列表页面查找游戏是否已经被关联
         const gameMetaUrl = $(page).find('div.side > div.hd3:contains("关联游戏")').length > 0 ? $(page).find('div.side > ul > center > a')[0].href : null;
         if (gameMetaUrl) {
           fetchGameMetaPage(gameMetaUrl, gameId);
@@ -2462,13 +2471,18 @@
         }
       };
       const referVariants = (gameId) => {
+        // 查找缓存
         // eslint-disable-next-line no-undef
         const gameIds = gameVariantCacheDecode(GM_getValue(gameVariantCacheID(gameId), null));
         if (gameIds) {
+          // 有缓存时直接链接
           referVariantsDelegate(gameId, gameIds);
+          console.log('游戏关联版本信息已使用缓存');
         } else if (psngameTrophyListUrlRegex.test(window.location.href)) {
+          // 无缓存、当前页面为奖杯列表则直接查询
           findGameVariants(gameId, document.body);
         } else {
+          // 无缓存、当前页面并非奖杯列表，抓取奖杯列表页面再查询
           fetchPageAndProcess(`https://psnine.com/psngame/${gameId}`, (page) => { findGameVariants(gameId, page); });
         }
       };
