@@ -2410,7 +2410,7 @@
         if (!cacheText) return null;
         const cache = JSON.parse(cacheText);
         // 缓存有效时间1小时
-        if (Date.now() - cache.timestamp > 60 * 60 * 1000) return null;
+        if (Date.now() - cache.timestamp > 24 * 60 * 60 * 1000) return null;
         return cache.variants;
       };
       const gameVariantCacheStore = (gameIds) => {
