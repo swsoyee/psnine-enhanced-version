@@ -2337,8 +2337,9 @@
       };
       const psngameTrophyListUrlRegex = /\/psngame\/\d+\/?($|\?)/;
       // 创建包含多个游戏版本链接的板块
-      const createReferenceDiv = (text) => {
+      const createReferenceDiv = (text, style = 'margin-left: 100px;') => {
         const referenceDiv = document.createElement('div');
+        referenceDiv.style.cssText = style;
         const innerTextEm = document.createElement('em');
         innerTextEm.innerText = text;
         referenceDiv.appendChild(innerTextEm);
@@ -2364,7 +2365,7 @@
       const referVariantsOnTrophyTips = (gameId, gameIds) => {
         const trophy = $('body > div.min-inner.mt40 > div.box.pd5')[0];
         const trophyIdStr = window.location.href.match(/\/trophy\/\d+/)[0].replace(`/trophy/${gameId}`, '');
-        const referenceDiv = createReferenceDiv('其他版本：');
+        const referenceDiv = createReferenceDiv('其他版本：', 'margin-left: 90px; margin-top: -10px;');
         gameIds.forEach((otherGameId) => {
           if (gameId === otherGameId) return;
           createReferenceA(referenceDiv, `https://psnine.com/trophy/${otherGameId}${trophyIdStr}`, ` #${otherGameId}${trophyIdStr}`);
