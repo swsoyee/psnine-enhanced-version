@@ -124,3 +124,8 @@ Made with [contributors-img](https://contributors-img.web.app).
 - v1.0 👑发布
 
 </details>
+
+## 开发
+
+1. 请在psnineplus.js中编写代码，并复制到暴力猴中进行测试
+2. 请在开发完成后运行npm run install，然后运行npm run lint自动修复语法错误

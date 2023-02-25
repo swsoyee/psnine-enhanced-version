@@ -122,7 +122,7 @@
         node.id = 'nightModeStyle';
         node.type = 'text/css';
         node.appendChild(document.createTextNode(`
-                    li[style="background:#f5faec"]{background:#344836!important}li[style="background:#fdf7f7"]{background:#4f3945!important}li[style="background:#faf8f0"]{background:#4e4c39!important}li[style="background:#f4f8fa"]{background:#505050!important}span[style="color:blue;"]{color:#64a5ff!important}span[style="color:red;"],span[style="color:#a10000"]{color:#ff6464!important}span[style="color:brown;"]{color:#ff8864!important}.tit3{color:white!important}.mark{background:#bbb!important;color:#bbb}body.bg{background:#2b2b2b!important}.list li,.box .post,td,th{border-bottom:1px solid #333}.psnnode{background:#656565}.box{background:#3d3d3d!important}.title a{color:#bbb}.text-strong,strong,.storeinfo,.content{color:#bbb!important}.alert-warning,.alert-error,.alert-success,.alert-info{background:#4b4b4b!important}h1,.title2{color:#fff!important}.twoge{color:#fff!important}.inav{background:#3d3d3d!important}.inav li.current{background:#4b4b4b!important}.ml100 p{color:#fff!important}.t1{background:#657caf!important}.t2{background:#845e2f!important}.t3{background:#707070!important}.t4{background:#8b4d2d!important}blockquote{background:#bababa!important}.text-gray{color:#bbb!important}.tradelist li{color:white!important}.tbl{background:#3c3c3c!important}.genelist li:hover,.touchclick:hover{background:#333!important}.showbar{background:radial-gradient(at center top,#7b8492,#3c3c3c)}.darklist,.cloud{background-color:#3c3c3c}.side .hd3,.header,.dropdown ul{background-color:#222}.list li .sonlist li{background-color:#333}.node{background-color:#3b4861}.rep{background-color:#3b4861}.btn-gray{background-color:#666}`));
+        li[style="background:#f5faec"]{background:#344836 !important;}li[style="background:#fdf7f7"]{background:#4f3945 !important;}li[style="background:#faf8f0"]{background:#4e4c39 !important;}li[style="background:#f4f8fa"]{background:#505050 !important;}span[style="color:blue;"]{color:#64a5ff !important;}span[style="color:red;"],span[style="color:#a10000"]{color:#ff6464 !important;}span[style="color:brown;"]{color:#ff8864 !important;}.tit3{color:white !important;}.mark{background:#bbb !important;color:#bbb;}body.bg{background:#2b2b2b !important;}.list li,.box .post,td,th{border-bottom:1px solid #333;}.psnnode{background:#656565;}.box{background:#3d3d3d !important;}.title a{color:#bbb;}.text-strong,strong,.storeinfo,.content{color:#bbb !important;}.alert-warning,.alert-error,.alert-success,.alert-info{background:#4b4b4b !important;}h1,.title2{color:#ffffff !important;}.twoge{color:#ffffff !important;}.inav{background:#3d3d3d !important;}.inav li.current{background:#4b4b4b !important;}.ml100 p{color:#ffffff !important;}.t1{background:#657caf !important;}.t2{background:#845e2f !important;}.t3{background:#707070 !important;}.t4{background:#8b4d2d !important;}blockquote{background:#bababa !important;}.text-gray{color:#bbb !important;}.tradelist li{color:white !important;}.tbl{background:#3c3c3c !important;}.genelist li:hover,.touchclick:hover{background:#333 !important;}.showbar{background:radial-gradient(at center top,#7B8492,#3c3c3c);}.darklist,.cloud{background-color:#3c3c3c;}.side .hd3,.header,.dropdown ul{background-color:#222;}.list li .sonlist li{background-color:#333;}.node{background-color:#3b4861;}.rep{background-color:#3b4861;}.btn-gray{background-color:#666;}.dropmenu .o_btn{margin-right:0;color:#bbb;border-color:#bbb;}.dropmenu .o_btn.select{margin-right:0;color:#fff;border-color:#3498db;background-color:#3498db;}`));
         const heads = document.getElementsByTagName('head');
         if (heads.length > 0) {
           heads[0].appendChild(node);
@@ -2339,9 +2339,10 @@
       };
       const psngameTrophyListUrlRegex = /\/psngame\/\d+\/?($|\?)/;
       // 创建包含多个游戏版本链接的板块
-      const createReferenceDiv = (text, style = 'margin-left: 100px;') => {
+      const createReferenceDiv = (text, style = '', className = 'other-version') => {
         const referenceDiv = document.createElement('div');
         referenceDiv.style.cssText = style;
+        referenceDiv.className = className;
         const innerTextEm = document.createElement('em');
         innerTextEm.innerText = text;
         referenceDiv.appendChild(innerTextEm);
@@ -2351,56 +2352,51 @@
         const referenceA = document.createElement('a');
         referenceA.href = url;
         referenceA.innerText = text;
+        referenceA.target = '_blank';
         referenceDiv.appendChild(referenceA);
       };
       // 适用于奖杯列表页面
       const referVariantsOnTrophyList = (gameId, gameIds) => {
-        const trophySections = $('div.main > div.box > table > tbody > tr').not('.trophy').find('td[colspan="4"]');
-        const referenceDiv = createReferenceDiv('其他版本：');
+        const trophySections = $('div.main > ul.inav');
+        let bg = '#fff';
+        if (JSON.parse(localStorage['psnine-night-mode-CSS-settings']).nightMode) {
+          bg = '#3d3d3d';
+        }
+        const referenceDiv = createReferenceDiv('查看该游戏的其他版本：', `margin-bottom: 20px; background: ${bg}; padding:12px 10px;`);
         gameIds.forEach((otherGameId) => {
           if (gameId === otherGameId) return;
           createReferenceA(referenceDiv, `https://psnine.com/psngame/${otherGameId}`, ` #${otherGameId}`);
         });
-        trophySections[0].appendChild(referenceDiv);
+        trophySections[0].after(referenceDiv);
       };
       // 适用于奖杯TIPS页面
       const referVariantsOnTrophyTips = (gameId, gameIds) => {
-        const trophy = $('body > div.min-inner.mt40 > div.box.pd5')[0];
+        let bg = '#fff';
+        if (JSON.parse(localStorage['psnine-night-mode-CSS-settings']).nightMode) {
+          bg = '#3d3d3d';
+        }
+        const trophy = $('body > div.min-inner.mt40 > div.box.pd5');
         const trophyIdStr = window.location.href.match(/\/trophy\/\d+/)[0].replace(`/trophy/${gameId}`, '');
-        const referenceDiv = createReferenceDiv('其他版本：', 'margin-left: 90px; margin-top: -10px;');
+        const referenceDiv = createReferenceDiv('查看该游戏其他版本的奖杯tips：', `margin-bottom: 20px; margin-top: 20px; background: ${bg}; padding:12px 10px;`);
         gameIds.forEach((otherGameId) => {
           if (gameId === otherGameId) return;
           createReferenceA(referenceDiv, `https://psnine.com/trophy/${otherGameId}${trophyIdStr}`, ` #${otherGameId}${trophyIdStr}`);
         });
-        trophy.appendChild(referenceDiv);
+        trophy.after(referenceDiv);
       };
       // 适用于其他游戏子页面
       const referVariantsOnRankThroughGamelist = (gameId, gameIds) => {
-        const psngame = $('body > div.min-inner.mt40 > div.box.pd10')[0];
-        const referenceDiv = createReferenceDiv('其他版本：');
+        let bg = '#fff';
+        if (JSON.parse(localStorage['psnine-night-mode-CSS-settings']).nightMode) {
+          bg = '#3d3d3d';
+        }
+        const psngame = $('body > div.min-inner.mt40 > ul.inav');
+        const referenceDiv = createReferenceDiv('查看该游戏的其他版本：', `margin-bottom: 20px; margin-top: 20px; background: ${bg}; padding:12px 10px;`);
         gameIds.forEach((otherGameId) => {
           if (gameId === otherGameId) return;
           createReferenceA(referenceDiv, window.location.href.replace(`/psngame/${gameId}/`, `/psngame/${otherGameId}/`), ` #${otherGameId}`);
         });
-        // 评论页面若有添加评分与图表需特别处理
-        if (/\/comment\/?$/.test(window.location.href) && ($('div.min-inner.mt40 div.box ul.list li div.ml64 div.meta.pb10 span.alert-success.pd5:contains(评分 )').length > 0 || $('div.min-inner.mt40 div.box div.ml64 p.text-success:contains(评分 ) b').length > 0)) {
-          repeatUntilSuccessful(() => {
-            const emMatches = $(psngame).find('em');
-            // 通过"xx.xx%完美"字样定位
-            let lastNativeEmIndex;
-            emMatches.each((i, em) => {
-              if (/%\s*完美/.test(em.innerText)) {
-                lastNativeEmIndex = i;
-                return false;
-              }
-              return true;
-            });
-            // 等待评分添加完毕
-            if (emMatches.length < (lastNativeEmIndex + 2)) return false;
-            $(referenceDiv).insertAfter(emMatches[lastNativeEmIndex + 1]);
-            return true;
-          }, 100);
-        } else psngame.appendChild(referenceDiv);
+        psngame.after(referenceDiv);
       };
       const referVariantsDelegate = (gameId, gameIds) => {
         if (gameIds.length === 1) return;
@@ -2561,25 +2557,30 @@
     };
 
     // 奖杯心得页面输入框可缩放大小
-    addButtonStyle('sortTipsByLikes', '#3498db', '8px 16px', '10px'); // 根据顶数排序Tips
-    if (window.location.href.match(/trophy\/\d+($|\/$)/)) {
+    if (window.location.href.match(/trophy\/\d+($|\/$)/) && $('div.box.mt20>.list>li').length) {
       let isSorted = false;
-      $("<a id='sortTipsByLikes'>根据顶数排序Tips</a>")
-        .insertBefore($('div.box.mt20>.list').get(0)).css({
-          width: '111px',
-          textAlign: 'center',
-          textDecoration: 'none',
-        })
+      $('div.box.mt20>.list').prepend("<div id='sortTipsByLikes'>将tips按热门排序</div>").css({
+        position: 'relative',
+      });
+      $('#sortTipsByLikes').css({
+        padding: '8px 6px',
+        'font-size': '12px',
+        'text-align': 'center',
+        'background-color': '#3890ff',
+        color: '#FFFFFF',
+        cursor: 'pointer',
+        margin: '10px',
+      })
         .click((event) => {
           if (isSorted) {
             sortTipsByLikes(isSorted);
-            $(event.target).text('根据顶数排序Tips').css({
-              'background-color': '#3498db',
+            $(event.target).text('将tips按热门排序').css({
+              'background-color': '#3890ff',
               color: '#FFFFFF',
             });
           } else {
             sortTipsByLikes(isSorted);
-            $(event.target).text('恢复默认排序').css({
+            $(event.target).text('将tips按时间排序').css({
               'background-color': '#E7EBEE',
               color: '#99A1A7',
             });
