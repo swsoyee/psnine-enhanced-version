@@ -185,4 +185,17 @@
   .btn-gray {
       background-color: #666;
   }
+
+  /* 奖杯列表比天梯的排序栏 */
+  .dropmenu .o_btn{
+    margin-right: 0;
+    color: #bbb;
+    border-color: #bbb;
+  }
+  .dropmenu .o_btn.select{
+    margin-right: 0;
+    color: #fff;
+    border-color: #3498db;
+    background-color: #3498db;
+  }
 }
