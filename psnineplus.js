@@ -2339,10 +2339,10 @@
       };
       const psngameTrophyListUrlRegex = /\/psngame\/\d+\/?($|\?)/;
       // 创建包含多个游戏版本链接的板块
-      const createReferenceDiv = (text, style = '', className = 'other-version') => {
+      const createReferenceDiv = (text, style = '') => {
         const referenceDiv = document.createElement('div');
+        referenceDiv.className = 'box';
         referenceDiv.style.cssText = style;
-        referenceDiv.className = className;
         const innerTextEm = document.createElement('em');
         innerTextEm.innerText = text;
         referenceDiv.appendChild(innerTextEm);
@@ -2357,27 +2357,19 @@
       };
       // 适用于奖杯列表页面
       const referVariantsOnTrophyList = (gameId, gameIds) => {
-        const trophySections = $('div.main > ul.inav');
-        let bg = '#fff';
-        if (JSON.parse(localStorage['psnine-night-mode-CSS-settings']).nightMode) {
-          bg = '#3d3d3d';
-        }
-        const referenceDiv = createReferenceDiv('查看该游戏的其他版本：', `margin-bottom: 20px; background: ${bg}; padding:12px 10px;`);
+        const psngameNavBar = $('div.main > ul.inav');
+        const referenceDiv = createReferenceDiv('查看该游戏的其他版本：', 'margin-bottom: 20px; padding:12px 10px;');
         gameIds.forEach((otherGameId) => {
           if (gameId === otherGameId) return;
           createReferenceA(referenceDiv, `https://psnine.com/psngame/${otherGameId}`, ` #${otherGameId}`);
         });
-        trophySections[0].after(referenceDiv);
+        psngameNavBar.after(referenceDiv);
       };
       // 适用于奖杯TIPS页面
       const referVariantsOnTrophyTips = (gameId, gameIds) => {
-        let bg = '#fff';
-        if (JSON.parse(localStorage['psnine-night-mode-CSS-settings']).nightMode) {
-          bg = '#3d3d3d';
-        }
         const trophy = $('body > div.min-inner.mt40 > div.box.pd5');
         const trophyIdStr = window.location.href.match(/\/trophy\/\d+/)[0].replace(`/trophy/${gameId}`, '');
-        const referenceDiv = createReferenceDiv('查看该游戏其他版本的奖杯tips：', `margin-bottom: 20px; margin-top: 20px; background: ${bg}; padding:12px 10px;`);
+        const referenceDiv = createReferenceDiv('查看该游戏其他版本的奖杯Tips：', 'margin-bottom: 20px; margin-top: 20px; padding:12px 10px;');
         gameIds.forEach((otherGameId) => {
           if (gameId === otherGameId) return;
           createReferenceA(referenceDiv, `https://psnine.com/trophy/${otherGameId}${trophyIdStr}`, ` #${otherGameId}${trophyIdStr}`);
@@ -2386,17 +2378,13 @@
       };
       // 适用于其他游戏子页面
       const referVariantsOnRankThroughGamelist = (gameId, gameIds) => {
-        let bg = '#fff';
-        if (JSON.parse(localStorage['psnine-night-mode-CSS-settings']).nightMode) {
-          bg = '#3d3d3d';
-        }
-        const psngame = $('body > div.min-inner.mt40 > ul.inav');
-        const referenceDiv = createReferenceDiv('查看该游戏的其他版本：', `margin-bottom: 20px; margin-top: 20px; background: ${bg}; padding:12px 10px;`);
+        const psngameNavBar = $('body > div.min-inner.mt40 > ul.inav');
+        const referenceDiv = createReferenceDiv('查看该游戏的其他版本：', 'margin-bottom: 20px; margin-top: 20px; padding:12px 10px;');
         gameIds.forEach((otherGameId) => {
           if (gameId === otherGameId) return;
           createReferenceA(referenceDiv, window.location.href.replace(`/psngame/${gameId}/`, `/psngame/${otherGameId}/`), ` #${otherGameId}`);
         });
-        psngame.after(referenceDiv);
+        psngameNavBar.after(referenceDiv);
       };
       const referVariantsDelegate = (gameId, gameIds) => {
         if (gameIds.length === 1) return;
