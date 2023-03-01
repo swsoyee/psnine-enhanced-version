@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      1.0.14
+// @version      1.0.15
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // eslint-disable-next-line max-len
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
@@ -2337,7 +2337,6 @@
         if (idMatch.length > 0) return Number.parseInt(idMatch[0].replace(/\/trophy\/(\d+)\d{3}/, '$1'), 10);
         return -1;
       };
-      const psngameTrophyListUrlRegex = /\/psngame\/\d+\/?($|\?)/;
       // 创建包含多个游戏版本链接的板块
       const createReferenceDiv = (text, style = '') => {
         const referenceDiv = document.createElement('div');
@@ -2386,6 +2385,7 @@
         });
         psngameNavBar.after(referenceDiv);
       };
+      const psngameTrophyListUrlRegex = /\/psngame\/\d+\/?($|\?)/;
       const referVariantsDelegate = (gameId, gameIds) => {
         if (gameIds.length === 1) return;
         if (psngameTrophyListUrlRegex.test(window.location.href)) {
@@ -2417,6 +2417,9 @@
         });
       };
       // 查询尚未由管理员关联的游戏是否存在多版本
+      const gameTitleTrim = (title) => title.replace(/(^(\s*《\s*)+)|((\s*》\s*)+$)/g, '')
+        .replace(/\s*[（(]VR2?(\s*可选)?[）)]\s*$/gi, '')
+        .replace(/\s*Trophies\s*$/gi, '');
       function findGameVariantsBySearch(gameId, gameTitle, tryGameMeta = false) {
         const searchUrl = `https://psnine.com/psngame?title=${encodeURIComponent(gameTitle).replaceAll('%20', '+')}`;
         fetchPageAndProcess(searchUrl, (page) => {
@@ -2424,7 +2427,7 @@
           if (psngameMatches.length <= 0) return;
           let gameIds = [gameId];
           psngameMatches.each((i, a) => {
-            if (a.innerText.trim().replace(/(^《)|(》$)/g, '') !== gameTitle) return;
+            if (gameTitleTrim(a.innerText) !== gameTitle) return;
             gameIds.push(gameIdFromPsngameUrl(a.href));
           });
           gameIds = gameIds.filter((value, index, array) => array.indexOf(value) === index);
@@ -2446,14 +2449,15 @@
       }
       // 在不同页面查找游戏标题
       const findGameTitle = () => {
+        const gameTitleExtaction = (title) => title.replace(/(^[^《]*)|([^》]*$)/g, '');
         if (psngameTrophyListUrlRegex.test(window.location.href)) {
-          return $('div.inner.mt40 > div.main > div.box.pd10 > h1')[0].innerText.replace(/[^《]*《(.+)》[^》]*/, '$1').trim().replace(/(^《)|(》$)/g, '');
+          return gameTitleTrim(gameTitleExtaction($('div.inner.mt40 > div.main > div.box.pd10 > h1')[0].innerText));
         }
         if (/\/trophy\/\d+\/?$/.test(window.location.href)) {
-          return $('div.min-inner.mt40 > ul > li > div.ml100 > p > a')[0].innerText.trim();
+          return gameTitleTrim($('div.min-inner.mt40 > ul > li > div.ml100 > p > a')[0].innerText);
         }
         if (/\/(rank|comment|qa|topic|battle|gamelist)\/?$/.test(window.location.href)) {
-          return $('div.min-inner.mt40 > div.box.pd10 > h1')[0].innerText.replace(/[^《]*《(.+)》[^》]*/, '$1').trim().replace(/(^《)|(》$)/g, '');
+          return gameTitleTrim(gameTitleExtaction($('div.min-inner.mt40 > div.box.pd10 > h1')[0].innerText));
         }
         return null;
       };
