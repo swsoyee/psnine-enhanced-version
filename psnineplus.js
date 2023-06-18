@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      1.0.15
+// @version      1.0.16
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // eslint-disable-next-line max-len
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
@@ -2041,6 +2041,9 @@
         title: {
           display: false,
         },
+        labels: {
+          style: { color: '#808080' },
+        },
       };
       // 绘图数据
       const trophyGetTimeSeries = [
@@ -2071,6 +2074,9 @@
         max: totalTrophyCount,
         endOnTick: false,
         tickInterval: Math.floor(totalTrophyCount / 4),
+        labels: {
+          style: { color: '#808080' },
+        },
       };
       // 绘图设置
       const trophyGetTimeChart = {
@@ -2776,12 +2782,18 @@
           const scoreXaxis = [{
             categories: gaussianOn ? scoreAxis : scoreAxisNoGaussian,
             crosshair: true,
+            labels: {
+              style: { color: '#808080' },
+            },
           }];
           const scoreYaxis = [{
             min: 0,
             max: 5 * Math.ceil(scoreCountMax / 5),
             tickInterval: Math.ceil(scoreCountMax / 5),
             title: { text: '点评人数' },
+            labels: {
+              style: { color: '#808080' },
+            },
           }];
           const scoreTooltip = {
             formatter() {
@@ -2834,6 +2846,7 @@
                 formatter() {
                   return `${this.value * 100}%`;
                 },
+                style: { color: '#808080' },
               },
             });
             scoreSeries.push({
@@ -3003,6 +3016,9 @@
             title: {
               display: false,
             },
+            labels: {
+              style: { color: '#808080' },
+            },
           };
           // 绘图数据
           const firstWeekDate = new Date(weekToTimestamp(firstWeek[0], firstWeek[1]));
@@ -3150,6 +3166,9 @@
               endOnTick: true,
               tickInterval: scoreTrendYAxisRatingTick,
               opposite: false,
+              labels: {
+                style: { color: '#808080' },
+              },
             }, {
               title: {
                 text: '周增评分次数',
@@ -3162,6 +3181,9 @@
               endOnTick: true,
               tickInterval: scoreTrendYAxisRatingCountTick,
               opposite: true,
+              labels: {
+                style: { color: '#808080' },
+              },
             },
           ];
           // 绘图设置
