@@ -945,7 +945,7 @@
       } : (el) => el.parents(parent).remove();
       let removed = 0;
       $(psnnode).each((i, el) => {
-        psnInfo = psnInfoGetter($(el));
+        psnInfo = psnInfoGetter($(el)).trim();
         if (userListLowerCase.find(userNameCheckerFinal) !== undefined) {
           remover($(el));
           removed += 1;
