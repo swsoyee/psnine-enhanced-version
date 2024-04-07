@@ -2615,29 +2615,51 @@
         if (/评论\(\d+\)/.test(subcommentLink.innerText.trim()) && !subcommentAlreadyExpanded(subcommentLink)) subcommentLinks.push(subcommentLink);
       });
       if (subcommentLinks.length === 0) return;
-      let subcommentLinkIndex = 0;
-      let subcommentLinkClicked = false;
-      let subcommentLinkFails;
-      repeatUntilSuccessful(() => {
-        const subcommentLink = subcommentLinks[subcommentLinkIndex];
-        if (!subcommentLinkClicked) {
-          subcommentLink.click();
-          subcommentLinkClicked = true;
-          subcommentLinkFails = 0;
-        }
-        if (subcommentAlreadyExpanded(subcommentLink)) {
-          subcommentLinkIndex += 1;
-          subcommentLinkClicked = false;
-          if (subcommentLinkIndex === subcommentLinks.length) return true;
-        } else {
-          subcommentLinkFails += 1;
-          if (subcommentLinkFails >= 5) {
-            subcommentLinkIndex += 1;
-            subcommentLinkClicked = false;
+      const clickedLinks = [];
+      const links = [];
+      let activeIntersectionEvents = 0;
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const link = entries[0].target;
+            if (clickedLinks.indexOf(link) < 0 && links.indexOf(link) < 0) links.push(link);
           }
+        });
+        activeIntersectionEvents += 1;
+        if (activeIntersectionEvents > 1) {
+          activeIntersectionEvents -= 1;
+          return;
         }
-        return false;
-      }, 200);
+        let linkClickStatus = false;
+        let linkFails;
+        repeatUntilSuccessful(() => {
+          if (links.length === 0) {
+            activeIntersectionEvents -= 1;
+            return true;
+          }
+          const link = links[0];
+          if (!linkClickStatus) {
+            link.click();
+            // console.log(`clicked subcomment link #${subcommentLinks.indexOf(link)}`);
+            linkClickStatus = true;
+            linkFails = 0;
+          }
+          if (subcommentAlreadyExpanded(link)) {
+            linkClickStatus = false;
+            clickedLinks.push(links.shift());
+          } else {
+            linkFails += 1;
+            if (linkFails % 5 === 0) {
+              link.click();
+              // console.log(`re-clicked subcomment link #${subcommentLinks.indexOf(link)}`);
+            }
+          }
+          return false;
+        }, 200);
+      }, { rootMargin: '0px', threshold: [0.5] });
+      subcommentLinks.forEach((subcommentLink) => {
+        observer.observe(subcommentLink);
+      });
     };
     expandCollapsedSubcomments();
 
