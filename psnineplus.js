@@ -2591,6 +2591,56 @@
     };
     trophyTipsEnhancement();
 
+    // 奖杯心得及游戏评论页面展开二级评论
+    const expandCollapsedSubcomments = () => {
+      let pageType;
+      if (/trophy\/\d+\/?$/.test(window.location.href)) pageType = 'trophy tips';
+      else if (/psngame\/\d+\/comment\/?$/.test(window.location.href)) pageType = 'game comment';
+      else return;
+      let commentMetas;
+      switch (pageType) {
+        case 'trophy tips':
+          commentMetas = document.querySelectorAll('div.min-inner.mt40 > div.box.mt20 > ul.list > li > div.ml64 > div.meta:not(.pb10)');
+          break;
+        case 'game comment':
+          commentMetas = document.querySelectorAll('div.min-inner.mt40 > div.box > ul.list > li > div.ml64 > div.meta:not(.pb10)');
+          break;
+        default:
+          return;
+      }
+      const subcommentAlreadyExpanded = (subcommentLink) => Boolean($(subcommentLink).parents('li')[0].querySelector('div.sonlistmark.ml64.mt10 > ul.sonlist > li'));
+      const subcommentLinks = [];
+      commentMetas.forEach((commentMeta) => {
+        const subcommentLink = commentMeta.querySelector('span.r > a:nth-child(2)');
+        if (/评论\(\d+\)/.test(subcommentLink.innerText.trim()) && !subcommentAlreadyExpanded(subcommentLink)) subcommentLinks.push(subcommentLink);
+      });
+      if (subcommentLinks.length === 0) return;
+      let subcommentLinkIndex = 0;
+      let subcommentLinkClicked = false;
+      let subcommentLinkFails;
+      repeatUntilSuccessful(() => {
+        const subcommentLink = subcommentLinks[subcommentLinkIndex];
+        if (!subcommentLinkClicked) {
+          subcommentLink.click();
+          subcommentLinkClicked = true;
+          subcommentLinkFails = 0;
+        }
+        if (subcommentAlreadyExpanded(subcommentLink)) {
+          subcommentLinkIndex += 1;
+          subcommentLinkClicked = false;
+          if (subcommentLinkIndex === subcommentLinks.length) return true;
+        } else {
+          subcommentLinkFails += 1;
+          if (subcommentLinkFails >= 5) {
+            subcommentLinkIndex += 1;
+            subcommentLinkClicked = false;
+          }
+        }
+        return false;
+      }, 200);
+    };
+    expandCollapsedSubcomments();
+
     // P9时间格式转换函数
     function p9TimeTextParser(timestampText) { // returns UTC time
       let array = null;
