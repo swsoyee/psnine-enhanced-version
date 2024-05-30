@@ -410,6 +410,47 @@
       document.head.appendChild(nightModeStyle);
     }
 
+    /* 游戏列表添加按难度排列按钮 */
+    let hdElement = document.querySelector('.hd');
+    if (hdElement && hdElement.textContent.trim() === '游戏列表') {
+        // 创建新的 span 元素
+        let spanElement = document.createElement('span');
+        spanElement.className = 'btn';
+        spanElement.textContent = '按难度排列';
+        // 添加 span 元素到 .hd 元素中
+        hdElement.appendChild(spanElement);
+        // 添加样式使 span 右对齐
+        let style = document.createElement('style');
+        style.textContent = `
+            .hd {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .btn {
+                margin-left: auto;
+                cursor: pointer;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // 为 span 元素添加点击排序功能
+        spanElement.addEventListener('click', () => {
+            const tdElements = document.querySelectorAll('table.list tbody > tr');
+            let tdArray = Array.from(tdElements).map(td => {
+                const valueElement = td.querySelector('td.twoge > em');
+                const value = valueElement ? parseFloat(valueElement.textContent) : 0;
+                return { td, value };
+            });
+            tdArray.sort((a, b) => b.value - a.value);
+            const tbody = document.querySelector('table.list tbody');
+            tbody.innerHTML = '';
+            tdArray.forEach(item => {
+                tbody.appendChild(item.td);
+            });
+        });
+    }
+    
     /*
     * 自动签到功能
     * @param  isOn  是否开启功能
