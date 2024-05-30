@@ -411,61 +411,61 @@
     }
 
     /* 游戏列表添加按难度排列按钮 */
-    let hdElement = document.querySelector('.hd');
+    const hdElement = document.querySelector('.hd');
     if (hdElement && hdElement.textContent.trim() === '游戏列表') {
-        // 创建新的 span 元素
-        let spanElement = document.createElement('span');
-        spanElement.className = 'btn';
-        spanElement.textContent = '按难度排列';
-        // 添加 span 元素到 .hd 元素中
-        hdElement.appendChild(spanElement);
-        // 添加样式使 span 右对齐
-        let style = document.createElement('style');
-        style.textContent = `
-            .hd {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-            .hd span {
-              margin-top: 0px;
-            }
-            .btn {
-                cursor: pointer;
-            }
+      // 创建新的 span 元素
+      let spanElement = document.createElement('span');
+      spanElement.className = 'btn';
+      spanElement.textContent = '按难度排列';
+      // 添加 span 元素到 .hd 元素中
+      hdElement.appendChild(spanElement);
+      // 添加样式使 span 右对齐
+      const style = document.createElement('style');
+      style.textContent = `
+        .hd {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .hd span {
+          margin-top: 0px;
+        }
+        .btn {
+          cursor: pointer;
+        }
         `;
-        document.head.appendChild(style);
+      document.head.appendChild(style);
 
-        // 状态变量，跟踪当前的排序顺序，初始为 true 表示升序
-        let ascending = true;
+      // 状态变量，跟踪当前的排序顺序，初始为 true 表示升序
+      let ascending = true;
 
-        // 为 span 元素添加点击排序功能
-        spanElement.addEventListener('click', () => {
-            const tdElements = document.querySelectorAll('table.list tbody > tr');
-            let tdArray = Array.from(tdElements).map(td => {
-                const valueElement = td.querySelector('td.twoge > em');
-                const value = valueElement ? parseFloat(valueElement.textContent) : null;
-                return { td, value };
-            });
-
-            // 根据当前的排序顺序进行排序
-            tdArray.sort((a, b) => {
-                if (a.value === null) return 1; // a 为空则放到最后
-                if (b.value === null) return -1; // b 为空则放到最后
-                return ascending ? a.value - b.value : b.value - a.value;
-            });
-
-            const tbody = document.querySelector('table.list tbody');
-            tbody.innerHTML = '';
-            tdArray.forEach(item => {
-                tbody.appendChild(item.td);
-            });
-
-            // 切换排序顺序
-            ascending = !ascending;
+      // 为 span 元素添加点击排序功能
+      spanElement.addEventListener('click', () => {
+        const tdElements = document.querySelectorAll('table.list tbody > tr');
+        const tdArray = Array.from(tdElements).map(td => {
+          const valueElement = td.querySelector('td.twoge > em');
+          const value = valueElement ? parseFloat(valueElement.textContent) : null;
+          return { td, value };
         });
+
+        // 根据当前的排序顺序进行排序
+        tdArray.sort((a, b) => {
+          if (a.value === null) return 1; // a 为空则放到最后
+          if (b.value === null) return -1; // b 为空则放到最后
+            return ascending ? a.value - b.value : b.value - a.value;
+        });
+
+        const tbody = document.querySelector('table.list tbody');
+        tbody.innerHTML = '';
+        tdArray.forEach(item => {
+          tbody.appendChild(item.td);
+        });
+
+        // 切换排序顺序
+        ascending = !ascending;
+      });
     }
-    
+
     /*
     * 自动签到功能
     * @param  isOn  是否开启功能
