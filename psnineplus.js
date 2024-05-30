@@ -414,7 +414,7 @@
     const hdElement = document.querySelector('.hd');
     if (hdElement && hdElement.textContent.trim() === '游戏列表') {
       // 创建新的 span 元素
-      let spanElement = document.createElement('span');
+      const spanElement = document.createElement('span');
       spanElement.className = 'btn';
       spanElement.textContent = '按难度排列';
       // 添加 span 元素到 .hd 元素中
@@ -442,7 +442,7 @@
       // 为 span 元素添加点击排序功能
       spanElement.addEventListener('click', () => {
         const tdElements = document.querySelectorAll('table.list tbody > tr');
-        const tdArray = Array.from(tdElements).map(td => {
+        const tdArray = Array.from(tdElements).map((td) => {
           const valueElement = td.querySelector('td.twoge > em');
           const value = valueElement ? parseFloat(valueElement.textContent) : null;
           return { td, value };
@@ -452,12 +452,12 @@
         tdArray.sort((a, b) => {
           if (a.value === null) return 1; // a 为空则放到最后
           if (b.value === null) return -1; // b 为空则放到最后
-            return ascending ? a.value - b.value : b.value - a.value;
+          return ascending ? a.value - b.value : b.value - a.value;
         });
 
         const tbody = document.querySelector('table.list tbody');
         tbody.innerHTML = '';
-        tdArray.forEach(item => {
+        tdArray.forEach((item) => {
           tbody.appendChild(item.td);
         });
 
