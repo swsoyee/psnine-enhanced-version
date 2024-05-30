@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      1.0.20
+// @version      1.0.21
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // eslint-disable-next-line max-len
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
@@ -427,27 +427,42 @@
                 justify-content: space-between;
                 align-items: center;
             }
+            .hd span {
+              margin-top: 0px;
+            }
             .btn {
-                margin-left: auto;
                 cursor: pointer;
             }
         `;
         document.head.appendChild(style);
+
+        // 状态变量，跟踪当前的排序顺序，初始为 true 表示升序
+        let ascending = true;
 
         // 为 span 元素添加点击排序功能
         spanElement.addEventListener('click', () => {
             const tdElements = document.querySelectorAll('table.list tbody > tr');
             let tdArray = Array.from(tdElements).map(td => {
                 const valueElement = td.querySelector('td.twoge > em');
-                const value = valueElement ? parseFloat(valueElement.textContent) : 0;
+                const value = valueElement ? parseFloat(valueElement.textContent) : null;
                 return { td, value };
             });
-            tdArray.sort((a, b) => b.value - a.value);
+
+            // 根据当前的排序顺序进行排序
+            tdArray.sort((a, b) => {
+                if (a.value === null) return 1; // a 为空则放到最后
+                if (b.value === null) return -1; // b 为空则放到最后
+                return ascending ? a.value - b.value : b.value - a.value;
+            });
+
             const tbody = document.querySelector('table.list tbody');
             tbody.innerHTML = '';
             tdArray.forEach(item => {
                 tbody.appendChild(item.td);
             });
+
+            // 切换排序顺序
+            ascending = !ascending;
         });
     }
     
