@@ -463,7 +463,6 @@
 
       // 为 span 元素添加点击排序功能
       spanElement.addEventListener('click', () => {
-
         const tdArray = Array.from(tdElements).map((tr) => {
           const valueElement = tr.querySelector('td.twoge > em');
           const value = valueElement ? parseFloat(valueElement.textContent) : null;
