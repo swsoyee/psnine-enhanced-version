@@ -397,7 +397,7 @@
         $('body,html').animate({
           scrollTop: document.body.clientHeight,
         },
-        500);
+          500);
       }).css({
         cursor: 'pointer',
       });
@@ -410,9 +410,31 @@
       document.head.appendChild(nightModeStyle);
     }
 
-    /* 游戏列表添加按难度排列按钮 */
+    /* 
+      1.游戏列表添加按难度排列按钮 
+      2.游戏列表根据已记录的完成度添加染色
+      3.TODO：游戏列表隐藏已经 100% 的游戏（需要添加用户可见的开关）
+    */
     const hdElement = document.querySelector('.hd');
     if (hdElement && hdElement.textContent.trim() === '游戏列表') {
+
+      const tdElements = document.querySelectorAll('table.list tbody > tr');
+
+      // 添加完成度染色
+
+      const platinumBackground = 'background-color: #d0f6ff;background-image: linear-gradient(90deg, #c7fffd 0%, #ffffff 60%);'
+      const goldBackground = 'background-color: #e5ffe7;background-image: linear-gradient(90deg, #daffde 0%, #ffffff 60%);'
+      const personalGameCompletions = GM_getValue('personalGameCompletions', [])
+      tdElements.forEach((tr) => {
+        const gameID = tr.getAttribute('id') || 0;
+        const thisGameCompletion = personalGameCompletions.find(item => item[0] == gameID);
+        if (thisGameCompletion) {
+          if (thisGameCompletion[1] == 100 && thisGameCompletion[2] == true) { tr.setAttribute('style', platinumBackground); }
+          if (thisGameCompletion[1] == 100 && thisGameCompletion[2] == false) { tr.setAttribute('style', goldBackground); }
+        }
+      })
+
+
       // 创建新的 span 元素
       const spanElement = document.createElement('span');
       spanElement.className = 'btn';
@@ -441,11 +463,11 @@
 
       // 为 span 元素添加点击排序功能
       spanElement.addEventListener('click', () => {
-        const tdElements = document.querySelectorAll('table.list tbody > tr');
-        const tdArray = Array.from(tdElements).map((td) => {
-          const valueElement = td.querySelector('td.twoge > em');
+
+        const tdArray = Array.from(tdElements).map((tr) => {
+          const valueElement = tr.querySelector('td.twoge > em');
           const value = valueElement ? parseFloat(valueElement.textContent) : null;
-          return { td, value };
+          return { tr, value };
         });
 
         // 根据当前的排序顺序进行排序
@@ -458,7 +480,7 @@
         const tbody = document.querySelector('table.list tbody');
         tbody.innerHTML = '';
         tdArray.forEach((item) => {
-          tbody.appendChild(item.td);
+          tbody.appendChild(item.tr);
         });
 
         // 切换排序顺序
@@ -527,9 +549,66 @@
             }`,
     );
 
+    /* 
+      在 LocatStorage 中保存个人游戏完成度函数
+      添加于 /psnid\/[A-Za-z0-9_-]+\/?$/ 页面，以及该页自动翻页函数内部
+    */
+
+    const savePersonalGameCompletions = (configifneeded) => {
+
+      // if GM_setValue && GM_getValue is enabled
+
+      let thisFeatureEnabled = configifneeded || true && (typeof GM_setValue === 'function' && typeof GM_getValue === 'function')
+
+      if (thisFeatureEnabled) {
+
+        // 获得当前页的游戏完成度
+        const tdElements = document.querySelectorAll('table.list tbody > tr');
+        const personalGameCompletions = Array.from(tdElements).map((tr) => {
+          const completionElement = tr.querySelector('div.progress > div')
+          const completion = completionElement ? parseFloat(completionElement.textContent) : 0
+          const platinumElement = tr.querySelector('span.text-platinum')
+          const platinum = platinumElement ? platinumElement.textContent == '白1' : false
+          const gameIDElement = tr.querySelector('a')
+          const gameID = gameIDElement.href.match(/\/psngame\/(\d+)/)[1]
+
+          return [gameID, completion, platinum]
+        })
+
+        // 读取已保存的历史
+        let history = GM_getValue('personalGameCompletions', [])
+
+        // 用当前覆盖历史
+        personalGameCompletions.forEach((currentItem) => {
+          const index = history.findIndex(historyItem => historyItem[0] === currentItem[0]);
+          if (index !== -1) {
+            history[index] = currentItem;
+          } else {
+            history.push(currentItem);
+          }
+        });
+
+        // 保存更新后的历史记录
+        GM_setValue('personalGameCompletions', history);
+        console.log(GM_getValue('personalGameCompletions'))
+        return true
+      } else {
+        return false
+      }
+    }
+
+    // 在个人页面或个人游戏列表页更新数据
+    if (
+      /psnid\/[A-Za-z0-9_-]+\/?$/.test(window.location.href) || /psnid\/[A-Za-z0-9_-]+\/psngame\/?/.test(window.location.href)
+    ) {
+      savePersonalGameCompletions()
+    }
+
+
+
     if (
       /psnid\/[A-Za-z0-9_-]+\/?$/.test(window.location.href)
-              && $('tbody').length > 2
+      && $('tbody').length > 2
     ) {
       const windowLocationHref = window.location.href.replace(/\/$/g, '');
       // 功能0-7：个人主页下显示所有游戏
@@ -541,9 +620,9 @@
         $(window).scroll(function () {
           if (
             $(this).scrollTop() + $(window).height() + 700
-                        >= $(document).height()
-                        && $(this).scrollTop() > 700
-                        && isbool2 === true
+            >= $(document).height()
+            && $(this).scrollTop() > 700
+            && isbool2 === true
           ) {
             isbool2 = false;
             const gamePage = `${windowLocationHref}/psngame?page=${gamePageIndex}`;
@@ -559,6 +638,9 @@
                   $('tbody > tr:last').after(nextGameContent);
                   isbool2 = true;
                   gamePageIndex += 1;
+
+                  // 同步更新个人游戏完成度
+                  savePersonalGameCompletions()
                 } else {
                   $('#loadingMessage').text('没有更多游戏了...');
                 }
@@ -659,7 +741,7 @@
 
     if (
       /(gene|trade|topic)\//.test(window.location.href)
-            && !/comment/.test(window.location.href)
+      && !/comment/.test(window.location.href)
     ) {
       // 获取楼主ID
       const authorId = $('.title2').text();
@@ -876,16 +958,16 @@
       $('div.meta').each((index, element) => {
         const replyCount = $(element).text().split(/(\d+)/);
         if (Number(replyCount[replyCount.length - 2]) > settings.hotTagThreshold
-                    && replyCount[replyCount.length - 1].match('评论|答案|回复')
-                    && replyCount[replyCount.length - 1].match('评论|答案|回复').index > -1
-                    && $(element).children('a#hot').length === 0
+          && replyCount[replyCount.length - 1].match('评论|答案|回复')
+          && replyCount[replyCount.length - 1].match('评论|答案|回复').index > -1
+          && $(element).children('a#hot').length === 0
         ) {
           const tagBackgroundColor = $('body.bg').css('background-color');
           $(element)
             .append(`&nbsp;<a class="psnnode" id="hot" style="background-color: ${tagBackgroundColor === 'rgb(43, 43, 43)'
               ? 'rgb(125 69 67)' // 暗红色
               : 'rgb(217, 83, 79)' // 鲜红色
-            };color: rgb(255, 255, 255);">🔥热门&nbsp;</a>`);
+              };color: rgb(255, 255, 255);">🔥热门&nbsp;</a>`);
         }
       });
     };
@@ -1096,12 +1178,12 @@
     const filterBlockWorld = () => {
       const windowHref = window.location.href;
       if (windowHref.indexOf('gene') > -1 // 机因回复
-                || windowHref.indexOf('topic') > -1 // 主帖回复
-                || windowHref.indexOf('trophy') > -1 // 奖杯TIPS
-                || windowHref.indexOf('qa') > -1 // 问答回复
-                || windowHref.indexOf('trade') > -1 // 交易回复
-                || windowHref.match(/\/battle\/[1-9][0-9]+/) !== null // 约战回复
-                || windowHref.match(/\/psnid\/[^/]+\/comment/) !== null // 个人主页留言
+        || windowHref.indexOf('topic') > -1 // 主帖回复
+        || windowHref.indexOf('trophy') > -1 // 奖杯TIPS
+        || windowHref.indexOf('qa') > -1 // 问答回复
+        || windowHref.indexOf('trade') > -1 // 交易回复
+        || windowHref.match(/\/battle\/[1-9][0-9]+/) !== null // 约战回复
+        || windowHref.match(/\/psnid\/[^/]+\/comment/) !== null // 个人主页留言
       ) {
         FilterWordRegular('div.ml64>div.content.pb10');
       }
@@ -1350,13 +1432,13 @@
         let isbool = true; // 触发开关，防止多次调用事件
         let autoPagingLimitCount = 0;
         $(window).scroll(function () {
-        // 当内容滚动到底部时加载新的内容
+          // 当内容滚动到底部时加载新的内容
           if (
             $(this).scrollTop() + $(window).height() + 700
-                      >= $(document).height()
-                      && $(this).scrollTop() > 700
-                      && isbool === true
-                      && autoPagingLimitCount < settings.autoPaging
+            >= $(document).height()
+            && $(this).scrollTop() > 700
+            && isbool === true
+            && autoPagingLimitCount < settings.autoPaging
           ) {
             isbool = false;
             // 获取下一页页码和链接
@@ -1669,7 +1751,7 @@
           };
           const CNY = price.map((item) => (
             Number(item.replace(regionCurrency[region][0], ''))
-                            * regionCurrency[region][1]
+            * regionCurrency[region][1]
           ));
           // 整块增加的价格表示
           const addCNYPriceBlock = [
@@ -1895,7 +1977,7 @@
     // 页面：数折 > 商品页
     if (
       /\/dd\//.test(window.location.href)
-            || /game\/[0-9]+\/dd$/.test(window.location.href)
+      || /game\/[0-9]+\/dd$/.test(window.location.href)
     ) {
       repeatUntilSuccessful(() => {
         if (httpCSSFixed()) {
@@ -2297,9 +2379,9 @@
     // 功能3-1：游戏奖杯界面可视化
     if (
       /psngame\//.test(window.location.href)
-            && /^(?!.*comment|.*rank|.*battle|.*gamelist|.*topic|.*qa)/.test(
-              window.location.href,
-            )
+      && /^(?!.*comment|.*rank|.*battle|.*gamelist|.*topic|.*qa)/.test(
+        window.location.href,
+      )
     ) {
       $('.box.pd10').append('<div id="trophyChartContainer" style="float: left"></div>');
       repeatUntilSuccessful(() => {
@@ -2393,7 +2475,7 @@
     // 进入游戏页默认查看我自己的奖杯
     if (
       window.location.href.match(/psngame\/\d+($|\/$)|(#\d+($|\/$))/)
-            && !/psnid/.test(window.location.href)
+      && !/psnid/.test(window.location.href)
     ) {
       // 检查游戏页
       window.onpageshow = (e) => {
@@ -3078,7 +3160,7 @@
           return (
             startOfYear.getTime()
             + (-((startOfYear.getUTCDay() || 7) - 1)
-            + (7 * (week - 1) + (day - 1))) * 86400000/* milliseconds of a day */
+              + (7 * (week - 1) + (day - 1))) * 86400000/* milliseconds of a day */
           );
         };
         const weekDifference = (date1, date2) => {
