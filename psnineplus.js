@@ -421,10 +421,11 @@
       const tdElements = document.querySelectorAll('table.list tbody > tr');
 
       // 添加完成度染色
-
       const platinumBackground = 'background-color: #d0f6ff;background-image: linear-gradient(90deg, #c7fffd 0%, #ffffff 60%);'
       const goldBackground = 'background-color: #e5ffe7;background-image: linear-gradient(90deg, #daffde 0%, #ffffff 60%);'
       const personalGameCompletions = GM_getValue('personalGameCompletions', [])
+
+      // 根据已保存的完成度添加染色
       tdElements.forEach((tr) => {
         const gameID = tr.getAttribute('id') || 0;
         const thisGameCompletion = personalGameCompletions.find(item => item[0] == gameID);
@@ -433,7 +434,6 @@
           if (thisGameCompletion[1] == 100 && thisGameCompletion[2] == false) { tr.setAttribute('style', goldBackground); }
         }
       })
-
 
       // 创建新的 span 元素
       const spanElement = document.createElement('span');
@@ -557,11 +557,9 @@
     const savePersonalGameCompletions = (configifneeded) => {
 
       // if GM_setValue && GM_getValue is enabled
-
       let thisFeatureEnabled = configifneeded || true && (typeof GM_setValue === 'function' && typeof GM_getValue === 'function')
 
       if (thisFeatureEnabled) {
-
         // 获得当前页的游戏完成度
         const tdElements = document.querySelectorAll('table.list tbody > tr');
         const personalGameCompletions = Array.from(tdElements).map((tr) => {
@@ -571,7 +569,6 @@
           const platinum = platinumElement ? platinumElement.textContent == '白1' : false
           const gameIDElement = tr.querySelector('a')
           const gameID = gameIDElement.href.match(/\/psngame\/(\d+)/)[1]
-
           return [gameID, completion, platinum]
         })
 
@@ -590,7 +587,7 @@
 
         // 保存更新后的历史记录
         GM_setValue('personalGameCompletions', history);
-        console.log(GM_getValue('personalGameCompletions'))
+        // console.log(GM_getValue('personalGameCompletions'))
         return true
       } else {
         return false
@@ -603,7 +600,6 @@
     ) {
       savePersonalGameCompletions()
     }
-
 
 
     if (
