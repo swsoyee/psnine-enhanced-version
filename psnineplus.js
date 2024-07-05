@@ -430,7 +430,6 @@
         }`);
 
       // 背景 CSS 进度条计算，含夜间模式
-
       const progressPlatinumBG = (p) => `background-image: linear-gradient(90deg, rgba(200,240,255,0.6) ${p}%, rgba(200,255,250,0.15) ${p}%)`;
       const progressPlatinumBGNight = (p) => `background-image: linear-gradient(90deg, rgba(200,240,255,0.15) ${p}%, rgba(200,255,250,0.05) ${p}%)`;
       const progressGoldBG = (p) => `background-image: linear-gradient(90deg, rgba(220,255,220,0.8) ${p}%, rgba(220,255,220,0.15) ${p}%);`;
@@ -440,32 +439,28 @@
 
       // 根据已保存的完成度添加染色
       const personalGameCompletions = GM_getValue('personalGameCompletions', []);
+
       tdElements.forEach((tr) => {
         const gameID = tr.getAttribute('id') || 0;
         const thisGameCompletion = personalGameCompletions.find((item) => item[0] === gameID);
+        const gameHasPlatinum = tr.querySelector('td.pd10 > .meta > em.text-platinum').textContent === '白1';
+        // if game hase platinum 由于个人页面的白金判断是记录的个人完成度，这里需要判断游戏本身是否有白金
+
         if (thisGameCompletion) {
-          // if game hase platinum
-          if (tr.querySelector('td.pd10 > .meta > em.text-platinum').textContent === '白1') {
-            if (settings.nightMode) {
-              tr.setAttribute('style', progressPlatinumBGNight(thisGameCompletion[1]));
-            } else {
-              tr.setAttribute('style', progressPlatinumBG(thisGameCompletion[1]));
-            }
-          } else if (settings.nightMode) {
-            tr.setAttribute('style', progressGoldBGNight(thisGameCompletion[1]));
-          } else {
-            tr.setAttribute('style', progressGoldBG(thisGameCompletion[1]));
-          }
-          // 添加进度徽章
-          const gameText = tr.querySelector('td.pd10 > p > a');
-          if (gameText) {
-            const completion = thisGameCompletion[1];
-            const completionBadge = document.createElement('span');
-            completionBadge.className = 'completion-badge';
-            completionBadge.textContent = `${completion}%`;
-            completionBadge.title = '奖杯完成度';
-            gameText.parentNode.insertBefore(completionBadge, gameText);
-          }
+          if (gameHasPlatinum && settings.nightMode) { tr.setAttribute('style', progressPlatinumBGNight(thisGameCompletion[1])); }
+          if (gameHasPlatinum && !settings.nightMode) { tr.setAttribute('style', progressPlatinumBG(thisGameCompletion[1])); }
+          if (!gameHasPlatinum && settings.nightMode) { tr.setAttribute('style', progressGoldBGNight(thisGameCompletion[1])); }
+          if (!gameHasPlatinum && !settings.nightMode) { tr.setAttribute('style', progressGoldBG(thisGameCompletion[1])); }
+        }
+        // 添加进度徽章
+        const gameText = tr.querySelector('td.pd10 > p > a');
+        if (gameText) {
+          const completion = thisGameCompletion[1];
+          const completionBadge = document.createElement('span');
+          completionBadge.className = 'completion-badge';
+          completionBadge.textContent = `${completion}%`;
+          completionBadge.title = '奖杯完成度';
+          gameText.parentNode.insertBefore(completionBadge, gameText);
         }
       });
 
