@@ -417,7 +417,7 @@
     */
     const hdElement = document.querySelector('.hd');
     if (hdElement && hdElement.textContent.trim() === '游戏列表') {
-      // 添加自定义的 CSS 类
+      // 添加徽章 CSS 类
       GM_addStyle(`
         span.completion-badge {
           background-color: rgb(5 96 175);
@@ -429,8 +429,7 @@
           font-weight: 300;
         }`);
 
-      // background-color: #d0f6ff;
-      // background-image: linear-gradient(90deg, #c7fffd 0%, #ffffff 60%);
+      // 添加背景 CSS 类含夜间模式
       GM_addStyle(`
         tr.completed-platinum {
             /* background: rgba(200,255,250,0.6); */
@@ -443,9 +442,6 @@
             background-image: linear-gradient(90deg, rgba(200,255,250,0.15) 0%, rgba(200,255,250,0) 60%);
         }
       `);
-
-      // background-color: #e5ffe7;
-      // background-image: linear-gradient(90deg, #daffde 0 %, #ffffff 60 %);
       GM_addStyle(`
         tr.completed-gold {
             /* background: rgba(220,255,220,0.6); */
@@ -455,16 +451,14 @@
       GM_addStyle(`
         tr.completed-gold-night {
             /* background: rgba(101,159,19,0.1); */
-            background-image: linear-gradient(90deg, rgba(101,159,19,0.1) 0%, rgba(101,159,19,0) 60%);
+            background-image: linear-gradient(90deg, rgba(101,159,19,0.15) 0%, rgba(101,159,19,0) 60%);
         }
       `);
 
       const tdElements = document.querySelectorAll('table.list tbody > tr');
 
-      // 添加完成度染色
-      const personalGameCompletions = GM_getValue('personalGameCompletions', []);
-
       // 根据已保存的完成度添加染色
+      const personalGameCompletions = GM_getValue('personalGameCompletions', []);
       tdElements.forEach((tr) => {
         const gameID = tr.getAttribute('id') || 0;
         const thisGameCompletion = personalGameCompletions.find((item) => item[0] === gameID);
@@ -488,13 +482,12 @@
         }
       });
 
-      // 创建新的 span 元素
+      // 添加按难度排列按钮
       const spanElement = document.createElement('span');
       spanElement.className = 'btn';
       spanElement.textContent = '按难度排列';
-      // 添加 span 元素到 .hd 元素中
+      // 添加 span 元素并设置样式
       hdElement.appendChild(spanElement);
-      // 添加样式使 span 右对齐
       const style = document.createElement('style');
       style.textContent = `
         .hd {
@@ -502,12 +495,7 @@
           justify-content: space-between;
           align-items: center;
         }
-        .hd span {
-          margin-top: 0px;
-        }
-        .btn {
-          cursor: pointer;
-        }
+        .hd span { margin-top: 0px; }
         `;
       document.head.appendChild(style);
 
