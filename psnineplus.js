@@ -429,31 +429,12 @@
           font-weight: 300;
         }`);
 
-      // 添加背景 CSS 类含夜间模式
-      GM_addStyle(`
-        tr.completed-platinum {
-            /* background: rgba(200,255,250,0.6); */
-            background-image: linear-gradient(90deg, rgba(200,255,250,0.8) 0%, rgba(200,255,250,0) 60%);
-        }
-      `);
-      GM_addStyle(`
-        tr.completed-platinum-night {
-            /* background: rgba(200,255,250,0.1); */
-            background-image: linear-gradient(90deg, rgba(200,255,250,0.15) 0%, rgba(200,255,250,0) 60%);
-        }
-      `);
-      GM_addStyle(`
-        tr.completed-gold {
-            /* background: rgba(220,255,220,0.6); */
-            background-image: linear-gradient(90deg, rgba(220,255,220,0.8) 0%, rgba(220,255,220,0) 60%);
-        }
-      `);
-      GM_addStyle(`
-        tr.completed-gold-night {
-            /* background: rgba(101,159,19,0.1); */
-            background-image: linear-gradient(90deg, rgba(101,159,19,0.15) 0%, rgba(101,159,19,0) 60%);
-        }
-      `);
+      // 背景 CSS 进度条计算，含夜间模式
+
+      const progressPlatinumBG = (p) => `background-image: linear-gradient(90deg, rgba(200,240,255,0.6) ${p}%, rgba(200,255,250,0.15) ${p}%)`;
+      const progressPlatinumBGNight = (p) => `background-image: linear-gradient(90deg, rgba(200,240,255,0.15) ${p}%, rgba(200,255,250,0.05) ${p}%)`;
+      const progressGoldBG = (p) => `background-image: linear-gradient(90deg, rgba(220,255,220,0.8) ${p}%, rgba(220,255,220,0.15) ${p}%);`;
+      const progressGoldBGNight = (p) => `background-image: linear-gradient(90deg, rgba(101,159,19,0.15) ${p}%, rgba(101,159,19,0.05) ${p}%);`;
 
       const tdElements = document.querySelectorAll('table.list tbody > tr');
 
@@ -463,11 +444,17 @@
         const gameID = tr.getAttribute('id') || 0;
         const thisGameCompletion = personalGameCompletions.find((item) => item[0] === gameID);
         if (thisGameCompletion) {
-          if (thisGameCompletion[1] === 100 && thisGameCompletion[2] === true) {
-            if (settings.nightMode) { tr.setAttribute('class', 'completed-platinum-night'); } else { tr.setAttribute('class', 'completed-platinum'); }
-          }
-          if (thisGameCompletion[1] === 100 && thisGameCompletion[2] === false) {
-            if (settings.nightMode) { tr.setAttribute('class', 'completed-gold-night'); } else { tr.setAttribute('class', 'completed-gold'); }
+          // if game hase platinum
+          if (tr.querySelector('td.pd10 > .meta > em.text-platinum').textContent === '白1') {
+            if (settings.nightMode) {
+              tr.setAttribute('style', progressPlatinumBGNight(thisGameCompletion[1]));
+            } else {
+              tr.setAttribute('style', progressPlatinumBG(thisGameCompletion[1]));
+            }
+          } else if (settings.nightMode) {
+            tr.setAttribute('style', progressGoldBGNight(thisGameCompletion[1]));
+          } else {
+            tr.setAttribute('style', progressGoldBG(thisGameCompletion[1]));
           }
           // 添加进度徽章
           const gameText = tr.querySelector('td.pd10 > p > a');
