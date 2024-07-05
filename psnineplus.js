@@ -451,16 +451,16 @@
           if (gameHasPlatinum && !settings.nightMode) { tr.setAttribute('style', progressPlatinumBG(thisGameCompletion[1])); }
           if (!gameHasPlatinum && settings.nightMode) { tr.setAttribute('style', progressGoldBGNight(thisGameCompletion[1])); }
           if (!gameHasPlatinum && !settings.nightMode) { tr.setAttribute('style', progressGoldBG(thisGameCompletion[1])); }
-        }
-        // 添加进度徽章
-        const gameText = tr.querySelector('td.pd10 > p > a');
-        if (gameText) {
-          const completion = thisGameCompletion[1];
-          const completionBadge = document.createElement('span');
-          completionBadge.className = 'completion-badge';
-          completionBadge.textContent = `${completion}%`;
-          completionBadge.title = '奖杯完成度';
-          gameText.parentNode.insertBefore(completionBadge, gameText);
+          // 添加进度徽章
+          const gameText = tr.querySelector('td.pd10 > p > a');
+          if (gameText) {
+            const completion = thisGameCompletion[1];
+            const completionBadge = document.createElement('span');
+            completionBadge.className = 'completion-badge';
+            completionBadge.textContent = `${completion}%`;
+            completionBadge.title = '奖杯完成度';
+            gameText.parentNode.insertBefore(completionBadge, gameText);
+          }
         }
       });
 
