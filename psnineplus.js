@@ -417,11 +417,51 @@
     */
     const hdElement = document.querySelector('.hd');
     if (hdElement && hdElement.textContent.trim() === '游戏列表') {
+      // 添加自定义的 CSS 类
+      GM_addStyle(`
+        span.completion-badge {
+          background-color: rgb(5 96 175);
+          font-size: 11px;
+          color: white;
+          border-radius: 2px;
+          padding: 2px 6px;
+          margin-right: 4px;
+          font-weight: 300;
+        }`);
+
+      // background-color: #d0f6ff;
+      // background-image: linear-gradient(90deg, #c7fffd 0%, #ffffff 60%);
+      GM_addStyle(`
+        tr.completed-platinum {
+            /* background: rgba(200,255,250,0.6); */
+            background-image: linear-gradient(90deg, rgba(200,255,250,0.8) 0%, rgba(200,255,250,0) 60%);
+        }
+      `);
+      GM_addStyle(`
+        tr.completed-platinum-night {
+            /* background: rgba(200,255,250,0.1); */
+            background-image: linear-gradient(90deg, rgba(200,255,250,0.15) 0%, rgba(200,255,250,0) 60%);
+        }
+      `);
+
+      // background-color: #e5ffe7;
+      // background-image: linear-gradient(90deg, #daffde 0 %, #ffffff 60 %);
+      GM_addStyle(`
+        tr.completed-gold {
+            /* background: rgba(220,255,220,0.6); */
+            background-image: linear-gradient(90deg, rgba(220,255,220,0.8) 0%, rgba(220,255,220,0) 60%);
+        }
+      `);
+      GM_addStyle(`
+        tr.completed-gold-night {
+            /* background: rgba(101,159,19,0.1); */
+            background-image: linear-gradient(90deg, rgba(101,159,19,0.1) 0%, rgba(101,159,19,0) 60%);
+        }
+      `);
+
       const tdElements = document.querySelectorAll('table.list tbody > tr');
 
       // 添加完成度染色
-      const platinumBackground = 'background-color: #d0f6ff;background-image: linear-gradient(90deg, #c7fffd 0%, #ffffff 60%);';
-      const goldBackground = 'background-color: #e5ffe7;background-image: linear-gradient(90deg, #daffde 0%, #ffffff 60%);';
       const personalGameCompletions = GM_getValue('personalGameCompletions', []);
 
       // 根据已保存的完成度添加染色
@@ -429,8 +469,22 @@
         const gameID = tr.getAttribute('id') || 0;
         const thisGameCompletion = personalGameCompletions.find((item) => item[0] === gameID);
         if (thisGameCompletion) {
-          if (thisGameCompletion[1] === 100 && thisGameCompletion[2] === true) { tr.setAttribute('style', platinumBackground); }
-          if (thisGameCompletion[1] === 100 && thisGameCompletion[2] === false) { tr.setAttribute('style', goldBackground); }
+          if (thisGameCompletion[1] === 100 && thisGameCompletion[2] === true) {
+            if (settings.nightMode) { tr.setAttribute('class', 'completed-platinum-night'); } else { tr.setAttribute('class', 'completed-platinum'); }
+          }
+          if (thisGameCompletion[1] === 100 && thisGameCompletion[2] === false) {
+            if (settings.nightMode) { tr.setAttribute('class', 'completed-gold-night'); } else { tr.setAttribute('class', 'completed-gold'); }
+          }
+          // 添加进度徽章
+          const gameText = tr.querySelector('td.pd10 > p > a');
+          if (gameText) {
+            const completion = thisGameCompletion[1];
+            const completionBadge = document.createElement('span');
+            completionBadge.className = 'completion-badge';
+            completionBadge.textContent = `${completion}%`;
+            completionBadge.title = '奖杯完成度';
+            gameText.parentNode.insertBefore(completionBadge, gameText);
+          }
         }
       });
 
