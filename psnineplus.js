@@ -435,6 +435,7 @@
       const progressGoldBG = (p) => `background-image: linear-gradient(90deg, rgba(220,255,220,0.8) ${p}%, rgba(220,255,220,0.15) ${p}%);`;
       const progressGoldBGNight = (p) => `background-image: linear-gradient(90deg, rgba(101,159,19,0.15) ${p}%, rgba(101,159,19,0.05) ${p}%);`;
 
+      // 获取游戏列表下所有游戏的 DOM 元素指针
       const tdElements = document.querySelectorAll('table.list tbody > tr');
 
       // 根据已保存的完成度添加染色
@@ -443,8 +444,8 @@
       tdElements.forEach((tr) => {
         const gameID = tr.getAttribute('id') || 0;
         const thisGameCompletion = personalGameCompletions.find((item) => item[0] === gameID);
-        const gameHasPlatinum = tr.querySelector('td.pd10 > .meta > em.text-platinum').textContent === '白1';
         // if game hase platinum 由于个人页面的白金判断是记录的个人完成度，这里需要判断游戏本身是否有白金
+        const gameHasPlatinum = tr.querySelector('td.pd10 > .meta > em.text-platinum').textContent === '白1';
 
         if (thisGameCompletion) {
           if (gameHasPlatinum && settings.nightMode) { tr.setAttribute('style', progressPlatinumBGNight(thisGameCompletion[1])); }
