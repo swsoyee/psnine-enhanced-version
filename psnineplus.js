@@ -8,7 +8,7 @@
 // @author       InfinityLoop, mordom0404, Nathaniel_Wu, JayusTree
 // @include      *psnine.com/*
 // @include      *d7vg.com/*
-// @require      http://cdn.staticfile.org/jquery/2.1.4/jquery.min.js
+// @require      http://libs.baidu.com/jquery/2.1.4/jquery.min.js
 // @require      https://code.highcharts.com/11.1.0/highcharts.js
 // @require      https://code.highcharts.com/11.1.0/modules/histogram-bellcurve.js
 // @require      https://unpkg.com/tippy.js@3/dist/tippy.all.min.js
