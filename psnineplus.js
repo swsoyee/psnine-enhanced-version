@@ -522,13 +522,12 @@
         const progressPlatinumBG = (p) => `background-image: linear-gradient(90deg, rgba(200,240,255,0.6) ${p}%, rgba(200,255,250,0.15) ${p}%)`;
         const progressPlatinumBGNight = (p) => `background-image: linear-gradient(90deg, rgba(200,240,255,0.15) ${p}%, rgba(200,255,250,0.05) ${p}%)`;
 
-        const tdElements = document.querySelectorAll('table.list > tbody > tr');
         const personalGameCompletions = GM_getValue('personalGameCompletions', []);
+        const tdElements = document.querySelectorAll('table.list > tbody > tr');
 
         tdElements.forEach((tr) => {
           const gameID = tr.querySelector('td.pdd15 a').href.match(/\/psngame\/(\d+)/)[1];
           const thisGameCompletion = personalGameCompletions.find((item) => item[0] === gameID);
-
           if (thisGameCompletion && thisGameCompletion[1] < 100) {
             // 约战页面没有显示游戏本身是否有白金，就直接默认白金底色显示了
             if (settings.nightMode) { tr.setAttribute('style', progressPlatinumBGNight(thisGameCompletion[1])); }
@@ -538,7 +537,11 @@
       }
     }
 
-    /* ↓↓↓ 约战监控与通知相关功能开始 ↓↓↓↓ */
+    /* ↓↓↓ 约战监控与通知相关功能开始 ↓↓↓↓
+        1. 用户是否设置了监控
+        2. 约战缓存是否存在或过期，否则从约战页更新数据
+        3. 比较两组数据，并更新顶部菜单
+    */
 
     // 添加消息通知数量图标样式（伪元素）
     GM_addStyle(`
@@ -558,13 +561,11 @@
       text-align: center;
     }`);
 
-    // 1. 用户是否设置了监控
-    // 2. 约战缓存是否存在或过期，否则从约战页更新数据
-    // 3. 比较两组数据，并更新顶部菜单
+    // 定义两个变量，用户设置的游戏约战监控列表，和当前存在的约战列表（缓存）
     let userBattleMonitors = GM_getValue('userBattleMonitors', []);
     let cacheBattleInfo = GM_getValue('cacheBattleInfo', {});
 
-    const updateTopMenuNotice = (lista, listb) => { // 定义函数：变更顶部菜单通知红点
+    const updateTopMenuNotice = (lista, listb) => { // 定义函数：变更顶部菜单通知红点，多处执行
       let count = 0;
       lista.forEach((item) => {
         if (listb.includes(item)) count += 1;
@@ -603,9 +604,7 @@
             updateTopMenuNotice(userBattleMonitors, cacheBattleInfo.list);
           }
         },
-        error: () => {
-          console.log('无法获取约战信息');
-        },
+        error: () => { console.log('无法获取约战信息'); },
       });
     };
 
@@ -624,7 +623,7 @@
       const actionArea = document.querySelector('center.pd10');
       const monitorBTN = document.createElement('p');
       monitorBTN.className = 'btn btn-large btn-info';
-      monitorBTN.title = '当有用户发起该游戏的约战时，你会收到消息通知。';
+      monitorBTN.title = '当有用户发起该游戏的约战时，顶部菜单会出现红点通知。';
       monitorBTN.textContent = userBattleMonitors.includes(gameID) ? '移除约战监控' : '添加约战监控';
       // 添加 span 元素并设置样式
       actionArea.appendChild(monitorBTN);
