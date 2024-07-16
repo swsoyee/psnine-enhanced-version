@@ -90,6 +90,8 @@
     expandCollapsedSubcomments: true,
     // 约战页面显示相关游戏个人游戏进度
     showGameProgressInBattle: true,
+    // 约战缓存更新时间
+    BattleInfoUpdateInterval: 60 * 60 * 1000,
   };
   if (window.localStorage) {
     if (window.localStorage['psnine-night-mode-CSS-settings']) {
@@ -389,6 +391,7 @@
               }`);
       }
     };
+
     fixPspcIcon();
     /*
     * 页面右下角追加点击跳转到页面底部按钮
@@ -399,7 +402,7 @@
         $('body,html').animate({
           scrollTop: document.body.clientHeight,
         },
-          500);
+        500);
       }).css({
         cursor: 'pointer',
       });
@@ -513,7 +516,7 @@
       });
     }
 
-    /* 用背景进度条显示约战列表中，我有且未完美的游戏。 */
+    /* 用背景进度条显示约战列表中，自己有奖杯记录且未完美的游戏。 */
     if (settings.showGameProgressInBattle) {
       if (/battle$/.test(window.location.href)) {
         const progressPlatinumBG = (p) => `background-image: linear-gradient(90deg, rgba(200,240,255,0.6) ${p}%, rgba(200,255,250,0.15) ${p}%)`;
@@ -527,13 +530,132 @@
           const thisGameCompletion = personalGameCompletions.find((item) => item[0] === gameID);
 
           if (thisGameCompletion && thisGameCompletion[1] < 100) {
-            // 约战页面没有显示游戏本身是否有白金，就直接默认以白金底色显示了
+            // 约战页面没有显示游戏本身是否有白金，就直接默认白金底色显示了
             if (settings.nightMode) { tr.setAttribute('style', progressPlatinumBGNight(thisGameCompletion[1])); }
             if (!settings.nightMode) { tr.setAttribute('style', progressPlatinumBG(thisGameCompletion[1])); }
           }
         });
       }
     }
+
+    /* ↓↓↓ 约战监控与通知相关功能开始 ↓↓↓↓ */
+
+    // 添加消息通知数量图标样式（伪元素）
+    GM_addStyle(`
+    .notice::after {
+      content: attr(data-notice);
+      position: absolute;
+      top: 8px;
+      right: 0px;
+      background-color: red;
+      color: white;
+      border-radius: 6px;
+      padding: 2px 2px;
+      font-size: 12px;
+      line-height: 0.9em;
+      display: inline-block;
+      min-width: 12px;
+      text-align: center;
+    }`);
+
+    // 1. 用户是否设置了监控
+    // 2. 约战缓存是否存在或过期，否则从约战页更新数据
+    // 3. 比较两组数据，并更新顶部菜单
+    let userBattleMonitors = GM_getValue('userBattleMonitors', []);
+    let cacheBattleInfo = GM_getValue('cacheBattleInfo', {});
+
+    const updateTopMenuNotice = (lista, listb) => { // 定义函数：添加顶部菜单通知红点
+      let count = 0;
+      lista.forEach((item) => {
+        if (listb.includes(item)) count += 1;
+      });
+      if (count > 0) {
+        document.querySelectorAll('#pcmenu li, #mobilemenu li').forEach((el) => {
+          const a = el.querySelector('a');
+          if (a && a.innerText === '约战') {
+            el.classList.add('notice');
+            el.setAttribute('data-notice', count);
+          }
+        });
+      } else {
+        document.querySelectorAll('#pcmenu li, #mobilemenu li').forEach((el) => el.classList.remove('notice'));
+      }
+    };
+
+    const updateBattleRecuritInfo = () => { // 定义函数：更新约战信息
+      const result = [];
+      $.ajax({
+        type: 'GET',
+        url: 'https://psnine.com/battle',
+        dataType: 'html',
+        async: true,
+        success(data, status) {
+          if (status === 'success') {
+            const page = document.createElement('html');
+            page.innerHTML = data;
+            const list = page.querySelectorAll('.box table.list > tbody > tr');
+            list.forEach((tr) => {
+              const gameID = tr.querySelector('td.pdd15 a').href.match(/\/psngame\/(\d+)/)[1];
+              result.push(gameID);
+            });
+            cacheBattleInfo = { list: result, lastUpdate: new Date().getTime() };
+            GM_setValue('cacheBattleInfo', cacheBattleInfo);
+            updateTopMenuNotice(userBattleMonitors, cacheBattleInfo.list);
+          }
+        },
+        error: () => {
+          console.log('无法获取约战信息');
+        },
+      });
+    };
+
+    if (cacheBattleInfo.lastUpdate && new Date().getTime() - cacheBattleInfo.lastUpdate < settings.BattleInfoUpdateInterval) {
+      updateTopMenuNotice(userBattleMonitors, cacheBattleInfo.list);
+      console.log('use cached BattleRecuritInfo');
+    } else {
+      updateBattleRecuritInfo();
+      console.log('update BattleRecuritInfo');
+    }
+
+    // 添加约战监控按钮
+    if (/\/psngame\/\d+\/battle\/?$/.test(window.location.href)) {
+      const gameID = window.location.href.match(/\/psngame\/(\d+)/)[1];
+      const actionArea = document.querySelector('center.pd10');
+      const monitorBTN = document.createElement('p');
+      monitorBTN.className = 'btn btn-large btn-info';
+      monitorBTN.title = '当有用户发起该游戏的约战时，你会收到消息通知。';
+      monitorBTN.textContent = userBattleMonitors.includes(gameID) ? '移除约战监控' : '添加约战监控';
+      // 添加 span 元素并设置样式
+      actionArea.appendChild(monitorBTN);
+      const style = document.createElement('style');
+      style.textContent = `
+        center.pd10 {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        center.pd10 * {
+          flex: 1;
+          width: calc(50% - 8px);
+          margin: 0 4px;
+        }
+        `;
+      document.head.appendChild(style);
+
+      // 为 span 元素添加点击事件，切换约战监控状态
+      monitorBTN.addEventListener('click', () => {
+        if (userBattleMonitors.includes(gameID)) {
+          userBattleMonitors = userBattleMonitors.filter((id) => id !== gameID);
+          monitorBTN.textContent = '添加约战监控';
+        } else {
+          userBattleMonitors.push(gameID);
+          monitorBTN.textContent = '移除约战监控';
+        }
+        GM_setValue('userBattleMonitors', userBattleMonitors);
+        updateTopMenuNotice(userBattleMonitors, cacheBattleInfo.list);
+      });
+    }
+    /* ↑↑↑↑ 约战监控与通知相关功能结束 ↑↑↑↑ */
 
     /*
     * 自动签到功能
@@ -1007,7 +1129,7 @@
             .append(`&nbsp;<a class="psnnode" id="hot" style="background-color: ${tagBackgroundColor === 'rgb(43, 43, 43)'
               ? 'rgb(125 69 67)' // 暗红色
               : 'rgb(217, 83, 79)' // 鲜红色
-              };color: rgb(255, 255, 255);">🔥热门&nbsp;</a>`);
+            };color: rgb(255, 255, 255);">🔥热门&nbsp;</a>`);
         }
       });
     };
