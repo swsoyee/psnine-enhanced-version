@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      1.0.24
+// @version      1.0.25
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // eslint-disable-next-line max-len
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
@@ -88,6 +88,8 @@
     preferSearchForFindingVariants: false,
     // 展开隐藏的子评论
     expandCollapsedSubcomments: true,
+    // 约战页面显示相关游戏个人游戏进度
+    showGameProgressInBattle: true,
   };
   if (window.localStorage) {
     if (window.localStorage['psnine-night-mode-CSS-settings']) {
@@ -397,7 +399,7 @@
         $('body,html').animate({
           scrollTop: document.body.clientHeight,
         },
-        500);
+          500);
       }).css({
         cursor: 'pointer',
       });
@@ -413,7 +415,6 @@
     /*
       1.游戏列表添加按难度排列按钮
       2.游戏列表根据已记录的完成度添加染色
-      3.TODO：游戏列表隐藏已经 100% 的游戏（需要添加用户可见的开关）
     */
     const hdElement = document.querySelector('.hd');
     if (hdElement && hdElement.textContent.trim() === '游戏列表') {
@@ -436,11 +437,12 @@
       const progressGoldBGNight = (p) => `background-image: linear-gradient(90deg, rgba(101,159,19,0.15) ${p}%, rgba(101,159,19,0.05) ${p}%);`;
 
       // 获取游戏列表下所有游戏的 DOM 元素指针
-      const tdElements = document.querySelectorAll('table.list tbody > tr');
+      const tdElements = document.querySelectorAll('table.list > tbody > tr');
 
-      // 根据已保存的完成度添加染色
+      // 获取已保存的完成度
       const personalGameCompletions = GM_getValue('personalGameCompletions', []);
 
+      // 根据已保存的完成度添加染色
       tdElements.forEach((tr) => {
         const gameID = tr.getAttribute('id') || 0;
         const thisGameCompletion = personalGameCompletions.find((item) => item[0] === gameID);
@@ -509,6 +511,28 @@
         // 切换排序顺序
         ascending = !ascending;
       });
+    }
+
+    /* 用背景进度条显示约战列表中，我有且未完美的游戏。 */
+    if (settings.showGameProgressInBattle) {
+      if (/battle$/.test(window.location.href)) {
+        const progressPlatinumBG = (p) => `background-image: linear-gradient(90deg, rgba(200,240,255,0.6) ${p}%, rgba(200,255,250,0.15) ${p}%)`;
+        const progressPlatinumBGNight = (p) => `background-image: linear-gradient(90deg, rgba(200,240,255,0.15) ${p}%, rgba(200,255,250,0.05) ${p}%)`;
+
+        const tdElements = document.querySelectorAll('table.list > tbody > tr');
+        const personalGameCompletions = GM_getValue('personalGameCompletions', []);
+
+        tdElements.forEach((tr) => {
+          const gameID = tr.querySelector('td.pdd15 a').href.match(/\/psngame\/(\d+)/)[1];
+          const thisGameCompletion = personalGameCompletions.find((item) => item[0] === gameID);
+
+          if (thisGameCompletion && thisGameCompletion[1] < 100) {
+            // 约战页面没有显示游戏本身是否有白金，就直接默认以白金底色显示了
+            if (settings.nightMode) { tr.setAttribute('style', progressPlatinumBGNight(thisGameCompletion[1])); }
+            if (!settings.nightMode) { tr.setAttribute('style', progressPlatinumBG(thisGameCompletion[1])); }
+          }
+        });
+      }
     }
 
     /*
@@ -983,7 +1007,7 @@
             .append(`&nbsp;<a class="psnnode" id="hot" style="background-color: ${tagBackgroundColor === 'rgb(43, 43, 43)'
               ? 'rgb(125 69 67)' // 暗红色
               : 'rgb(217, 83, 79)' // 鲜红色
-            };color: rgb(255, 255, 255);">🔥热门&nbsp;</a>`);
+              };color: rgb(255, 255, 255);">🔥热门&nbsp;</a>`);
         }
       });
     };
