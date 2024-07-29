@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      1.0.26
+// @version      1.0.27
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // eslint-disable-next-line max-len
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
@@ -402,7 +402,7 @@
         $('body,html').animate({
           scrollTop: document.body.clientHeight,
         },
-        500);
+          500);
       }).css({
         cursor: 'pointer',
       });
@@ -724,7 +724,15 @@
 
     const savePersonalGameCompletions = (configifneeded) => {
       // if GM_setValue && GM_getValue is enabled
-      const thisFeatureEnabled = (configifneeded || true) && (typeof GM_setValue === 'function' && typeof GM_getValue === 'function');
+      let thisFeatureEnabled = (configifneeded || true) && (typeof GM_setValue === 'function' && typeof GM_getValue === 'function');
+      const myHomePage = document.querySelectorAll('ul.r li.dropdown ul li a')[0].href;
+      thisFeatureEnabled = thisFeatureEnabled && window.location.href.includes(myHomePage);
+
+      // 2024.07.30 bug fix: 错误地保存他人的游戏完成度。已经修复，但用户端的旧数据需要清除
+      const lasttime = GM_getValue('personalGameCompletionsLastUpdated', 0);
+      if (lasttime === 0) { GM_setValue('personalGameCompletions', []); }
+
+      GM_setValue('personalGameCompletions', []);
 
       if (thisFeatureEnabled) {
         // 获得当前页的游戏完成度
@@ -740,7 +748,8 @@
         });
 
         // 读取已保存的历史
-        const history = GM_getValue('personalGameCompletions', []);
+
+        let history = GM_getValue('personalGameCompletions', []);
 
         // 用当前覆盖历史
         personalGameCompletions.forEach((currentItem) => {
@@ -754,7 +763,8 @@
 
         // 保存更新后的历史记录
         GM_setValue('personalGameCompletions', history);
-        // console.log(GM_getValue('personalGameCompletions'))
+        GM_setValue('personalGameCompletionsLastUpdated', new Date().getTime());
+        console.log(history)
         return true;
       }
       return false;
@@ -764,6 +774,7 @@
     if (
       /psnid\/[A-Za-z0-9_-]+\/?$/.test(window.location.href) || /psnid\/[A-Za-z0-9_-]+\/psngame\/?/.test(window.location.href)
     ) {
+
       savePersonalGameCompletions();
     }
 
@@ -1128,7 +1139,7 @@
             .append(`&nbsp;<a class="psnnode" id="hot" style="background-color: ${tagBackgroundColor === 'rgb(43, 43, 43)'
               ? 'rgb(125 69 67)' // 暗红色
               : 'rgb(217, 83, 79)' // 鲜红色
-            };color: rgb(255, 255, 255);">🔥热门&nbsp;</a>`);
+              };color: rgb(255, 255, 255);">🔥热门&nbsp;</a>`);
         }
       });
     };
