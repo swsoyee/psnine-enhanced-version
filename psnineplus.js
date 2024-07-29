@@ -732,8 +732,6 @@
       const lasttime = GM_getValue('personalGameCompletionsLastUpdated', 0);
       if (lasttime === 0) { GM_setValue('personalGameCompletions', []); }
 
-      GM_setValue('personalGameCompletions', []);
-
       if (thisFeatureEnabled) {
         // 获得当前页的游戏完成度
         const tdElements = document.querySelectorAll('table.list tbody > tr');
@@ -748,7 +746,6 @@
         });
 
         // 读取已保存的历史
-
         let history = GM_getValue('personalGameCompletions', []);
 
         // 用当前覆盖历史
@@ -764,7 +761,6 @@
         // 保存更新后的历史记录
         GM_setValue('personalGameCompletions', history);
         GM_setValue('personalGameCompletionsLastUpdated', new Date().getTime());
-        console.log(history)
         return true;
       }
       return false;
@@ -774,7 +770,6 @@
     if (
       /psnid\/[A-Za-z0-9_-]+\/?$/.test(window.location.href) || /psnid\/[A-Za-z0-9_-]+\/psngame\/?/.test(window.location.href)
     ) {
-
       savePersonalGameCompletions();
     }
 
