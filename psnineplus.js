@@ -402,7 +402,7 @@
         $('body,html').animate({
           scrollTop: document.body.clientHeight,
         },
-        500);
+          500);
       }).css({
         cursor: 'pointer',
       });
@@ -796,6 +796,7 @@
               || pagesUpdateTime[0] < 1722333600000 // 2024-07-30 18:00 GMT+0800
             ) {
               GM_setValue('personalGameCompletions', []);
+              pagesUpdateTime = [];
             }
 
             // 读取当前页奖杯完成数据
@@ -1226,7 +1227,7 @@
             .append(`&nbsp;<a class="psnnode" id="hot" style="background-color: ${tagBackgroundColor === 'rgb(43, 43, 43)'
               ? 'rgb(125 69 67)' // 暗红色
               : 'rgb(217, 83, 79)' // 鲜红色
-            };color: rgb(255, 255, 255);">🔥热门&nbsp;</a>`);
+              };color: rgb(255, 255, 255);">🔥热门&nbsp;</a>`);
         }
       });
     };
