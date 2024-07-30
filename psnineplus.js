@@ -726,12 +726,12 @@
          4. 用户新开坑，可能导致页面数量增长，此时，最后几页也未记录更新时间，但实际是不需要更新的
 
        简化： 
-         1. 没有时间记录的页面，都需要更新，有时间记录的页面，从前往后更新，遇到已有记录的就停止
+         1. 没有时间记录的页面，都需要更新，有时间记录的页面，从前往后更新，遇到无变化奖杯条目的就停止
          2. 当用户进行异常操作时，需要自行通过翻页刷新数据
      */
 
     // GM_setValue('personalGameCompletions', []);
-    // console.log(GM_getValue('personalGameCompletions', []));
+    console.log(GM_getValue('personalGameCompletions', []));
     // GM_setValue('personalGameCompletionsLastUpdate', []);
 
     const parseCompletionPage = (content) => {
@@ -762,24 +762,26 @@
     const updateCompletions = (updateList) => {
 
       let gameCompletionHistory = GM_getValue('personalGameCompletions', []);
-      let count = 0
+      let updateCount = 0
 
       updateList.forEach(completion => {
+
         const index = gameCompletionHistory.findIndex(historyItem => historyItem[0] === completion[0]);
         if (index !== -1) {
           if (gameCompletionHistory[index][1] !== completion[1]) {
             gameCompletionHistory[index] = completion;
-            count++
+            updateCount++
           }
         } else {
           gameCompletionHistory.push(completion);
-          count++
+          updateCount++
         }
+
       });
 
       GM_setValue('personalGameCompletions', gameCompletionHistory);
-
-      return count
+      let nowRecordsNumber = gameCompletionHistory.length;
+      return { updateCount, nowRecordsNumber }
     }
 
 
@@ -801,15 +803,15 @@
             const page = document.createElement('html');
             page.innerHTML = data;
             let { totalPages, totalItems, thisPageCompletions } = parseCompletionPage(page)
-            totalPages = totalPages || pagesUpdateTime.length
-            let addCounts = updateCompletions(thisPageCompletions)
+            totalPages = totalPages || pagesUpdateTime.length || 1
+            let { addCounts, totalRecords } = updateCompletions(thisPageCompletions)
 
             // 更新页面记录时间
             pagesUpdateTime[startPageID - 1] = new Date().getTime();
             GM_setValue('personalGameCompletionsLastUpdate', pagesUpdateTime);
 
             // 根据规则计算下一页
-            if (addCounts == thisPageCompletions.length && startPageID < totalPages) {
+            if (addCounts == thisPageCompletions.length && startPageID < totalPages - 1) {
               setTimeout(() => { loadGameCompletions(userid, startPageID + 1) }, 5000);
               return true
             } else {
@@ -817,11 +819,11 @@
               const nextIdx = fullfilledUpdateTime.findIndex(time => {
                 return time == undefined || time == 0 || time == null
               });
-
               if (nextIdx !== -1) {
                 setTimeout(() => { loadGameCompletions(userid, nextIdx + 1) }, 5000);
                 return true
               }
+              return false
             }
           }
         },
@@ -836,7 +838,7 @@
       let pagesUpdateTime = GM_getValue('personalGameCompletionsLastUpdate', []);
 
       // 2024.07.30 bug fix: 错误地保存他人的游戏完成度 - 已经修复，但用户端的旧数据需要清除
-      if (pagesUpdateTime[0] === undefined || pagesUpdateTime[0] < 1722301200000) { // 2024-07-30 9:00 GMT+0800
+      if (pagesUpdateTime[0] === undefined || pagesUpdateTime[0] < 1722333600000) { // 2024-07-30 18:00 GMT+0800
         GM_setValue('personalGameCompletions', []);
       }
 
@@ -862,16 +864,17 @@
     if (myGamePageURLRegex.test(window.location.href)) {
 
       let { totalPages, totalItems, thisPageCompletions } = parseCompletionPage(document)
-      const pageid = window.location.href.match(myGamePageURLRegex)[1] || 1;
+      const pageid = parseInt(window.location.href.match(myGamePageURLRegex)[1]) || 1;
 
-      const updateItemCounts = updateCompletions(thisPageCompletions)
+      const { addCounts, totalRecords } = updateCompletions(thisPageCompletions)
 
       let pagesUpdateTime = GM_getValue('personalGameCompletionsLastUpdate', []);
       pagesUpdateTime[pageid - 1] = new Date().getTime();
       GM_setValue('personalGameCompletionsLastUpdate', pagesUpdateTime);
 
-      if (updateItemCounts <= totalItems) {
-        loadGameCompletions(myUserId, 1)
+      if (totalRecords < totalItems || totalItems === 0) {
+        let nextPageID = pageid == 1 ? 2 : 1
+        loadGameCompletions(myUserId, nextPageID)
       }
     } else {
 
