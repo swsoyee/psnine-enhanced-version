@@ -715,7 +715,6 @@
             }`,
     );
 
-
     /*
        在 LocatStorage 中保存个人游戏完成度函数，为避免过多的页面重复请求，逻辑梳理如下：
  
@@ -731,7 +730,7 @@
      */
 
     // GM_setValue('personalGameCompletions', []);
-    console.log(GM_getValue('personalGameCompletions', []));
+    // console.log(GM_getValue('personalGameCompletions', []));
     // GM_setValue('personalGameCompletionsLastUpdate', []);
 
     const parseCompletionPage = (content) => {
@@ -765,18 +764,14 @@
       let updateCount = 0
 
       updateList.forEach(completion => {
-
         const index = gameCompletionHistory.findIndex(historyItem => historyItem[0] === completion[0]);
         if (index !== -1) {
-          if (gameCompletionHistory[index][1] !== completion[1]) {
-            gameCompletionHistory[index] = completion;
-            updateCount++
-          }
+          if (gameCompletionHistory[index][1] !== completion[1]) { updateCount++ }
+          gameCompletionHistory[index] = completion;
         } else {
           gameCompletionHistory.push(completion);
           updateCount++
         }
-
       });
 
       GM_setValue('personalGameCompletions', gameCompletionHistory);
@@ -787,7 +782,7 @@
 
     // 后台更新主函数
     const loadGameCompletions = (userid, startPageID) => {
-      console.log(`https://psnine.com/psnid/${userid}/psngame?page=${startPageID}`)
+      // console.log(`https://psnine.com/psnid/${userid}/psngame?page=${startPageID}`)
       $.ajax({
         type: 'GET',
         url: `https://psnine.com/psnid/${userid}/psngame?page=${startPageID}`,
@@ -802,9 +797,9 @@
             // 读取当前页奖杯完成数据
             const page = document.createElement('html');
             page.innerHTML = data;
-            let { totalPages, totalItems, thisPageCompletions } = parseCompletionPage(page)
-            totalPages = totalPages || pagesUpdateTime.length || 1
-            let { addCounts, totalRecords } = updateCompletions(thisPageCompletions)
+            let { totalPages, totalItems, thisPageCompletions } = parseCompletionPage(page);
+            totalPages = totalPages || pagesUpdateTime.length || 1;
+            let { addCounts, totalRecords } = updateCompletions(thisPageCompletions);
 
             // 更新页面记录时间
             pagesUpdateTime[startPageID - 1] = new Date().getTime();
@@ -825,6 +820,7 @@
               }
               return false
             }
+
           }
         },
         error: (e) => { console.log('loadGameCompletions error', e); },
@@ -833,21 +829,11 @@
 
     // 后台更新频次控制
     const bgUpdateMyGameCompletion = () => {
-
-      // 读取记录的各页更新时间
-      let pagesUpdateTime = GM_getValue('personalGameCompletionsLastUpdate', []);
-
-      // 2024.07.30 bug fix: 错误地保存他人的游戏完成度 - 已经修复，但用户端的旧数据需要清除
-      if (pagesUpdateTime[0] === undefined || pagesUpdateTime[0] < 1722333600000) { // 2024-07-30 18:00 GMT+0800
-        GM_setValue('personalGameCompletions', []);
-      }
-
-      let now = new Date().getTime()
-      // if (now - pagesUpdateTime[0] > 60 * 60 * 1000) {
-      if (pagesUpdateTime[0] == undefined || now - pagesUpdateTime[0] > 1) {
+      const pagesUpdateTime = GM_getValue('personalGameCompletionsLastUpdate', []);
+      const now = new Date().getTime()
+      if (pagesUpdateTime[0] == undefined || now - pagesUpdateTime[0] > 60 * 60 * 1000) {
         loadGameCompletions(myUserId, 1);
       }
-
     };
 
     // 获取个人 ID
@@ -860,26 +846,30 @@
     // match: https://psnine.com/psnid/kaikaiiiiiiiwu/psngame?page=2
     // dismatch: https://psnine.com/psnid/kaikaiiiiiiiwu/comment
 
+    // 2024.07.30 bug fix: 错误地保存他人的游戏完成度 - 已经修复，但用户端的旧数据需要清除
+    let pagesUpdateTime = GM_getValue('personalGameCompletionsLastUpdate', []);
+    if (pagesUpdateTime[0] === undefined || pagesUpdateTime[0] < 1722333600000) { // 2024-07-30 18:00 GMT+0800
+      GM_setValue('personalGameCompletions', []);
+    }
+
     // 在用户浏览个人页面或个人游戏列表页时，无视 Interval 白嫖一次数据更新
     if (myGamePageURLRegex.test(window.location.href)) {
 
-      let { totalPages, totalItems, thisPageCompletions } = parseCompletionPage(document)
+      let pagesUpdateTime = GM_getValue('personalGameCompletionsLastUpdate', []);
       const pageid = parseInt(window.location.href.match(myGamePageURLRegex)[1]) || 1;
 
+      const { totalPages, totalItems, thisPageCompletions } = parseCompletionPage(document)
       const { addCounts, totalRecords } = updateCompletions(thisPageCompletions)
 
-      let pagesUpdateTime = GM_getValue('personalGameCompletionsLastUpdate', []);
       pagesUpdateTime[pageid - 1] = new Date().getTime();
       GM_setValue('personalGameCompletionsLastUpdate', pagesUpdateTime);
-
       if (totalRecords < totalItems || totalItems === 0) {
         let nextPageID = pageid == 1 ? 2 : 1
         loadGameCompletions(myUserId, nextPageID)
       }
-    } else {
 
-      // 固定更新
-      bgUpdateMyGameCompletion();
+    } else {
+      bgUpdateMyGameCompletion(); // 定时更新
     }
 
 
