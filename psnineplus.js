@@ -402,7 +402,7 @@
         $('body,html').animate({
           scrollTop: document.body.clientHeight,
         },
-          500);
+        500);
       }).css({
         cursor: 'pointer',
       });
@@ -724,8 +724,7 @@
     */
 
     const bgGetMyGameCompletion = (configifneeded) => {
-
-      let thisFeatureEnabled = (configifneeded || true) && (typeof GM_setValue === 'function' && typeof GM_getValue === 'function');
+      const thisFeatureEnabled = (configifneeded || true) && (typeof GM_setValue === 'function' && typeof GM_getValue === 'function');
       if (thisFeatureEnabled) {
         const myHomePage = document.querySelectorAll('ul.r li.dropdown ul li a')[0].href;
         const myUserId = myHomePage.match(/\/psnid\/([A-Za-z0-9_-]+)/)[1];
@@ -736,21 +735,18 @@
         if (lasttime < new Date('2024-07-30 9:00 GMT+0800').getTime()) { GM_setValue('personalGameCompletions', []); }
 
         // 小于一小时不执行
-        if (new Date().getTime() - lasttime < 3600 * 1000) { return false }
+        if (new Date().getTime() - lasttime < 3600 * 1000) { return false; }
 
-        let gameCompletionHistory = GM_getValue('personalGameCompletions', []);
+        const gameCompletionHistory = GM_getValue('personalGameCompletions', []);
 
         const loadGameCompletions = (userid, pageid) => {
-
           $.ajax({
             type: 'GET',
             url: `https://psnine.com/psnid/${userid}/psngame?page=${pageid}`,
             dataType: 'html',
             async: true,
             success: (data, status) => {
-
               if (status === 'success') {
-
                 // 读取当前页奖杯完成数据
                 const page = document.createElement('html');
                 page.innerHTML = data;
@@ -777,13 +773,13 @@
                   } else {
                     gameCompletionHistory.push(completion);
                   }
-                })
+                });
 
                 // 如果最后一页，则停止
                 let loadNext = true;
-                const totalPageEle = page.querySelectorAll('.page > ul > li > a')
-                const totalPage = parseInt(totalPageEle[totalPageEle.length - 2].innerText);
-                if (pageid === totalPage) { loadNext = false }
+                const totalPageEle = page.querySelectorAll('.page > ul > li > a');
+                const totalPage = parseInt(totalPageEle[totalPageEle.length - 2].innerText, 10);
+                if (pageid === totalPage) { loadNext = false; }
 
                 // 保存数据
                 GM_setValue('personalGameCompletions', gameCompletionHistory);
@@ -791,19 +787,19 @@
 
                 //  执行下一页
                 if (loadNext && !sameItemAppeared) {
-                  setTimeout(() => { loadGameCompletions(userid, pageid + 1) }, 5000);
+                  setTimeout(() => { loadGameCompletions(userid, pageid + 1); }, 5000);
                 }
               }
             },
-            error: (e) => { console.log('loadGameCompletions error', e) },
-          })
-        }
+            error: (e) => { console.log('loadGameCompletions error', e); },
+          });
+        };
         loadGameCompletions(myUserId, 1);
       }
-    }
+      return true;
+    };
 
     bgGetMyGameCompletion(true);
-
 
     if (
       /psnid\/[A-Za-z0-9_-]+\/?$/.test(window.location.href)
@@ -1163,7 +1159,7 @@
             .append(`&nbsp;<a class="psnnode" id="hot" style="background-color: ${tagBackgroundColor === 'rgb(43, 43, 43)'
               ? 'rgb(125 69 67)' // 暗红色
               : 'rgb(217, 83, 79)' // 鲜红色
-              };color: rgb(255, 255, 255);">🔥热门&nbsp;</a>`);
+            };color: rgb(255, 255, 255);">🔥热门&nbsp;</a>`);
         }
       });
     };
