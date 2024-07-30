@@ -718,33 +718,29 @@
     );
 
     /*
-      在 LocatStorage 中保存个人游戏完成度函数
-      添加于 /psnid\/[A-Za-z0-9_-]+\/?$/ 页面，以及该页自动翻页函数内部
+      在 LocatStorage 中保存个人游戏完成度函数，为避免过多的重复请求，设置了两个结束条件：
+      一：更新时间超过一小时
+      二：遇到和已知条目的进度一样时停止，利用更新奖杯一定在前的特性
     */
 
     const bgGetMyGameCompletion = (configifneeded) => {
 
-      console.log('run bgGetMyGameCompletion')
       let thisFeatureEnabled = (configifneeded || true) && (typeof GM_setValue === 'function' && typeof GM_getValue === 'function');
-      const myHomePage = document.querySelectorAll('ul.r li.dropdown ul li a')[0].href;
-      const myUserId = myHomePage.match(/\/psnid\/([A-Za-z0-9_-]+)/)[1];
-
-      const lasttime = GM_getValue('personalGameCompletionsLastUpdated', 0);
-
-      // 2024.07.30 bug fix: 错误地保存他人的游戏完成度。已经修复，但用户端的旧数据需要清除
-      if (lasttime === 0) { GM_setValue('personalGameCompletions', []); }
-
-      // 小于一小时不执行
-      // if (new Date().getTime() - lasttime < 3600 * 1000) { return false }
-      if (new Date().getTime() - lasttime < 1) { return false }
-
-      let gameCompletionHistory = GM_getValue('personalGameCompletions', []);
-      gameCompletionHistory = [];
-
       if (thisFeatureEnabled) {
+        const myHomePage = document.querySelectorAll('ul.r li.dropdown ul li a')[0].href;
+        const myUserId = myHomePage.match(/\/psnid\/([A-Za-z0-9_-]+)/)[1];
+
+        const lasttime = GM_getValue('personalGameCompletionsLastUpdated', 0);
+
+        // 2024.07.30 bug fix: 错误地保存他人的游戏完成度。已经修复，但用户端的旧数据需要清除
+        if (lasttime < new Date('2024-07-30 9:00 GMT+0800').getTime()) { GM_setValue('personalGameCompletions', []); }
+
+        // 小于一小时不执行
+        if (new Date().getTime() - lasttime < 3600 * 1000) { return false }
+
+        let gameCompletionHistory = GM_getValue('personalGameCompletions', []);
 
         const loadGameCompletions = (userid, pageid) => {
-          console.log(`https://psnine.com/psnid/${userid}/psngame?page=${pageid}`)
 
           $.ajax({
             type: 'GET',
@@ -752,6 +748,7 @@
             dataType: 'html',
             async: true,
             success: (data, status) => {
+
               if (status === 'success') {
 
                 // 读取当前页奖杯完成数据
@@ -768,106 +765,45 @@
                   return [gameID, completion, platinum];
                 });
 
-                console.log(thisPageCompletions);
-                // 合并更新历史数据，并确定是否加载下一页
-                let loadNext = true;
-                let comblineflag = false;
-
-                // 1. 合并数据，并当整页数据都没有变化时，不加载下一页
+                // 合并数据，遇到和已知条目的进度一样时标记
+                let sameItemAppeared = false;
                 thisPageCompletions.forEach((completion) => {
                   const index = gameCompletionHistory.findIndex((historyItem) => historyItem[0] === completion[0]);
                   if (index !== -1) {
-                    if (gameCompletionHistory[index][1] !== completion[1]) {
-                      comblineflag = true;
+                    if (gameCompletionHistory[index][1] === completion[1]) {
+                      sameItemAppeared = true;
                       gameCompletionHistory[index] = completion;
                     }
                   } else {
                     gameCompletionHistory.push(completion);
-                    comblineflag = true;
                   }
                 })
 
-                //  如果最后一页，则停止
+                // 如果最后一页，则停止
+                let loadNext = true;
                 const totalPageEle = page.querySelectorAll('.page > ul > li > a')
                 const totalPage = parseInt(totalPageEle[totalPageEle.length - 2].innerText);
-                console.log(totalPage, pageid)
                 if (pageid === totalPage) { loadNext = false }
 
                 // 保存数据
-                console.log(gameCompletionHistory);
                 GM_setValue('personalGameCompletions', gameCompletionHistory);
                 GM_setValue('personalGameCompletionsLastUpdated', new Date().getTime());
-                console.log(loadNext, comblineflag)
 
                 //  执行下一页
-                if (loadNext && comblineflag) {
+                if (loadNext && !sameItemAppeared) {
                   setTimeout(() => { loadGameCompletions(userid, pageid + 1) }, 5000);
                 }
-
               }
             },
             error: (e) => { console.log('loadGameCompletions error', e) },
           })
         }
-
-        loadGameCompletions(myUserId, 15);
+        loadGameCompletions(myUserId, 1);
       }
-
     }
 
     bgGetMyGameCompletion(true);
 
-
-    // const savePersonalGameCompletions = (configifneeded) => {
-    //   // if GM_setValue && GM_getValue is enabled
-    //   let thisFeatureEnabled = (configifneeded || true) && (typeof GM_setValue === 'function' && typeof GM_getValue === 'function');
-    //   const myHomePage = document.querySelectorAll('ul.r li.dropdown ul li a')[0].href;
-    //   thisFeatureEnabled = thisFeatureEnabled && window.location.href.includes(myHomePage);
-
-    //   // 2024.07.30 bug fix: 错误地保存他人的游戏完成度。已经修复，但用户端的旧数据需要清除
-    //   const lasttime = GM_getValue('personalGameCompletionsLastUpdated', 0);
-    //   if (lasttime === 0) { GM_setValue('personalGameCompletions', []); }
-
-    //   if (thisFeatureEnabled) {
-    //     // 获得当前页的游戏完成度
-    //     const tdElements = document.querySelectorAll('table.list tbody > tr');
-    //     const personalGameCompletions = Array.from(tdElements).map((tr) => {
-    //       const completionElement = tr.querySelector('div.progress > div');
-    //       const completion = completionElement ? parseFloat(completionElement.textContent) : 0;
-    //       const platinumElement = tr.querySelector('span.text-platinum');
-    //       const platinum = platinumElement ? platinumElement.textContent === '白1' : false;
-    //       const gameIDElement = tr.querySelector('a');
-    //       const gameID = gameIDElement.href.match(/\/psngame\/(\d+)/)[1];
-    //       return [gameID, completion, platinum];
-    //     });
-
-    //     // 读取已保存的历史
-    //     const history = GM_getValue('personalGameCompletions', []);
-
-    //     // 用当前覆盖历史
-    //     personalGameCompletions.forEach((currentItem) => {
-    //       const index = history.findIndex((historyItem) => historyItem[0] === currentItem[0]);
-    //       if (index !== -1) {
-    //         history[index] = currentItem;
-    //       } else {
-    //         history.push(currentItem);
-    //       }
-    //     });
-
-    //     // 保存更新后的历史记录
-    //     GM_setValue('personalGameCompletions', history);
-    //     GM_setValue('personalGameCompletionsLastUpdated', new Date().getTime());
-    //     return true;
-    //   }
-    //   return false;
-    // };
-
-    // 在个人页面或个人游戏列表页更新数据
-    if (
-      /psnid\/[A-Za-z0-9_-]+\/?$/.test(window.location.href) || /psnid\/[A-Za-z0-9_-]+\/psngame\/?/.test(window.location.href)
-    ) {
-      // savePersonalGameCompletions();
-    }
 
     if (
       /psnid\/[A-Za-z0-9_-]+\/?$/.test(window.location.href)
@@ -901,9 +837,6 @@
                   $('tbody > tr:last').after(nextGameContent);
                   isbool2 = true;
                   gamePageIndex += 1;
-
-                  // 同步更新个人游戏完成度
-                  // savePersonalGameCompletions();
                 } else {
                   $('#loadingMessage').text('没有更多游戏了...');
                 }
