@@ -402,7 +402,7 @@
         $('body,html').animate({
           scrollTop: document.body.clientHeight,
         },
-          500);
+        500);
       }).css({
         cursor: 'pointer',
       });
@@ -717,14 +717,14 @@
 
     /*
        在 LocatStorage 中保存个人游戏完成度函数，为避免过多的页面重复请求，逻辑梳理如下：
- 
+
        场景：
-         1. 更新的奖杯一定在前，但用户可能会隐藏游戏或解除隐藏，导致内容不再确定。 
+         1. 更新的奖杯一定在前，但用户可能会隐藏游戏或解除隐藏，导致内容不再确定。
          2. 隐藏游戏条目不影响本地已有数据，也不要求本地数据作对应删除，但影响页码数和对应的更新记录
          3. 由于设置为 Ajax 5 秒翻页，所以存在前几页数据已更新，后几页数据因为用户关闭页面而未更新的情况
          4. 用户新开坑，可能导致页面数量增长，此时，最后几页也未记录更新时间，但实际是不需要更新的
 
-       简化： 
+       简化：
          1. 没有时间记录的页面，都需要更新，有时间记录的页面，从前往后更新，遇到无变化奖杯条目的就停止
          2. 当用户进行异常操作时，需要自行通过翻页刷新数据
      */
@@ -734,7 +734,6 @@
     // GM_setValue('personalGameCompletionsLastUpdate', []);
 
     const parseCompletionPage = (content) => {
-
       // 游戏进度信息
       const tdElements = content.querySelectorAll('table.list tbody > tr');
       const thisPageCompletions = Array.from(tdElements).map((tr) => {
@@ -748,37 +747,36 @@
       });
 
       // 获得总页数和总条目数
-      let totalPages = totalItems = 0;
+      let totalPages = 0; let
+        totalItems = 0;
       const PaginationEle = content.querySelectorAll('.page > ul > li > a');
       if (PaginationEle.length > 2) {
         totalPages = parseInt(PaginationEle[PaginationEle.length - 2].innerText, 10);
         totalItems = parseInt(PaginationEle[PaginationEle.length - 1].innerText, 10);
       }
 
-      return { totalPages, totalItems, thisPageCompletions }
-    }
+      return { totalPages, totalItems, thisPageCompletions };
+    };
 
     const updateCompletions = (updateList) => {
+      const gameCompletionHistory = GM_getValue('personalGameCompletions', []);
+      let addCounts = 0;
 
-      let gameCompletionHistory = GM_getValue('personalGameCompletions', []);
-      let updateCount = 0
-
-      updateList.forEach(completion => {
-        const index = gameCompletionHistory.findIndex(historyItem => historyItem[0] === completion[0]);
+      updateList.forEach((completion) => {
+        const index = gameCompletionHistory.findIndex((historyItem) => historyItem[0] === completion[0]);
         if (index !== -1) {
-          if (gameCompletionHistory[index][1] !== completion[1]) { updateCount++ }
+          if (gameCompletionHistory[index][1] !== completion[1]) { addCounts += 1; }
           gameCompletionHistory[index] = completion;
         } else {
           gameCompletionHistory.push(completion);
-          updateCount++
+          addCounts += 1;
         }
       });
 
       GM_setValue('personalGameCompletions', gameCompletionHistory);
-      let nowRecordsNumber = gameCompletionHistory.length;
-      return { updateCount, nowRecordsNumber }
-    }
-
+      const totalRecords = gameCompletionHistory.length;
+      return { addCounts, totalRecords };
+    };
 
     // 后台更新主函数
     const loadGameCompletions = (userid, startPageID) => {
@@ -790,90 +788,85 @@
         async: true,
         success: (data, status) => {
           if (status === 'success') {
-
             // 读取历史数据
             const pagesUpdateTime = GM_getValue('personalGameCompletionsLastUpdate', []);
+            // 2024.07.30 bug fix: 错误地保存他人的游戏完成度 - 已经修复，但用户端的旧数据需要清除
+            if (Array.isArray(pagesUpdateTime) === false
+              || pagesUpdateTime[0] === undefined
+              || pagesUpdateTime[0] < 1722333600000 // 2024-07-30 18:00 GMT+0800
+            ) {
+              GM_setValue('personalGameCompletions', []);
+            }
 
             // 读取当前页奖杯完成数据
             const page = document.createElement('html');
             page.innerHTML = data;
-            let { totalPages, totalItems, thisPageCompletions } = parseCompletionPage(page);
-            totalPages = totalPages || pagesUpdateTime.length || 1;
-            let { addCounts, totalRecords } = updateCompletions(thisPageCompletions);
+            const o = parseCompletionPage(page);
+            const { thisPageCompletions } = o;
+            const totalPages = o.totalPages || pagesUpdateTime.length || 1;
+            const { addCounts } = updateCompletions(thisPageCompletions);
 
             // 更新页面记录时间
             pagesUpdateTime[startPageID - 1] = new Date().getTime();
             GM_setValue('personalGameCompletionsLastUpdate', pagesUpdateTime);
 
             // 根据规则计算下一页
-            if (addCounts == thisPageCompletions.length && startPageID < totalPages - 1) {
-              setTimeout(() => { loadGameCompletions(userid, startPageID + 1) }, 5000);
-              return true
-            } else {
-              const fullfilledUpdateTime = pagesUpdateTime.concat(Array(totalPages - pagesUpdateTime.length).fill(0))
-              const nextIdx = fullfilledUpdateTime.findIndex(time => {
-                return time == undefined || time == 0 || time == null
-              });
-              if (nextIdx !== -1) {
-                setTimeout(() => { loadGameCompletions(userid, nextIdx + 1) }, 5000);
-                return true
-              }
-              return false
+            if (addCounts === thisPageCompletions.length && startPageID < totalPages - 1) {
+              setTimeout(() => { loadGameCompletions(userid, startPageID + 1); }, 5000);
+              return true;
             }
-
+            const fullfilledUpdateTime = pagesUpdateTime.concat(Array(totalPages - pagesUpdateTime.length).fill(0));
+            const nextIdx = fullfilledUpdateTime.findIndex((time) => time === undefined || time === 0 || time === null);
+            if (nextIdx !== -1) {
+              setTimeout(() => { loadGameCompletions(userid, nextIdx + 1); }, 5000);
+              return true;
+            }
+            return false;
           }
+          return true;
         },
         error: (e) => { console.log('loadGameCompletions error', e); },
       });
     };
 
-    // 后台更新频次控制
-    const bgUpdateMyGameCompletion = () => {
-      const pagesUpdateTime = GM_getValue('personalGameCompletionsLastUpdate', []);
-      const now = new Date().getTime()
-      if (pagesUpdateTime[0] == undefined || now - pagesUpdateTime[0] > 60 * 60 * 1000) {
-        loadGameCompletions(myUserId, 1);
-      }
-    };
-
     // 获取个人 ID
     const myHomePage = document.querySelectorAll('ul.r li.dropdown ul li a')[0].href;
-    const myUserId = myHomePage.match(/\/psnid\/([A-Za-z0-9_-]+)/)[1] || "*"
-    const myGamePageURLRegex = new RegExp(`psnid\/${myUserId}/?(?:psngame(?:\\?page=(\\d+))?|$)`);
+    const myUserId = myHomePage.match(/\/psnid\/([A-Za-z0-9_-]+)/)[1] || '*';
+    const myGamePageURLRegex = new RegExp(`psnid/${myUserId}/?(?:psngame(?:\\?page=(\\d+))?|$)`);
     // match: https://psnine.com/psnid/kaikaiiiiiiiwu
     // match: https://psnine.com/psnid/kaikaiiiiiiiwu/
     // match: https://psnine.com/psnid/kaikaiiiiiiiwu/psngame
     // match: https://psnine.com/psnid/kaikaiiiiiiiwu/psngame?page=2
     // dismatch: https://psnine.com/psnid/kaikaiiiiiiiwu/comment
 
-    // 2024.07.30 bug fix: 错误地保存他人的游戏完成度 - 已经修复，但用户端的旧数据需要清除
-    let pagesUpdateTime = GM_getValue('personalGameCompletionsLastUpdate', []);
-    if (pagesUpdateTime[0] === undefined || pagesUpdateTime[0] < 1722333600000) { // 2024-07-30 18:00 GMT+0800
-      GM_setValue('personalGameCompletions', []);
-    }
+    // 后台更新频次控制
+    const bgUpdateMyGameCompletion = () => {
+      const pagesUpdateTime = GM_getValue('personalGameCompletionsLastUpdate', []);
+      const now = new Date().getTime();
+      if (pagesUpdateTime[0] === undefined || now - pagesUpdateTime[0] > 60 * 60 * 1000) {
+        loadGameCompletions(myUserId, 1);
+      }
+    };
 
     // 在用户浏览个人页面或个人游戏列表页时，无视 Interval 白嫖一次数据更新
     if (myGamePageURLRegex.test(window.location.href)) {
+      const pagesUpdateTime = GM_getValue('personalGameCompletionsLastUpdate', []);
+      const pageid = parseInt(window.location.href.match(myGamePageURLRegex)[1], 10) || 1;
 
-      let pagesUpdateTime = GM_getValue('personalGameCompletionsLastUpdate', []);
-      const pageid = parseInt(window.location.href.match(myGamePageURLRegex)[1]) || 1;
-
-      const { totalPages, totalItems, thisPageCompletions } = parseCompletionPage(document)
-      const { addCounts, totalRecords } = updateCompletions(thisPageCompletions)
+      const { totalItems, thisPageCompletions } = parseCompletionPage(document);
+      const { totalRecords } = updateCompletions(thisPageCompletions);
 
       pagesUpdateTime[pageid - 1] = new Date().getTime();
       GM_setValue('personalGameCompletionsLastUpdate', pagesUpdateTime);
       if (totalRecords < totalItems || totalItems === 0) {
-        let nextPageID = pageid == 1 ? 2 : 1
-        loadGameCompletions(myUserId, nextPageID)
+        const nextPageID = pageid === 1 ? 2 : 1;
+        loadGameCompletions(myUserId, nextPageID);
       }
-
     } else {
       bgUpdateMyGameCompletion(); // 定时更新
     }
 
-
-    ////////////////////////////////////////////////////////////////////////////////
+    /// /////////////////////////////////////////////////////////////////////////////
 
     if (
       /psnid\/[A-Za-z0-9_-]+\/?$/.test(window.location.href)
@@ -1233,7 +1226,7 @@
             .append(`&nbsp;<a class="psnnode" id="hot" style="background-color: ${tagBackgroundColor === 'rgb(43, 43, 43)'
               ? 'rgb(125 69 67)' // 暗红色
               : 'rgb(217, 83, 79)' // 鲜红色
-              };color: rgb(255, 255, 255);">🔥热门&nbsp;</a>`);
+            };color: rgb(255, 255, 255);">🔥热门&nbsp;</a>`);
         }
       });
     };
