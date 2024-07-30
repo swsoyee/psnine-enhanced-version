@@ -757,7 +757,7 @@
                 // 读取当前页奖杯完成数据
                 const page = document.createElement('html');
                 page.innerHTML = data;
-                const tdElements = document.querySelectorAll('table.list tbody > tr');
+                const tdElements = page.querySelectorAll('table.list tbody > tr');
                 const thisPageCompletions = Array.from(tdElements).map((tr) => {
                   const completionElement = tr.querySelector('div.progress > div');
                   const completion = completionElement ? parseFloat(completionElement.textContent) : 0;
@@ -789,7 +789,8 @@
 
                 //  如果最后一页，则停止
                 const totalPageEle = page.querySelectorAll('.page > ul > li > a')
-                const totalPage = parseInt(totalPageEle[totalPageEle.length - 1].innerText, 10);
+                const totalPage = parseInt(totalPageEle[totalPageEle.length - 2].innerText);
+                console.log(totalPage, pageid)
                 if (pageid === totalPage) { loadNext = false }
 
                 // 保存数据
@@ -809,7 +810,7 @@
           })
         }
 
-        loadGameCompletions(myUserId, 1);
+        loadGameCompletions(myUserId, 15);
       }
 
     }
