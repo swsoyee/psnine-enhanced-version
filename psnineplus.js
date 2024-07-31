@@ -789,7 +789,7 @@
         success: (data, status) => {
           if (status === 'success') {
             // 读取历史数据
-            const pagesUpdateTime = GM_getValue('personalGameCompletionsLastUpdate', []);
+            let pagesUpdateTime = GM_getValue('personalGameCompletionsLastUpdate', []);
             // 2024.07.30 bug fix: 错误地保存他人的游戏完成度 - 已经修复，但用户端的旧数据需要清除
             if (Array.isArray(pagesUpdateTime) === false
               || pagesUpdateTime[0] === undefined
