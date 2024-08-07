@@ -833,12 +833,9 @@
     // 获取个人 ID
     const myHomePage = document.querySelectorAll('ul.r li.dropdown ul li a')[0].href;
     const myUserId = myHomePage.match(/\/psnid\/([A-Za-z0-9_-]+)/)[1] || '*';
-    const myGamePageURLRegex = new RegExp(`psnid/${myUserId}/?(?:psngame(?:\\?page=(\\d+))?|$)`);
-    // match: https://psnine.com/psnid/kaikaiiiiiiiwu
-    // match: https://psnine.com/psnid/kaikaiiiiiiiwu/
-    // match: https://psnine.com/psnid/kaikaiiiiiiiwu/psngame
-    // match: https://psnine.com/psnid/kaikaiiiiiiiwu/psngame?page=2
-    // dismatch: https://psnine.com/psnid/kaikaiiiiiiiwu/comment
+    // const myGamePageURLRegex = new RegExp(`psnid/${myUserId}/?(?:psngame(?:\\?page=(\\d+))?|$)`);
+    const myHomepageURLRegex = new RegExp(`psnid/${myUserId}/?`);
+    const myGamePageURLRegex = new RegExp(`psnid/${myUserId}/psngame(?:\\?page=(\\d+))?`);
 
     // 后台更新频次控制
     const bgUpdateMyGameCompletion = () => {
@@ -851,18 +848,27 @@
 
     // 在用户浏览个人页面或个人游戏列表页时，无视 Interval 白嫖一次数据更新
     if (myGamePageURLRegex.test(window.location.href)) {
-      const pagesUpdateTime = GM_getValue('personalGameCompletionsLastUpdate', []);
       const pageid = parseInt(window.location.href.match(myGamePageURLRegex)[1], 10) || 1;
 
       const { totalItems, thisPageCompletions } = parseCompletionPage(document);
       const { totalRecords } = updateCompletions(thisPageCompletions);
 
+      const pagesUpdateTime = GM_getValue('personalGameCompletionsLastUpdate', []);
       pagesUpdateTime[pageid - 1] = new Date().getTime();
       GM_setValue('personalGameCompletionsLastUpdate', pagesUpdateTime);
+
       if (totalRecords < totalItems || totalItems === 0) {
         const nextPageID = pageid === 1 ? 2 : 1;
         loadGameCompletions(myUserId, nextPageID);
       }
+    } else if (myHomepageURLRegex.test(window.location.href)) {
+      const { thisPageCompletions } = parseCompletionPage(document);
+      updateCompletions(thisPageCompletions);
+
+      pagesUpdateTime[0] = new Date().getTime();
+      const pagesUpdateTime = GM_getValue('personalGameCompletionsLastUpdate', []);
+      GM_setValue('personalGameCompletionsLastUpdate', pagesUpdateTime);
+
     } else {
       bgUpdateMyGameCompletion(); // 定时更新
     }
