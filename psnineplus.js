@@ -848,8 +848,8 @@
 
     // 在用户浏览个人页面或个人游戏列表页时，无视 Interval 白嫖一次数据更新
     if (myGamePageURLRegex.test(window.location.href)) {
-      const pageid = parseInt(window.location.href.match(myGamePageURLRegex)[1], 10) || 1;
 
+      const pageid = parseInt(window.location.href.match(myGamePageURLRegex)[1], 10) || 1;
       const { totalItems, thisPageCompletions } = parseCompletionPage(document);
       const { totalRecords } = updateCompletions(thisPageCompletions);
 
@@ -861,7 +861,9 @@
         const nextPageID = pageid === 1 ? 2 : 1;
         loadGameCompletions(myUserId, nextPageID);
       }
+
     } else if (myHomepageURLRegex.test(window.location.href)) {
+
       const { thisPageCompletions } = parseCompletionPage(document);
       updateCompletions(thisPageCompletions);
 
@@ -874,6 +876,34 @@
     }
 
     /// /////////////////////////////////////////////////////////////////////////////
+
+    /*
+      在奖杯页提供一个扩展按钮，直接把每个奖杯第一页的评论展示在当前页面。
+    */
+
+
+
+    /////////////////////////////////////////////////////////////////////////////////
+
+    /*
+      修正为新的奖杯经验，并在对应的位置提供每个奖杯能给予的升级数据 (例如：+3.84级)
+      2020 年 PSN 的奖杯等级和经验进行了更新，目前是：
+      trophiesExp:{ Bronze: 15, Silver: 30, Gold: 90,Platinum: 300}
+      UserLeveling: {
+        Levels 1 - 99: 60 points
+        Levels 100 - 199: 90 points
+        Levels 200 - 299: 450 points
+        Levels 300 - 399: 900 points
+        Levels 400 - 499: 1350 points
+        Levels 500 - 599: 1800 points
+        Levels 600 - 699: 2250 points
+        Levels 700 - 799: 2700 points
+        Levels 800 - 899: 3150 points
+        Levels 900 - 999: 3600 points
+      }
+    */
+
+    /////////////////////////////////////////////////////////////////////////////////
 
     if (
       /psnid\/[A-Za-z0-9_-]+\/?$/.test(window.location.href)
