@@ -729,7 +729,8 @@
          2. 当用户进行异常操作时，需要自行通过翻页刷新数据
      */
 
-    // GM_setValue('personalGameCompletions', []);
+    // 测试用清除数据
+    // GM_setValue('personalGameCompletions', []); 
     // console.log(GM_getValue('personalGameCompletions', []));
     // GM_setValue('personalGameCompletionsLastUpdate', []);
 
@@ -880,6 +881,62 @@
     /*
       在奖杯页提供一个扩展按钮，直接把每个奖杯第一页的评论展示在当前页面。
     */
+
+    const myGameTrophyPageRegex = new RegExp(`psngame/(\\d+)\\?psnid=${myUserId}`);
+
+    if (myGameTrophyPageRegex.test(window.location.href)) {
+      const thisGameID = window.location.href.match(myGameTrophyPageRegex)[1];
+      const thisGameMyTrophyList = Array.from(document.querySelectorAll('table.list tr[id]')).map(tr => {
+        const ID = tr.id;
+        const tds = tr.querySelectorAll('td');
+        const trophyLink = tds[0].querySelector('a').href;
+        const tipEle = tds[1].querySelector('p em.alert-success b')
+        const tipNumber = tipEle ? parseInt(tipEle.innerText) : 0
+        const earned = tds[2].querySelector('em') ? true : false
+        const tiploaded = false
+        return { ID, trophyLink, tipNumber, earned, dom: tr, tiploaded }
+      })
+
+      const getTipContent = (t) => {
+        console.log(t)
+        $.ajax({
+          type: 'GET',
+          url: `${t.trophyLink}`,
+          dataType: 'html',
+          async: true,
+          success: (data, status) => {
+            if (status === 'success') {
+              const page = document.createElement('html');
+              page.innerHTML = data;
+              const comments = page.querySelector('ul.list');
+              attachTipToTrophy(t, comments)
+              return true
+            }
+            return 0
+          },
+          error: (e) => { console.log('getTipContent error', e); },
+        });
+      }
+
+      const attachTipToTrophy = (t, comments) => {
+        if (comments) {
+          const tipTR = document.createElement('tr');
+          tipTR.id = thisGameID + t.ID.padStart(3, 0);
+          const td = document.createElement('td');
+          tipTR.appendChild(td);
+          td.colSpan = 4;
+          td.appendChild(comments);
+          t.dom.after(tipTR);
+          t.tiploaded = true;
+        }
+        let next = thisGameMyTrophyList.filter(t => t.tiploaded !== true && t.tipNumber > 0 && t.earned === false).shift()
+        let delay = thisGameMyTrophyList.filter(t => t.tiploaded === true) ? 1000 : 0
+        if (next) { setTimeout(() => { getTipContent(next) }, delay); }
+      }
+
+      attachTipToTrophy();
+    }
+
 
 
 
