@@ -730,7 +730,7 @@
      */
 
     // 测试用清除数据
-    // GM_setValue('personalGameCompletions', []); 
+    // GM_setValue('personalGameCompletions', []);
     // console.log(GM_getValue('personalGameCompletions', []));
     // GM_setValue('personalGameCompletionsLastUpdate', []);
 
@@ -849,7 +849,6 @@
 
     // 在用户浏览个人页面或个人游戏列表页时，无视 Interval 白嫖一次数据更新
     if (myGamePageURLRegex.test(window.location.href)) {
-
       const pageid = parseInt(window.location.href.match(myGamePageURLRegex)[1], 10) || 1;
       const { totalItems, thisPageCompletions } = parseCompletionPage(document);
       const { totalRecords } = updateCompletions(thisPageCompletions);
@@ -862,16 +861,13 @@
         const nextPageID = pageid === 1 ? 2 : 1;
         loadGameCompletions(myUserId, nextPageID);
       }
-
     } else if (myHomepageURLRegex.test(window.location.href)) {
-
       const { thisPageCompletions } = parseCompletionPage(document);
       updateCompletions(thisPageCompletions);
 
-      pagesUpdateTime[0] = new Date().getTime();
       const pagesUpdateTime = GM_getValue('personalGameCompletionsLastUpdate', []);
+      pagesUpdateTime[0] = new Date().getTime();
       GM_setValue('personalGameCompletionsLastUpdate', pagesUpdateTime);
-
     } else {
       bgUpdateMyGameCompletion(); // 定时更新
     }
@@ -879,26 +875,34 @@
     /// /////////////////////////////////////////////////////////////////////////////
 
     /*
-      在奖杯页提供一个扩展按钮，直接把每个奖杯第一页的评论展示在当前页面。
+      在奖杯页提供一个扩展按钮，把每个奖杯第一页的评论展示在当前页面。
     */
 
     const myGameTrophyPageRegex = new RegExp(`psngame/(\\d+)\\?psnid=${myUserId}`);
 
     if (myGameTrophyPageRegex.test(window.location.href)) {
+
+      GM_addStyle('.tipContainer {padding:0;margin:0;border-left: #fadb6f 14px solid}')
+      GM_addStyle('.tipContainer ul.list li{padding:4px 14px 4px 4px;')
+      GM_addStyle('.tipContainer ul.list li:first-child{padding:14px 14px 4px 4px;')
+
       const thisGameID = window.location.href.match(myGameTrophyPageRegex)[1];
-      const thisGameMyTrophyList = Array.from(document.querySelectorAll('table.list tr[id]')).map(tr => {
+      const trophyTable = document.querySelector('table.list');
+      const thisGameMyTrophyList = Array.from(trophyTable.querySelectorAll('tr[id]')).map((tr) => {
         const ID = tr.id;
         const tds = tr.querySelectorAll('td');
         const trophyLink = tds[0].querySelector('a').href;
-        const tipEle = tds[1].querySelector('p em.alert-success b')
-        const tipNumber = tipEle ? parseInt(tipEle.innerText) : 0
+        const tipEle = tds[1].querySelector('p em.alert-success b');
+        const tipNumber = tipEle ? parseInt(tipEle.innerText, 10) : 0
         const earned = tds[2].querySelector('em') ? true : false
-        const tiploaded = false
-        return { ID, trophyLink, tipNumber, earned, dom: tr, tiploaded }
-      })
+        const tiploaded = false;
+        return { ID, trophyLink, tipNumber, earned, dom: tr, tiploaded };
+      });
+
+
 
       const getTipContent = (t) => {
-        console.log(t)
+        console.log(t);
         $.ajax({
           type: 'GET',
           url: `${t.trophyLink}`,
@@ -909,38 +913,60 @@
               const page = document.createElement('html');
               page.innerHTML = data;
               const comments = page.querySelector('ul.list');
-              attachTipToTrophy(t, comments)
-              return true
+              t.comments = comments
             }
-            return 0
+            return 0;
           },
           error: (e) => { console.log('getTipContent error', e); },
         });
-      }
+      };
 
-      const attachTipToTrophy = (t, comments) => {
-        if (comments) {
-          const tipTR = document.createElement('tr');
-          tipTR.id = thisGameID + t.ID.padStart(3, 0);
-          const td = document.createElement('td');
-          tipTR.appendChild(td);
-          td.colSpan = 4;
-          td.appendChild(comments);
-          t.dom.after(tipTR);
-          t.tiploaded = true;
-        }
-        let next = thisGameMyTrophyList.filter(t => t.tiploaded !== true && t.tipNumber > 0 && t.earned === false).shift()
-        let delay = thisGameMyTrophyList.filter(t => t.tiploaded === true) ? 1000 : 0
-        if (next) { setTimeout(() => { getTipContent(next) }, delay); }
-      }
+      // const attachTipToTrophy = (t, comments) => {
+      //   if (t && comments) {
+      //     const tipTR = document.createElement('tr');
+      //     tipTR.id = thisGameID + t.ID.padStart(3, 0);
+      //     const td = document.createElement('td');
+      //     tipTR.appendChild(td);
+      //     td.colSpan = 4;
+      //     td.classList.add('tipContainer')
+      //     td.appendChild(comments);
+      //     t.dom.after(tipTR);
+      //     t.tiploaded = true;
+      //   }
+      //   tipLoadManger()
+      // };
 
-      attachTipToTrophy();
+      // const tipLoadNext = () => {
+      //   const next = thisGameMyTrophyList.filter((t) => t.tiploaded !== true && t.tipNumber > 0 && t.earned === false).shift();
+      //   const delay = thisGameMyTrophyList.filter((t) => t.tiploaded === true) ? 1000 : 0;
+      //   if (next) { setTimeout(() => { getTipContent(next); }, delay) }
+      // }
+
+      // tipLoadNext()
+
+      // 添加一键 load 和一键隐藏的 dom
+
+
+
+      // function: 一键切换显示或隐藏，并且根据当前
+
+      // 创建一个 MutationObserver 实例，并定义回调函数
+      const observer = new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+          // if (mutation.type === 'childList') {
+          console.log(mutation);
+          attacpTipToTrophy();
+          // }
+        });
+      });
+
+      // 配置 MutationObserver 以观察目标节点的子元素变化
+      observer.observe(targetNode, { childList: true, attributes: true });
+
+
     }
 
-
-
-
-    /////////////////////////////////////////////////////////////////////////////////
+    /// //////////////////////////////////////////////////////////////////////////////
 
     /*
       修正为新的奖杯经验，并在对应的位置提供每个奖杯能给予的升级数据 (例如：+3.84级)
@@ -960,7 +986,7 @@
       }
     */
 
-    /////////////////////////////////////////////////////////////////////////////////
+    /// //////////////////////////////////////////////////////////////////////////////
 
     if (
       /psnid\/[A-Za-z0-9_-]+\/?$/.test(window.location.href)
