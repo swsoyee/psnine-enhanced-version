@@ -22,7 +22,7 @@
 // @grant        GM_getValue
 // @run-at       document-start
 // ==/UserScript==
-/* globals $, Highcharts, tippy */
+/* globals $, Highcharts, tippy, GM_getValue, GM_setValue */
 
 (function () {
   const settings = {
@@ -402,7 +402,7 @@
         $('body,html').animate({
           scrollTop: document.body.clientHeight,
         },
-          500);
+        500);
       }).css({
         cursor: 'pointer',
       });
@@ -880,6 +880,10 @@
       2. 在游戏标题栏上添加文字链接，加载并展开所有未获得的奖杯评论，间隔1秒
       3. 监视 $$()`table.list tr[id]`)，在其顺序或 display 属性变化时相应调整 tip Dom 的顺序和 display
       4. 阻止页面自带排序功能的 a 跳转，由脚本控制
+
+      argues：应该只限定在自己的页面，还是别人的页面也可以？
+      虽然代码上支持所有人的页面都可以，但感觉没啥意义。
+      代码中没有用到与个人信息有关的东西，但不知道会不会有未预料的 bug。
     */
 
     const throttleDebounce = (func, delay) => {
@@ -892,9 +896,10 @@
       };
     };
 
-    const myGameTrophyPageRegex = new RegExp(`psngame/(\\d+)\\?psnid=${myUserId}`);
-
-    if (myGameTrophyPageRegex.test(window.location.href)) {
+    // const myGameTrophyPageRegex = new RegExp(`psngame/(\\d+)\\?psnid=${myUserId}`);
+    // if (myGameTrophyPageRegex.test(window.location.href)) {
+    const gameTrophyPageRegex = new RegExp('psngame/\\d+\\?psnid=');
+    if (gameTrophyPageRegex.test(window.location.href)) {
       GM_addStyle('.tipContainer { padding: 0; margin: 0; border-left: 14px solid #ffbf00;}');
       GM_addStyle('.tipContainer ul.list li {padding: 4px 14px 4px 4px;}');
       GM_addStyle('.tipContainer ul.list li:first-child { padding:1 4px 14px 4px 4px;}');
@@ -924,7 +929,18 @@
         };
       });
 
-      let myTrophyList;
+      // 添加对象代理以便数据更新后自动渲染对应 DOM，并且在 tipShow 为 true 时自动加载
+      const myTrophyList = thisPageTrophyList.map((item) => new Proxy(item, {
+        set: (target, prop, value) => {
+          let flag = false;
+          if (prop === 'tipListDom' || prop === 'tipShow') { flag = true; }
+          target[prop] = value;
+          // eslint-disable-next-line no-use-before-define
+          if (flag) { refreshTrophyTip(); }
+          return true;
+        },
+      }));
+
       // 无论之前何种状态，都先清空 tipListDom，然后重新按 trDom 顺序插入
       const refreshTrophyTip = () => {
         myTrophyList.forEach((t) => {
@@ -935,20 +951,8 @@
         });
       };
 
-      // 添加对象代理以便数据更新后自动渲染对应 DOM，并且在 tipShow 为 true 时自动加载
-      myTrophyList = thisPageTrophyList.map((item) => new Proxy(item, {
-        set: (target, prop, value) => {
-          let flag = false;
-          if (prop === 'trDom' || prop === 'tipListDom' || prop === 'tipShow') { flag = true; }
-          target[prop] = value;
-          if (flag) { refreshTrophyTip(); }
-          return true;
-        },
-      }));
-
       // AJAX 获取奖杯评论并更新到对象代理中
       const getTipContent = (t) => new Promise((resolve, reject) => {
-        console.log(t);
         $.ajax({
           type: 'GET',
           url: `${t.trophyLink}`,
@@ -1031,7 +1035,7 @@
           expandUndoneBtn.innerText = '加载中 ...';
           expandAllBtn.innerText = '等待中 ...';
         } else {
-          myTrophyList.forEach((t) => { t.tipShow = openAllTipFlag });
+          myTrophyList.forEach((t) => { t.tipShow = openAllTipFlag; });
           openAllTipFlag = !openAllTipFlag;
           expandAllBtn.innerText = '加载中 ...';
           expandUndoneBtn.innerText = '等待中 ...';
@@ -1083,10 +1087,10 @@
           myTrophyList.sort((a, b) => (sortFlag.XMB ? a.ID - b.ID : b.ID - a.ID));
         }
         if (type === 'trophyType') {
-          myTrophyList.sort((a, b) => (sortFlag.trophyType ? a.trophyType.localeCompare(b.trophyType) : b.trophyType.localeCompare(a.trophyType)));
+          myTrophyList.sort((a, b) => a.trophyType.localeCompare(b.trophyType) * (sortFlag.trophyType ? 1 : -1));
         }
         if (type === 'percentage') {
-          myTrophyList.sort((a, b) => (sortFlag.percentage ? a.percentage - b.percentage : b.percentage - a.percentage));
+          myTrophyList.sort((a, b) => (a.percentage - b.percentage) * (sortFlag.percentage ? 1 : -1));
         }
         sortFlag[type] = !sortFlag[type];
         const tbody = document.querySelector('table.list tbody');
@@ -1476,7 +1480,7 @@
             .append(`&nbsp;<a class="psnnode" id="hot" style="background-color: ${tagBackgroundColor === 'rgb(43, 43, 43)'
               ? 'rgb(125 69 67)' // 暗红色
               : 'rgb(217, 83, 79)' // 鲜红色
-              };color: rgb(255, 255, 255);">🔥热门&nbsp;</a>`);
+            };color: rgb(255, 255, 255);">🔥热门&nbsp;</a>`);
         }
       });
     };
