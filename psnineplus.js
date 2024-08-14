@@ -402,7 +402,7 @@
         $('body,html').animate({
           scrollTop: document.body.clientHeight,
         },
-        500);
+          500);
       }).css({
         cursor: 'pointer',
       });
@@ -901,8 +901,8 @@
     const gameTrophyPageRegex = new RegExp('psngame/\\d+\\?psnid=');
     if (gameTrophyPageRegex.test(window.location.href)) {
       GM_addStyle('.tipContainer { padding: 0; margin: 0; border-left: 14px solid #ffbf00;}');
-      GM_addStyle('.tipContainer ul.list li {padding: 4px 14px 4px 4px;}');
-      GM_addStyle('.tipContainer ul.list li:first-child { padding:1 4px 14px 4px 4px;}');
+      GM_addStyle('.tipContainer ul.list li {padding: 4px 14px 4px 8px;}');
+      GM_addStyle('.tipContainer ul.list li:first-child { padding:4px 14px 4px 8px;}');
       GM_addStyle('table.list td > p > em.alert-success{cursor:pointer}');
 
       const trophyTable = document.querySelector('table.list');
@@ -1480,7 +1480,7 @@
             .append(`&nbsp;<a class="psnnode" id="hot" style="background-color: ${tagBackgroundColor === 'rgb(43, 43, 43)'
               ? 'rgb(125 69 67)' // 暗红色
               : 'rgb(217, 83, 79)' // 鲜红色
-            };color: rgb(255, 255, 255);">🔥热门&nbsp;</a>`);
+              };color: rgb(255, 255, 255);">🔥热门&nbsp;</a>`);
         }
       });
     };
