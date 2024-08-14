@@ -872,10 +872,10 @@
       bgUpdateMyGameCompletion(); // 定时更新
     }
 
-    /// /////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////
 
     /*
-      在奖杯页提供扩展功能，把每个奖杯第一页的评论直接展示在当前页面。
+    在奖杯页提供扩展功能，把每个奖杯第一页的评论直接展示在当前页面。
       1. 在 tip number 上添加 click 事件，加载并展开该奖杯评论
       2. 在游戏标题栏上添加文字链接，加载并展开所有未获得的奖杯评论，间隔1秒
       3. 监视 $$()`table.list tr[id]`)，在其顺序或 display 属性变化时相应调整 tip Dom 的顺序和 display
@@ -901,16 +901,18 @@
       GM_addStyle('.tipContainer ul.list li:first-child { padding:1 4px 14px 4px 4px;}')
       GM_addStyle('table.list td > p > em.alert-success{cursor:pointer}')
 
-      const thisGameID = window.location.href.match(myGameTrophyPageRegex)[1];
       const trophyTable = document.querySelector('table.list');
       const thisPageTrophyList = Array.from(trophyTable.querySelectorAll('tr[id]')).map((tr) => {
-        const ID = tr.id;
+        const ID = parseInt(tr.id, 10);
         const tds = tr.querySelectorAll('td');
         const trophyLink = tds[0].querySelector('a').href;
+        const trophyTypeMatch = tds[0].className.match(/\b(t1|t2|t3|t4)\b/);
+        const trophyType = trophyTypeMatch ? trophyTypeMatch[1] : '';
         const tipNumberEle = tds[1].querySelector('p em.alert-success b');
         const tipNumber = tipNumberEle ? parseInt(tipNumberEle.innerText, 10) : 0
         const earned = tds[2].querySelector('em') ? true : false
-        return { ID, trophyLink, tipNumber, earned, trDom: tr, tipListDom: null, tipShow: false };
+        const percentage = parseFloat(tds[3].innerText) || 0
+        return { ID, trophyLink, trophyType, tipNumber, earned, trDom: tr, tipListDom: null, tipShow: false, percentage };
       });
 
 
@@ -942,7 +944,7 @@
       // AJAX 获取奖杯评论并更新到对象代理中
       const getTipContent = (t) => {
         return new Promise((resolve, reject) => {
-          console.log(t.trophyLink)
+          console.log(t)
           $.ajax({
             type: 'GET',
             url: `${t.trophyLink}`,
@@ -961,7 +963,6 @@
                 tipTD.classList.add('tipContainer')
                 tipTD.appendChild(comments);
                 tipTR.appendChild(tipTD);
-                tipTR.id = t.ID
                 t.tipListDom = tipTR
                 resolve(true)
               }
@@ -1011,35 +1012,44 @@
       expandUndoneBtn.innerText = '展开未完成奖杯 Tips';
       const expandAllBtn = document.createElement('a');
       expandAllBtn.innerText = '展开所有奖杯 Tips';
-      expandBtnContainer.appendChild(expandUndoneBtn).appendChild(expandAllBtn);
+      expandBtnContainer.appendChild(expandUndoneBtn)
+      expandBtnContainer.appendChild(expandAllBtn);
       trophyTable.querySelector('tr td div').appendChild(expandBtnContainer);
 
       // click 事件的 multipleTipLoading 函数
       let multipleTipLoadingFlag = false
+      let openAllTipFlag = openUndoneTipFlag = true;
 
       const multipleTipLoading = (type) => {
 
         if (type == 'undone') {
-          myTrophyList.filter(t => !t.earned).forEach(t => t.tipShow = true);
+          myTrophyList.filter(t => !t.earned).forEach(t => t.tipShow = openUndoneTipFlag);
+          openUndoneTipFlag = !openUndoneTipFlag
+          expandUndoneBtn.innerText = '加载中 ...'
+          expandAllBtn.innerText = '等待中 ...'
         } else {
-          myTrophyList.forEach(t => t.tipShow = true)
+          myTrophyList.forEach(t => t.tipShow = openAllTipFlag)
+          openAllTipFlag = !openAllTipFlag
+          expandAllBtn.innerText = '加载中 ...'
+          expandUndoneBtn.innerText = '等待中 ...'
         }
 
         multipleTipLoadingFlag = true
 
         let tasklist = myTrophyList.filter(t => !t.tipListDom && t.tipNumber > 0)
         if (type == 'undone') { tasklist = tasklist.filter(t => !t.earned) }
-        if (tasklist.length == 0) { return true }
 
         async function recursiveLoad() {
           if (tasklist.length > 0) {
             const t = tasklist.shift();
             t.tipShow = true;
             await getTipContent(t);
-            await new Promise((resolve) => { setTimeout(() => { resolve(); }, 500) });
+            await new Promise((resolve) => { setTimeout(() => { resolve(); }, 300) });
             await recursiveLoad();
           } else {
             multipleTipLoadingFlag = false
+            expandUndoneBtn.innerText = openUndoneTipFlag ? '展开未完成奖杯 Tips' : '收起未完成奖杯 Tips'
+            expandAllBtn.innerText = openAllTipFlag ? '展开所有奖杯 Tips' : '收起所有奖杯 Tips'
             return true
           }
         }
@@ -1060,6 +1070,45 @@
         event.preventDefault();
         if (multipleTipLoadingFlag == true) return
         multipleTipLoading('undone');
+      })
+
+      // 取消奖杯排序菜单的页面跳转，并重新实现排序
+      const sortFlag = { XMB: true, trophyType: true, percentage: true }
+      const sortByType = (type) => {
+        if (type == 'XMB') {
+          myTrophyList.sort((a, b) => sortFlag.XMB ? a.ID - b.ID : b.ID - a.ID);
+        }
+        if (type == 'trophyType') {
+          myTrophyList.sort((a, b) => sortFlag.trophyType ? a.trophyType.localeCompare(b.trophyType) : b.trophyType.localeCompare(a.trophyType));
+        }
+        if (type == 'percentage') {
+          myTrophyList.sort((a, b) => sortFlag.percentage ? a.percentage - b.percentage : b.percentage - a.percentage);
+        }
+        sortFlag[type] = !sortFlag[type];
+        const tbody = document.querySelector('table.list tbody');
+        myTrophyList.forEach((item) => {
+          item.trDom.remove()
+          tbody.appendChild(item.trDom);
+        });
+      }
+
+      const sortMenuItemsEle = document.querySelectorAll('div.main div.box ul.dropmenu > li.dropdown > ul >li');
+      sortMenuItemsEle[0].addEventListener('click', (event) => {
+        event.stopImmediatePropagation();
+        event.preventDefault();
+        sortByType('XMB');
+      })
+
+      sortMenuItemsEle[1].addEventListener('click', (event) => {
+        event.stopImmediatePropagation();
+        event.preventDefault();
+        sortByType('trophyType');
+      })
+
+      sortMenuItemsEle[2].addEventListener('click', (event) => {
+        event.stopImmediatePropagation();
+        event.preventDefault();
+        sortByType('percentage');
       })
 
     }
@@ -2763,6 +2812,7 @@
       Highcharts.chart('trophyGetTimeChart', trophyGetTime);
     };
 
+    let sortTrophiesByTimestampFlag = false
     const sortTrophiesByTimestamp = () => {
       const trophyTableEntries = $('table.list').eq(0).children().find('tr');
       const trophies = trophyTableEntries.filter((i, e) => e.id !== '');
@@ -2775,6 +2825,7 @@
 
     const addTrophySortByTimestamp = () => {
       $('div.main ul.dropmenu > li.dropdown > ul').eq(0).append('<li id="sortTrophiesByTimestamp"><a>获得时间</a></li>');
+      $('#sortTrophiesByTimestamp').css("cursor", "pointer");
       $('#sortTrophiesByTimestamp').click(() => {
         sortTrophiesByTimestamp();
         // $('#sortTrophiesByTimestamp').remove();
