@@ -875,34 +875,74 @@
     /// /////////////////////////////////////////////////////////////////////////////
 
     /*
-      在奖杯页提供一个扩展按钮，把每个奖杯第一页的评论展示在当前页面。
+      在奖杯页提供扩展功能，把每个奖杯第一页的评论直接展示在当前页面。
+      1. 在 tip number 上添加 click 事件，加载并展开该奖杯评论
+      2. 在游戏标题栏上添加文字链接，加载并展开所有未获得的奖杯评论，间隔1秒
+      3. 监视 $$()`table.list tr[id]`)，在其顺序或 display 属性变化时相应调整 tip Dom 的顺序和 display
+      4. 阻止页面自带排序功能的 a 跳转，由脚本控制
     */
+
+    function throttleDebounce(func, delay) {
+      let timeout = false;
+      return function (...args) {
+        if (!timeout) {
+          func.apply(this, args);
+          timeout = setTimeout(() => timeout = null, delay);
+        }
+      };
+    }
 
     const myGameTrophyPageRegex = new RegExp(`psngame/(\\d+)\\?psnid=${myUserId}`);
 
     if (myGameTrophyPageRegex.test(window.location.href)) {
 
-      GM_addStyle('.tipContainer {padding:0;margin:0;border-left: #fadb6f 14px solid}')
+      GM_addStyle('.tipContainer {padding:0;margin:0;border-left:14px solid #ffbf00;}')
       GM_addStyle('.tipContainer ul.list li{padding:4px 14px 4px 4px;')
       GM_addStyle('.tipContainer ul.list li:first-child{padding:14px 14px 4px 4px;')
+      GM_addStyle('.tipContainer ul.list{max-height: 600px;overflow-x: hidden;overflow-y: scroll;}')
+      // GM_addStyle('.tipContainer ul.list{max-height: 600px;overflow-x: hidden;overflow-y: scroll;-ms-overflow-style: none;scrollbar-width: none;}')
+      // GM_addStyle('.tipContainer ul.list::-webkit-scrollbar{display: none;}')
+      GM_addStyle('table.list td > p > em.alert-success{cursor:pointer}')
 
       const thisGameID = window.location.href.match(myGameTrophyPageRegex)[1];
       const trophyTable = document.querySelector('table.list');
-      const thisGameMyTrophyList = Array.from(trophyTable.querySelectorAll('tr[id]')).map((tr) => {
+      const thisPageTrophyList = Array.from(trophyTable.querySelectorAll('tr[id]')).map((tr) => {
         const ID = tr.id;
         const tds = tr.querySelectorAll('td');
         const trophyLink = tds[0].querySelector('a').href;
-        const tipEle = tds[1].querySelector('p em.alert-success b');
-        const tipNumber = tipEle ? parseInt(tipEle.innerText, 10) : 0
+        const tipNumberEle = tds[1].querySelector('p em.alert-success b');
+        const tipNumber = tipNumberEle ? parseInt(tipNumberEle.innerText, 10) : 0
         const earned = tds[2].querySelector('em') ? true : false
-        const tiploaded = false;
-        return { ID, trophyLink, tipNumber, earned, dom: tr, tiploaded };
+        return { ID, trophyLink, tipNumber, earned, trDom: tr, tipListDom: null, tipShow: false };
       });
 
 
+      const updateTrophyTip = () => {
+        myTrophyList.forEach(t => {
+          // TODO: 需要针对排序/显示隐藏的情况做处理
+          t.tipListDom && t.tipListDom.remove()
+          if (t.tipShow == true && t.trDom.style.display != 'none' && t.tipListDom) {
+            t.trDom.insertAdjacentElement('afterend', t.tipListDom)
+          }
+        })
+      }
+
+      const myTrophyList = thisPageTrophyList.map(item => new Proxy(item, {
+        set: (target, prop, value) => {
+          let flag = false
+          if (prop === 'trDom' || prop === 'tipListDom' || prop === 'tipShow') {
+            flag = true
+          }
+          target[prop] = value;
+          if (flag) {
+            updateTrophyTip()
+          }
+          return true;
+        }
+      }));
 
       const getTipContent = (t) => {
-        console.log(t);
+        console.log(t.trophyLink);
         $.ajax({
           type: 'GET',
           url: `${t.trophyLink}`,
@@ -910,58 +950,59 @@
           async: true,
           success: (data, status) => {
             if (status === 'success') {
+              // get content from page
               const page = document.createElement('html');
               page.innerHTML = data;
-              const comments = page.querySelector('ul.list');
-              t.comments = comments
+              let comments = page.querySelector('ul.list');
+              // wrap and add to dataset
+              const tipTR = document.createElement('tr');
+              const tipTD = document.createElement('td');
+              tipTD.colSpan = 4;
+              tipTD.classList.add('tipContainer')
+              tipTD.appendChild(comments);
+              tipTR.appendChild(tipTD);
+              tipTR.id = t.ID
+              t.tipListDom = tipTR
+              return true
             }
-            return 0;
           },
           error: (e) => { console.log('getTipContent error', e); },
         });
       };
 
-      // const attachTipToTrophy = (t, comments) => {
-      //   if (t && comments) {
-      //     const tipTR = document.createElement('tr');
-      //     tipTR.id = thisGameID + t.ID.padStart(3, 0);
-      //     const td = document.createElement('td');
-      //     tipTR.appendChild(td);
-      //     td.colSpan = 4;
-      //     td.classList.add('tipContainer')
-      //     td.appendChild(comments);
-      //     t.dom.after(tipTR);
-      //     t.tiploaded = true;
-      //   }
-      //   tipLoadManger()
-      // };
 
-      // const tipLoadNext = () => {
-      //   const next = thisGameMyTrophyList.filter((t) => t.tiploaded !== true && t.tipNumber > 0 && t.earned === false).shift();
-      //   const delay = thisGameMyTrophyList.filter((t) => t.tiploaded === true) ? 1000 : 0;
-      //   if (next) { setTimeout(() => { getTipContent(next); }, delay) }
-      // }
-
-      // tipLoadNext()
-
-      // 添加一键 load 和一键隐藏的 dom
-
-
-
-      // function: 一键切换显示或隐藏，并且根据当前
-
-      // 创建一个 MutationObserver 实例，并定义回调函数
-      const observer = new MutationObserver(function (mutations) {
-        mutations.forEach(function (mutation) {
-          // if (mutation.type === 'childList') {
-          console.log(mutation);
-          attacpTipToTrophy();
-          // }
-        });
+      // 为 trophy column 即 td[1] 添加 click 事件，开关切换 tipShow
+      myTrophyList.forEach(t => {
+        const trophyTitleEle = t.trDom.querySelectorAll('td')[1];
+        if (trophyTitleEle.querySelector('em.alert-success')) {
+          const throttleGetTipContent = throttleDebounce(() => {
+            getTipContent(t);
+            t.tipShow = true;
+          }, 2000);
+          trophyTitleEle.addEventListener('click', (event) => {
+            event.stopImmediatePropagation();
+            event.preventDefault();
+            if (!t.tipListDom) {
+              throttleGetTipContent(event)
+            } else {
+              t.tipShow = !t.tipShow
+            }
+          })
+        }
       });
 
-      // 配置 MutationObserver 以观察目标节点的子元素变化
-      observer.observe(targetNode, { childList: true, attributes: true });
+      // 创建一个 MutationObserver 实例，并定义回调函数
+      // const observer = new MutationObserver(function (mutations) {
+      //   mutations.forEach(function (mutation) {
+      //     // if (mutation.type === 'childList') {
+      //     console.log(mutation);
+      //     attacpTipToTrophy();
+      //     // }
+      //   });
+      // });
+
+      // // 配置 MutationObserver 以观察目标节点的子元素变化
+      // observer.observe(targetNode, { childList: true, attributes: true });
 
 
     }
@@ -2679,7 +2720,7 @@
       $('div.main ul.dropmenu > li.dropdown > ul').eq(0).append('<li id="sortTrophiesByTimestamp"><a>获得时间</a></li>');
       $('#sortTrophiesByTimestamp').click(() => {
         sortTrophiesByTimestamp();
-        $('#sortTrophiesByTimestamp').remove();
+        // $('#sortTrophiesByTimestamp').remove();
         $('div.main ul.dropmenu > li.dropdown').removeClass('hover');
       });
     };
