@@ -924,7 +924,7 @@
         })
       }
 
-      // 添加对象代理以便数据更新后自动渲染对应 DOM
+      // 添加对象代理以便数据更新后自动渲染对应 DOM，并且在 tipShow 为 true 时自动加载
       const myTrophyList = thisPageTrophyList.map(item => new Proxy(item, {
         set: (target, prop, value) => {
           let flag = false
@@ -941,34 +941,35 @@
 
       // AJAX 获取奖杯评论并更新到对象代理中
       const getTipContent = (t) => {
-        console.log(t.trophyLink);
-        $.ajax({
-          type: 'GET',
-          url: `${t.trophyLink}`,
-          dataType: 'html',
-          async: true,
-          success: (data, status) => {
-            if (status === 'success') {
-              // get content from page
-              const page = document.createElement('html');
-              page.innerHTML = data;
-              let comments = page.querySelector('ul.list');
-              // wrap and add to dataset
-              const tipTR = document.createElement('tr');
-              const tipTD = document.createElement('td');
-              tipTD.colSpan = 4;
-              tipTD.classList.add('tipContainer')
-              tipTD.appendChild(comments);
-              tipTR.appendChild(tipTD);
-              tipTR.id = t.ID
-              t.tipListDom = tipTR
-              return true
-            }
-          },
-          error: (e) => { console.log('getTipContent error', e); },
-        });
-      };
-
+        return new Promise((resolve, reject) => {
+          console.log(t.trophyLink)
+          $.ajax({
+            type: 'GET',
+            url: `${t.trophyLink}`,
+            dataType: 'html',
+            async: true,
+            success: (data, status) => {
+              if (status === 'success') {
+                // get content from page
+                const page = document.createElement('html');
+                page.innerHTML = data;
+                let comments = page.querySelector('ul.list');
+                // wrap and add to dataset
+                const tipTR = document.createElement('tr');
+                const tipTD = document.createElement('td');
+                tipTD.colSpan = 4;
+                tipTD.classList.add('tipContainer')
+                tipTD.appendChild(comments);
+                tipTR.appendChild(tipTD);
+                tipTR.id = t.ID
+                t.tipListDom = tipTR
+                resolve(true)
+              }
+            },
+            error: (e) => { reject(e) },
+          });
+        })
+      }
 
       // 为 trophy column 即 td[1] 添加 click 事件，开关切换 tipShow
       myTrophyList.forEach(t => {
@@ -993,14 +994,73 @@
       // 创建一个 MutationObserver 实例， 监听 table.list 的变化，避免多处调用 refreshTrophyTip
       const observingConfig = { attributes: true, childList: true, subtree: true };
       const observer = new MutationObserver(function (mutations) {
-        console.log('mutations', mutations);
         observer.disconnect();
         refreshTrophyTip();
         observer.observe(trophyTable, observingConfig);
       });
       observer.observe(trophyTable, observingConfig);
 
+      // 添加 『展开全部未完成奖杯 Tips』文字按钮
+      GM_addStyle('table.list tr:first-child td {position: relative;}');
+      GM_addStyle('table.list tr .ml100 p#expand { font-size: 12px; position: absolute; right: 12%; bottom: 0; padding: 0;margin: 0;}');
+      GM_addStyle('table.list tr .ml100 p#expand a { cursor: pointer; text-decoration: none; color: #999; margin: 0 4px; }');
 
+      const expandBtnContainer = document.createElement('p');
+      expandBtnContainer.id = 'expand';
+      const expandUndoneBtn = document.createElement('a');
+      expandUndoneBtn.innerText = '展开未完成奖杯 Tips';
+      const expandAllBtn = document.createElement('a');
+      expandAllBtn.innerText = '展开所有奖杯 Tips';
+      expandBtnContainer.appendChild(expandUndoneBtn).appendChild(expandAllBtn);
+      trophyTable.querySelector('tr td div').appendChild(expandBtnContainer);
+
+      // click 事件的 multipleTipLoading 函数
+      let multipleTipLoadingFlag = false
+
+      const multipleTipLoading = (type) => {
+
+        if (type == 'undone') {
+          myTrophyList.filter(t => !t.earned).forEach(t => t.tipShow = true);
+        } else {
+          myTrophyList.forEach(t => t.tipShow = true)
+        }
+
+        multipleTipLoadingFlag = true
+
+        let tasklist = myTrophyList.filter(t => !t.tipListDom && t.tipNumber > 0)
+        if (type == 'undone') { tasklist = tasklist.filter(t => !t.earned) }
+        if (tasklist.length == 0) { return true }
+
+        async function recursiveLoad() {
+          if (tasklist.length > 0) {
+            const t = tasklist.shift();
+            t.tipShow = true;
+            await getTipContent(t);
+            await new Promise((resolve) => { setTimeout(() => { resolve(); }, 500) });
+            await recursiveLoad();
+          } else {
+            multipleTipLoadingFlag = false
+            return true
+          }
+        }
+        recursiveLoad();
+      }
+
+      // 为 expandAllBtn 添加 click 事件
+      expandAllBtn.addEventListener('click', (event) => {
+        event.stopImmediatePropagation();
+        event.preventDefault();
+        if (multipleTipLoadingFlag == true) return
+        multipleTipLoading();
+      })
+
+      // 为 expandUndoneBtn 添加 click 事件
+      expandUndoneBtn.addEventListener('click', (event) => {
+        event.stopImmediatePropagation();
+        event.preventDefault();
+        if (multipleTipLoadingFlag == true) return
+        multipleTipLoading('undone');
+      })
 
     }
 
