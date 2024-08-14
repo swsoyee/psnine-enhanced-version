@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      1.0.28
+// @version      1.0.29
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // eslint-disable-next-line max-len
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
@@ -872,7 +872,7 @@
       bgUpdateMyGameCompletion(); // 定时更新
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////
+    /// /////////////////////////////////////////////////////////////////////////////////
 
     /*
     在奖杯页提供扩展功能，把每个奖杯第一页的评论直接展示在当前页面。
@@ -882,24 +882,23 @@
       4. 阻止页面自带排序功能的 a 跳转，由脚本控制
     */
 
-    function throttleDebounce(func, delay) {
-      let timeout = false;
-      return function (...args) {
+    const throttleDebounce = (func, delay) => {
+      let timeout = null;
+      return (...args) => {
         if (!timeout) {
           func.apply(this, args);
-          timeout = setTimeout(() => timeout = null, delay);
+          timeout = setTimeout(() => { timeout = null; }, delay);
         }
       };
-    }
+    };
 
     const myGameTrophyPageRegex = new RegExp(`psngame/(\\d+)\\?psnid=${myUserId}`);
 
     if (myGameTrophyPageRegex.test(window.location.href)) {
-
-      GM_addStyle('.tipContainer { padding: 0; margin: 0; border-left: 14px solid #ffbf00;}')
-      GM_addStyle('.tipContainer ul.list li {padding: 4px 14px 4px 4px;}')
-      GM_addStyle('.tipContainer ul.list li:first-child { padding:1 4px 14px 4px 4px;}')
-      GM_addStyle('table.list td > p > em.alert-success{cursor:pointer}')
+      GM_addStyle('.tipContainer { padding: 0; margin: 0; border-left: 14px solid #ffbf00;}');
+      GM_addStyle('.tipContainer ul.list li {padding: 4px 14px 4px 4px;}');
+      GM_addStyle('.tipContainer ul.list li:first-child { padding:1 4px 14px 4px 4px;}');
+      GM_addStyle('table.list td > p > em.alert-success{cursor:pointer}');
 
       const trophyTable = document.querySelector('table.list');
       const thisPageTrophyList = Array.from(trophyTable.querySelectorAll('tr[id]')).map((tr) => {
@@ -909,71 +908,75 @@
         const trophyTypeMatch = tds[0].className.match(/\b(t1|t2|t3|t4)\b/);
         const trophyType = trophyTypeMatch ? trophyTypeMatch[1] : '';
         const tipNumberEle = tds[1].querySelector('p em.alert-success b');
-        const tipNumber = tipNumberEle ? parseInt(tipNumberEle.innerText, 10) : 0
-        const earned = tds[2].querySelector('em') ? true : false
-        const percentage = parseFloat(tds[3].innerText) || 0
-        return { ID, trophyLink, trophyType, tipNumber, earned, trDom: tr, tipListDom: null, tipShow: false, percentage };
+        const tipNumber = tipNumberEle ? parseInt(tipNumberEle.innerText, 10) : 0;
+        const earned = !!tds[2].querySelector('em');
+        const percentage = parseFloat(tds[3].innerText) || 0;
+        return {
+          ID,
+          trophyLink,
+          trophyType,
+          tipNumber,
+          earned,
+          percentage,
+          trDom: tr,
+          tipListDom: null,
+          tipShow: false,
+        };
       });
 
-
+      let myTrophyList;
       // 无论之前何种状态，都先清空 tipListDom，然后重新按 trDom 顺序插入
       const refreshTrophyTip = () => {
-        myTrophyList.forEach(t => {
-          t.tipListDom && t.tipListDom.remove()
-          if (t.tipShow == true && t.trDom.style.display != 'none' && t.tipListDom) {
-            t.trDom.insertAdjacentElement('afterend', t.tipListDom)
+        myTrophyList.forEach((t) => {
+          if (t.tipListDom) t.tipListDom.remove();
+          if (t.tipShow === true && t.trDom.style.display !== 'none' && t.tipListDom) {
+            t.trDom.insertAdjacentElement('afterend', t.tipListDom);
           }
-        })
-      }
+        });
+      };
 
       // 添加对象代理以便数据更新后自动渲染对应 DOM，并且在 tipShow 为 true 时自动加载
-      const myTrophyList = thisPageTrophyList.map(item => new Proxy(item, {
+      myTrophyList = thisPageTrophyList.map((item) => new Proxy(item, {
         set: (target, prop, value) => {
-          let flag = false
-          if (prop === 'trDom' || prop === 'tipListDom' || prop === 'tipShow') {
-            flag = true
-          }
+          let flag = false;
+          if (prop === 'trDom' || prop === 'tipListDom' || prop === 'tipShow') { flag = true; }
           target[prop] = value;
-          if (flag) {
-            refreshTrophyTip()
-          }
+          if (flag) { refreshTrophyTip(); }
           return true;
-        }
+        },
       }));
 
       // AJAX 获取奖杯评论并更新到对象代理中
-      const getTipContent = (t) => {
-        return new Promise((resolve, reject) => {
-          console.log(t)
-          $.ajax({
-            type: 'GET',
-            url: `${t.trophyLink}`,
-            dataType: 'html',
-            async: true,
-            success: (data, status) => {
-              if (status === 'success') {
-                // get content from page
-                const page = document.createElement('html');
-                page.innerHTML = data;
-                let comments = page.querySelector('ul.list');
-                // wrap and add to dataset
-                const tipTR = document.createElement('tr');
-                const tipTD = document.createElement('td');
-                tipTD.colSpan = 4;
-                tipTD.classList.add('tipContainer')
-                tipTD.appendChild(comments);
-                tipTR.appendChild(tipTD);
-                t.tipListDom = tipTR
-                resolve(true)
-              }
-            },
-            error: (e) => { reject(e) },
-          });
-        })
-      }
+      const getTipContent = (t) => new Promise((resolve, reject) => {
+        console.log(t);
+        $.ajax({
+          type: 'GET',
+          url: `${t.trophyLink}`,
+          dataType: 'html',
+          async: true,
+          success: (data, status) => {
+            if (status === 'success') {
+              // get content from page
+              const page = document.createElement('html');
+              page.innerHTML = data;
+              const comments = page.querySelector('ul.list');
+              // wrap and add to dataset
+              const tipTR = document.createElement('tr');
+              const tipTD = document.createElement('td');
+              tipTD.colSpan = 4;
+              tipTD.classList.add('tipContainer');
+              tipTD.appendChild(comments);
+              tipTR.appendChild(tipTD);
+              t.tipListDom = tipTR;
+              resolve(true);
+            }
+          },
+          error: (e) => { reject(e); },
+        });
+      });
 
       // 为 trophy column 即 td[1] 添加 click 事件，开关切换 tipShow
-      myTrophyList.forEach(t => {
+      myTrophyList.forEach((t) => {
         const trophyTitleEle = t.trDom.querySelectorAll('td')[1];
         if (trophyTitleEle.querySelector('em.alert-success')) {
           const throttleGetTipContent = throttleDebounce(() => {
@@ -984,17 +987,17 @@
             event.stopImmediatePropagation();
             event.preventDefault();
             if (!t.tipListDom) {
-              throttleGetTipContent(event)
+              throttleGetTipContent(event);
             } else {
-              t.tipShow = !t.tipShow // 当状态变化时会触发 set 函数
+              t.tipShow = !t.tipShow; // 当状态变化时会触发 set 函数
             }
-          })
+          });
         }
       });
 
       // 创建一个 MutationObserver 实例， 监听 table.list 的变化，避免多处调用 refreshTrophyTip
       const observingConfig = { attributes: true, childList: true, subtree: true };
-      const observer = new MutationObserver(function (mutations) {
+      const observer = new MutationObserver(() => {
         observer.disconnect();
         refreshTrophyTip();
         observer.observe(trophyTable, observingConfig);
@@ -1012,126 +1015,106 @@
       expandUndoneBtn.innerText = '展开未完成奖杯 Tips';
       const expandAllBtn = document.createElement('a');
       expandAllBtn.innerText = '展开所有奖杯 Tips';
-      expandBtnContainer.appendChild(expandUndoneBtn)
+      expandBtnContainer.appendChild(expandUndoneBtn);
       expandBtnContainer.appendChild(expandAllBtn);
       trophyTable.querySelector('tr td div').appendChild(expandBtnContainer);
 
       // click 事件的 multipleTipLoading 函数
-      let multipleTipLoadingFlag = false
-      let openAllTipFlag = openUndoneTipFlag = true;
+      let multipleTipLoadingFlag = false;
+      let openAllTipFlag = true; let
+        openUndoneTipFlag = true;
 
       const multipleTipLoading = (type) => {
-
-        if (type == 'undone') {
-          myTrophyList.filter(t => !t.earned).forEach(t => t.tipShow = openUndoneTipFlag);
-          openUndoneTipFlag = !openUndoneTipFlag
-          expandUndoneBtn.innerText = '加载中 ...'
-          expandAllBtn.innerText = '等待中 ...'
+        if (type === 'undone') {
+          myTrophyList.filter((t) => !t.earned).forEach((t) => { t.tipShow = openUndoneTipFlag; });
+          openUndoneTipFlag = !openUndoneTipFlag;
+          expandUndoneBtn.innerText = '加载中 ...';
+          expandAllBtn.innerText = '等待中 ...';
         } else {
-          myTrophyList.forEach(t => t.tipShow = openAllTipFlag)
-          openAllTipFlag = !openAllTipFlag
-          expandAllBtn.innerText = '加载中 ...'
-          expandUndoneBtn.innerText = '等待中 ...'
+          myTrophyList.forEach((t) => { t.tipShow = openAllTipFlag });
+          openAllTipFlag = !openAllTipFlag;
+          expandAllBtn.innerText = '加载中 ...';
+          expandUndoneBtn.innerText = '等待中 ...';
         }
 
-        multipleTipLoadingFlag = true
+        multipleTipLoadingFlag = true;
 
-        let tasklist = myTrophyList.filter(t => !t.tipListDom && t.tipNumber > 0)
-        if (type == 'undone') { tasklist = tasklist.filter(t => !t.earned) }
+        let tasklist = myTrophyList.filter((t) => !t.tipListDom && t.tipNumber > 0);
+        if (type === 'undone') { tasklist = tasklist.filter((t) => !t.earned); }
 
         async function recursiveLoad() {
           if (tasklist.length > 0) {
             const t = tasklist.shift();
             t.tipShow = true;
             await getTipContent(t);
-            await new Promise((resolve) => { setTimeout(() => { resolve(); }, 300) });
+            await new Promise((resolve) => { setTimeout(() => { resolve(); }, 300); });
             await recursiveLoad();
           } else {
-            multipleTipLoadingFlag = false
-            expandUndoneBtn.innerText = openUndoneTipFlag ? '展开未完成奖杯 Tips' : '收起未完成奖杯 Tips'
-            expandAllBtn.innerText = openAllTipFlag ? '展开所有奖杯 Tips' : '收起所有奖杯 Tips'
-            return true
+            multipleTipLoadingFlag = false;
+            expandUndoneBtn.innerText = openUndoneTipFlag ? '展开未完成奖杯 Tips' : '收起未完成奖杯 Tips';
+            expandAllBtn.innerText = openAllTipFlag ? '展开所有奖杯 Tips' : '收起所有奖杯 Tips';
+            return true;
           }
+          return false;
         }
         recursiveLoad();
-      }
+      };
 
       // 为 expandAllBtn 添加 click 事件
       expandAllBtn.addEventListener('click', (event) => {
         event.stopImmediatePropagation();
         event.preventDefault();
-        if (multipleTipLoadingFlag == true) return
+        if (multipleTipLoadingFlag === true) return;
         multipleTipLoading();
-      })
+      });
 
       // 为 expandUndoneBtn 添加 click 事件
       expandUndoneBtn.addEventListener('click', (event) => {
         event.stopImmediatePropagation();
         event.preventDefault();
-        if (multipleTipLoadingFlag == true) return
+        if (multipleTipLoadingFlag === true) return;
         multipleTipLoading('undone');
-      })
+      });
 
       // 取消奖杯排序菜单的页面跳转，并重新实现排序
-      const sortFlag = { XMB: true, trophyType: true, percentage: true }
+      const sortFlag = { XMB: true, trophyType: true, percentage: true };
       const sortByType = (type) => {
-        if (type == 'XMB') {
-          myTrophyList.sort((a, b) => sortFlag.XMB ? a.ID - b.ID : b.ID - a.ID);
+        if (type === 'XMB') {
+          myTrophyList.sort((a, b) => (sortFlag.XMB ? a.ID - b.ID : b.ID - a.ID));
         }
-        if (type == 'trophyType') {
-          myTrophyList.sort((a, b) => sortFlag.trophyType ? a.trophyType.localeCompare(b.trophyType) : b.trophyType.localeCompare(a.trophyType));
+        if (type === 'trophyType') {
+          myTrophyList.sort((a, b) => (sortFlag.trophyType ? a.trophyType.localeCompare(b.trophyType) : b.trophyType.localeCompare(a.trophyType)));
         }
-        if (type == 'percentage') {
-          myTrophyList.sort((a, b) => sortFlag.percentage ? a.percentage - b.percentage : b.percentage - a.percentage);
+        if (type === 'percentage') {
+          myTrophyList.sort((a, b) => (sortFlag.percentage ? a.percentage - b.percentage : b.percentage - a.percentage));
         }
         sortFlag[type] = !sortFlag[type];
         const tbody = document.querySelector('table.list tbody');
         myTrophyList.forEach((item) => {
-          item.trDom.remove()
+          item.trDom.remove();
           tbody.appendChild(item.trDom);
         });
-      }
+      };
 
       const sortMenuItemsEle = document.querySelectorAll('div.main div.box ul.dropmenu > li.dropdown > ul >li');
       sortMenuItemsEle[0].addEventListener('click', (event) => {
         event.stopImmediatePropagation();
         event.preventDefault();
         sortByType('XMB');
-      })
+      });
 
       sortMenuItemsEle[1].addEventListener('click', (event) => {
         event.stopImmediatePropagation();
         event.preventDefault();
         sortByType('trophyType');
-      })
+      });
 
       sortMenuItemsEle[2].addEventListener('click', (event) => {
         event.stopImmediatePropagation();
         event.preventDefault();
         sortByType('percentage');
-      })
-
+      });
     }
-
-    /// //////////////////////////////////////////////////////////////////////////////
-
-    /*
-      修正为新的奖杯经验，并在对应的位置提供每个奖杯能给予的升级数据 (例如：+3.84级)
-      2020 年 PSN 的奖杯等级和经验进行了更新，目前是：
-      trophiesExp:{ Bronze: 15, Silver: 30, Gold: 90,Platinum: 300}
-      UserLeveling: {
-        Levels 1 - 99: 60 points
-        Levels 100 - 199: 90 points
-        Levels 200 - 299: 450 points
-        Levels 300 - 399: 900 points
-        Levels 400 - 499: 1350 points
-        Levels 500 - 599: 1800 points
-        Levels 600 - 699: 2250 points
-        Levels 700 - 799: 2700 points
-        Levels 800 - 899: 3150 points
-        Levels 900 - 999: 3600 points
-      }
-    */
 
     /// //////////////////////////////////////////////////////////////////////////////
 
@@ -2812,7 +2795,6 @@
       Highcharts.chart('trophyGetTimeChart', trophyGetTime);
     };
 
-    let sortTrophiesByTimestampFlag = false
     const sortTrophiesByTimestamp = () => {
       const trophyTableEntries = $('table.list').eq(0).children().find('tr');
       const trophies = trophyTableEntries.filter((i, e) => e.id !== '');
@@ -2825,7 +2807,7 @@
 
     const addTrophySortByTimestamp = () => {
       $('div.main ul.dropmenu > li.dropdown > ul').eq(0).append('<li id="sortTrophiesByTimestamp"><a>获得时间</a></li>');
-      $('#sortTrophiesByTimestamp').css("cursor", "pointer");
+      $('#sortTrophiesByTimestamp').css('cursor', 'pointer');
       $('#sortTrophiesByTimestamp').click(() => {
         sortTrophiesByTimestamp();
         // $('#sortTrophiesByTimestamp').remove();
