@@ -896,12 +896,9 @@
 
     if (myGameTrophyPageRegex.test(window.location.href)) {
 
-      GM_addStyle('.tipContainer {padding:0;margin:0;border-left:14px solid #ffbf00;}')
-      GM_addStyle('.tipContainer ul.list li{padding:4px 14px 4px 4px;')
-      GM_addStyle('.tipContainer ul.list li:first-child{padding:14px 14px 4px 4px;')
-      GM_addStyle('.tipContainer ul.list{max-height: 600px;overflow-x: hidden;overflow-y: scroll;}')
-      // GM_addStyle('.tipContainer ul.list{max-height: 600px;overflow-x: hidden;overflow-y: scroll;-ms-overflow-style: none;scrollbar-width: none;}')
-      // GM_addStyle('.tipContainer ul.list::-webkit-scrollbar{display: none;}')
+      GM_addStyle('.tipContainer { padding: 0; margin: 0; border-left: 14px solid #ffbf00;}')
+      GM_addStyle('.tipContainer ul.list li {padding: 4px 14px 4px 4px;}')
+      GM_addStyle('.tipContainer ul.list li:first-child { padding:1 4px 14px 4px 4px;}')
       GM_addStyle('table.list td > p > em.alert-success{cursor:pointer}')
 
       const thisGameID = window.location.href.match(myGameTrophyPageRegex)[1];
@@ -917,9 +914,9 @@
       });
 
 
-      const updateTrophyTip = () => {
+      // 无论之前何种状态，都先清空 tipListDom，然后重新按 trDom 顺序插入
+      const refreshTrophyTip = () => {
         myTrophyList.forEach(t => {
-          // TODO: 需要针对排序/显示隐藏的情况做处理
           t.tipListDom && t.tipListDom.remove()
           if (t.tipShow == true && t.trDom.style.display != 'none' && t.tipListDom) {
             t.trDom.insertAdjacentElement('afterend', t.tipListDom)
@@ -927,6 +924,7 @@
         })
       }
 
+      // 添加对象代理以便数据更新后自动渲染对应 DOM
       const myTrophyList = thisPageTrophyList.map(item => new Proxy(item, {
         set: (target, prop, value) => {
           let flag = false
@@ -935,12 +933,13 @@
           }
           target[prop] = value;
           if (flag) {
-            updateTrophyTip()
+            refreshTrophyTip()
           }
           return true;
         }
       }));
 
+      // AJAX 获取奖杯评论并更新到对象代理中
       const getTipContent = (t) => {
         console.log(t.trophyLink);
         $.ajax({
@@ -985,24 +984,22 @@
             if (!t.tipListDom) {
               throttleGetTipContent(event)
             } else {
-              t.tipShow = !t.tipShow
+              t.tipShow = !t.tipShow // 当状态变化时会触发 set 函数
             }
           })
         }
       });
 
-      // 创建一个 MutationObserver 实例，并定义回调函数
-      // const observer = new MutationObserver(function (mutations) {
-      //   mutations.forEach(function (mutation) {
-      //     // if (mutation.type === 'childList') {
-      //     console.log(mutation);
-      //     attacpTipToTrophy();
-      //     // }
-      //   });
-      // });
+      // 创建一个 MutationObserver 实例， 监听 table.list 的变化，避免多处调用 refreshTrophyTip
+      const observingConfig = { attributes: true, childList: true, subtree: true };
+      const observer = new MutationObserver(function (mutations) {
+        console.log('mutations', mutations);
+        observer.disconnect();
+        refreshTrophyTip();
+        observer.observe(trophyTable, observingConfig);
+      });
+      observer.observe(trophyTable, observingConfig);
 
-      // // 配置 MutationObserver 以观察目标节点的子元素变化
-      // observer.observe(targetNode, { childList: true, attributes: true });
 
 
     }
@@ -2721,7 +2718,7 @@
       $('#sortTrophiesByTimestamp').click(() => {
         sortTrophiesByTimestamp();
         // $('#sortTrophiesByTimestamp').remove();
-        $('div.main ul.dropmenu > li.dropdown').removeClass('hover');
+        // $('div.main ul.dropmenu > li.dropdown').removeClass('hover');
       });
     };
 
