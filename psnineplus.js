@@ -402,7 +402,7 @@
         $('body,html').animate({
           scrollTop: document.body.clientHeight,
         },
-          500);
+        500);
       }).css({
         cursor: 'pointer',
       });
@@ -874,13 +874,13 @@
 
     /// /////////////////////////////////////////////////////////////////////////////////
 
-    /*
-      在奖杯页提供扩展功能，把每个奖杯第一页的评论直接展示在当前页面。
-      可以单点展开一个奖杯的 tips，
-      // 一次性展开所有奖杯 tips 的逻辑可能会造成服务器压力过大，考虑隐藏
-      同时改进页面默认的排序功能并阻止页面跳转行为。
+    /*  在奖杯页提供扩展功能，把每个奖杯页的评论直接展示在当前页面。
+        可以单点展开一个奖杯的 tips。
+        // 一次性展开所有奖杯 tips 的逻辑可能会造成服务器压力过大，已隐藏
+        同时改进页面默认的排序功能并阻止页面跳转行为。
     */
 
+    // 节流，防止用户多次点击
     const throttleDebounce = (func, delay) => {
       let timeout = null;
       return (...args) => {
@@ -893,6 +893,7 @@
 
     // const myGameTrophyPageRegex = new RegExp(`psngame/(\\d+)\\?psnid=${myUserId}`);
     // if (myGameTrophyPageRegex.test(window.location.href)) {
+    // 不再限制到自己的游戏页，现在在别人的游戏页也会执行
     const gameTrophyPageRegex = new RegExp('psngame/\\d+\\?psnid=');
     if (gameTrophyPageRegex.test(window.location.href)) {
       const height = Math.min(Math.max(window.innerHeight - 100, 320), 1200);
@@ -904,29 +905,31 @@
       GM_addStyle('table.list td > p > em.alert-success::after{content:" ▼"}');
 
       const trophyTables = Array.from(document.querySelectorAll('table.list')); // every dlc has one table
-      const thisPageTrophyList = trophyTables.flatMap((table) => Array.from(table.querySelectorAll('tr[id]')).map((tr) => {
-        const ID = parseInt(tr.id, 10);
-        const tds = Array.from(tr.querySelectorAll('td'));
-        const trophyLink = tds[0].querySelector('a').href;
-        const trophyTypeMatch = tds[0].className.match(/\b(t1|t2|t3|t4)\b/);
-        const trophyType = trophyTypeMatch ? trophyTypeMatch[1] : '';
-        const tipNumberEle = tds[1].querySelector('p em.alert-success b');
-        const tipNumber = tipNumberEle ? parseInt(tipNumberEle.innerText, 10) : 0;
-        const earned = tds.length === 4 && !!tds[2].querySelector('em');
-        const percentage = parseFloat(tds[tds.length - 1].innerText) || 0;
-        return {
-          ID,
-          trophyLink,
-          trophyType,
-          tipNumber,
-          earned,
-          percentage,
-          trDom: tr,
-          table,
-          tipListDom: null,
-          tipShow: false,
-        };
-      }));
+      const thisPageTrophyList = trophyTables
+        .flatMap((table) => Array.from(table.querySelectorAll('tr[id]'))
+          .map((tr) => {
+            const ID = parseInt(tr.id, 10);
+            const tds = Array.from(tr.querySelectorAll('td'));
+            const trophyLink = tds[0].querySelector('a').href;
+            const trophyTypeMatch = tds[0].className.match(/\b(t1|t2|t3|t4)\b/);
+            const trophyType = trophyTypeMatch ? trophyTypeMatch[1] : '';
+            const tipNumberEle = tds[1].querySelector('p em.alert-success b');
+            const tipNumber = tipNumberEle ? parseInt(tipNumberEle.innerText, 10) : 0;
+            const earned = tds.length === 4 && !!tds[2].querySelector('em');
+            const percentage = parseFloat(tds[tds.length - 1].innerText) || 0;
+            return {
+              ID,
+              trophyLink,
+              trophyType,
+              tipNumber,
+              earned,
+              percentage,
+              trDom: tr,
+              table,
+              tipListDom: null,
+              tipShow: false,
+            };
+          }));
 
       // 添加对象代理以便数据更新后自动渲染对应 DOM，并且在 tipShow 为 true 时自动加载
       const myTrophyList = thisPageTrophyList.map((item) => new Proxy(item, {
@@ -940,15 +943,15 @@
         },
       }));
 
-      // 更新 tipListDom，判断每个 tr[id] 紧邻的下一个元素是否为 tr[id]
+      // 根据当前状态刷新 tipListDom，维护列表的正常展示顺序
       const refreshTrophyTip = () => {
         // eslint-disable-next-line no-use-before-define
         mutationsOff();
         myTrophyList.filter((t) => t.tipListDom).forEach((t) => {
           if (t.trDom.style.display !== 'none' && t.tipShow === true) { // 应当显示
-            t.trDom.insertAdjacentElement('afterend', t.tipListDom);// 插入或移动
+            t.trDom.insertAdjacentElement('afterend', t.tipListDom); // 插入或移动
           } else {
-            t.tipListDom.remove(); // 重复 remove() 无影响
+            t.tipListDom.remove(); // 不显示则移出文档，重复 remove() 无影响
           }
         });
         // eslint-disable-next-line no-use-before-define
@@ -956,11 +959,11 @@
       };
 
       // 独立实现黑名单与屏蔽词，因为只在 getTipContent() 中用到一次。
-      // 本脚本中旧版的黑名单与屏蔽词是基于页面当前 dom 渲染的，会在 refreshTrophyTip 后重置
+      // 旧版的黑名单与屏蔽词函数是基于页面当前 dom 渲染的，会在 refreshTrophyTip 后重置
       const userListLowerCase = settings.blockList.map((user) => user.toLowerCase());
       const blockWordsList = settings.blockWordsList.map((word) => word.toLowerCase());
-      const filterBlockUser = (doc, itemSelector, itemAuthorSelector) => {
-        const items = doc.querySelectorAll(itemSelector);
+      const filterBlockUser = (rootEle, itemSelector, itemAuthorSelector) => {
+        const items = rootEle.querySelectorAll(itemSelector);
         if (items.length > 0) {
           items.forEach((item) => {
             const authorEle = item.querySelector(itemAuthorSelector);
@@ -973,8 +976,8 @@
           });
         }
       };
-      const filterBlockWords = (doc, itemSelector, contentSelector) => {
-        const posts = doc.querySelectorAll(itemSelector);
+      const filterBlockWords = (rootEle, itemSelector, contentSelector) => {
+        const posts = rootEle.querySelectorAll(itemSelector);
         if (posts.length > 0) {
           posts.forEach((post) => {
             const contentEle = post.querySelector(contentSelector);
@@ -989,7 +992,6 @@
                   warningDiv.previousElementSibling.style.display = 'block';
                   warningDiv.style.display = 'none';
                 };
-
                 post.style.display = 'none';
                 post.insertAdjacentElement('afterend', warningDiv);
               }
@@ -998,9 +1000,8 @@
         }
       };
 
-      // AJAX 获取奖杯评论并添加数据到对象代理中，由对象代理的 set 函数触发更新
+      // AJAX 获取奖杯评论并添加数据到对象代理中，由对象代理的 set 函数自行触发更新
       const getTipContent = (t) => {
-        console.log(t);
         $.ajax({
           type: 'GET',
           url: `${t.trophyLink}`,
@@ -1011,29 +1012,38 @@
               // get content from page
               const page = document.createElement('html');
               page.innerHTML = data;
+
+              // 两种不同的列表页面样式，一种是ul.list 列表，一种是 div.post DOM 组
               const comments = page.querySelector('ul.list');
               const posts = page.querySelectorAll('div.post');
-              // wrap and add to dataset
+
+              // wrap for table
               const tipTR = document.createElement('tr');
               const tipTD = document.createElement('td');
               tipTD.colSpan = 4;
               tipTD.classList.add('tipContainer');
+              tipTR.appendChild(tipTD);
+
               if (comments) {
+                // blacklist and block words
                 filterBlockUser(comments, 'ul.list>li', 'div.ml64>.meta.pb10>.psnnode');
                 filterBlockUser(comments, 'ul.sonlist>li', '.content>.psnnode');
                 filterBlockWords(comments, 'ul.list>li', 'div.ml64>div.content.pb10');
+
                 tipTD.appendChild(comments);
               } else if (posts) {
+                // 包裹 .list 以便适用于同一套 CSS 样式
                 const listdiv = document.createElement('div');
+                posts.forEach((post) => { listdiv.appendChild(post); });
                 listdiv.classList.add('list');
-                posts.forEach((post) => {
-                  listdiv.appendChild(post);
-                });
+
+                // blacklist and block words
                 filterBlockUser(listdiv, '.list>.post', '.meta>.psnnode');
                 filterBlockWords(listdiv, '.list>.post', 'div.ml64>div.content.pb10');
+
                 tipTD.appendChild(listdiv);
               }
-              tipTR.appendChild(tipTD);
+
               t.tipListDom = tipTR;
             }
             return true;
@@ -1042,15 +1052,17 @@
         });
       };
 
-      // 为 trophy column 即 td[1] 添加 click 事件，开关切换 tipShow
+      // 为 trophy tip badges 添加 click 事件，开关切换 tipShow
       myTrophyList.forEach((t) => {
-        const column = t.trDom.querySelectorAll('td')[1];
-        const trophyTipEle = column.querySelector('p em.alert-success');
+        const mainColumn = t.trDom.querySelectorAll('td')[1];
+        const trophyTipEle = mainColumn.querySelector('p em.alert-success');
+
         if (trophyTipEle) {
           const throttleGetTipContent = throttleDebounce(() => {
             getTipContent(t);
             t.tipShow = true;
-          }, 1000);
+          }, 2000);
+
           trophyTipEle.addEventListener('click', (event) => {
             if (!t.tipListDom) {
               throttleGetTipContent(event);
@@ -1072,7 +1084,6 @@
       const handleMutation = (mutations) => {
         let refreshFlag = false;
         mutations.forEach((mutation) => {
-          console.log('mutation element: ', mutation.target);
           if (mutation.target.matches('tr.trophy')
           ) { refreshFlag = true; }
         });
@@ -1100,6 +1111,7 @@
             GM_addStyle('table.list tr .ml100 p#expand { font-size: 12px; position: absolute; right: 12%; bottom: 0; padding: 0;margin: 0;}');
             GM_addStyle('table.list tr .ml100 p#expand a { cursor: pointer; text-decoration: none; color: #999; margin: 0 4px; }');
 
+            // add text button
             const expandBtnContainer = document.createElement('p');
             expandBtnContainer.id = 'expand';
             const expandUndoneBtn = document.createElement('a');
@@ -1138,7 +1150,7 @@
                   const t = tasklist.shift();
                   t.tipShow = true;
                   getTipContent(t);
-                  setTimeout(() => { recursiveLoad(); }, 1000);
+                  setTimeout(() => { recursiveLoad(); }, 1500);
                 } else {
                   multipleTipLoadingFlag = false;
                   expandUndoneBtn.innerText = openUndoneTipFlag ? '展开未完成奖杯 Tips' : '收起未完成奖杯 Tips';
@@ -1570,7 +1582,7 @@
             .append(`&nbsp;<a class="psnnode" id="hot" style="background-color: ${tagBackgroundColor === 'rgb(43, 43, 43)'
               ? 'rgb(125 69 67)' // 暗红色
               : 'rgb(217, 83, 79)' // 鲜红色
-              };color: rgb(255, 255, 255);">🔥热门&nbsp;</a>`);
+            };color: rgb(255, 255, 255);">🔥热门&nbsp;</a>`);
         }
       });
     };
