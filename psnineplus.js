@@ -941,6 +941,7 @@
         },
       }));
 
+
       // 更新 tipListDom，判断每个 tr[id] 紧邻的下一个元素是否为 tr[id]
       const refreshTrophyTip = () => {
         // eslint-disable-next-line no-use-before-define
@@ -952,6 +953,8 @@
             t.tipListDom.remove(); // 重复 remove() 无影响
           }
         });
+        filterUserPost();
+        filterBlockWorld();
         // eslint-disable-next-line no-use-before-define
         mutationOn();
       };
@@ -1022,7 +1025,9 @@
       const mutationOn = () => {
         observers.forEach((worker) => worker.observer.observe(worker.target, worker.config));
       };
-      const handleMutation = () => {
+      const handleMutation = (mutation) => {
+        // if mutation target is not tr, ignore
+        if (!mutation.target.closest('tr')) return;
         mutationOff();
         refreshTrophyTip();
         mutationOn();
@@ -1118,8 +1123,6 @@
           currentStep = 0;
         }
       });
-
-
 
       // 取消奖杯排序菜单的页面跳转，并重新实现排序
       const sortFlag = { XMB: true, trophyType: true, percentage: true };
@@ -1697,7 +1700,10 @@
           FilterRegular('div.ml64>.meta>.psnnode', 'div.post'); // 主页帖回复、交易帖回复、约战帖回复
         } else if (windowHref.match(/\/my\/notice/)) {
           FilterRegular('.psnnode', 'li'); // 消息通知
-        } else if (windowHref.indexOf('trophy') > -1 || windowHref.match(/\/psnid\/[^/]+\/comment/) !== null) {
+        } else if (windowHref.indexOf('trophy') > -1
+          || windowHref.match(/\/psnid\/[^/]+\/comment/) !== null
+          || windowHref.match(/psngame\/\d+\?psnid=/) !== null
+        ) {
           FilterRegular('div.ml64>.meta.pb10>.psnnode', 'li'); // 奖杯TIPS、个人主页留言
           FilterRegular('ul.sonlist .content>.psnnode', 'ul.sonlist>li'); // 奖杯TIPS二级回复、个人主页留言二级回复
         } else if (windowHref.match(/\/psngame\/[1-9][0-9]+\/comment/) !== null) {
@@ -1737,6 +1743,7 @@
         || windowHref.indexOf('trade') > -1 // 交易回复
         || windowHref.match(/\/battle\/[1-9][0-9]+/) !== null // 约战回复
         || windowHref.match(/\/psnid\/[^/]+\/comment/) !== null // 个人主页留言
+        || windowHref.match(/psngame\/\d+\?psnid=/) !== null // 游戏奖杯页在展开 tip 后
       ) {
         FilterWordRegular('div.ml64>div.content.pb10');
       }
