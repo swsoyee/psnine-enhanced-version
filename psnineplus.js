@@ -974,7 +974,30 @@
           })
         }
       };
+      const filterBlockWords = (doc, itemSelector, contentSelector) => {
+        const posts = doc.querySelectorAll(itemSelector);
+        if (posts.length > 0) {
+          posts.forEach((post) => {
+            const contentEle = post.querySelector(contentSelector);
+            if (contentEle) {
+              const content = contentEle.textContent.toLowerCase();
+              if (blockWordsList.some((word) => content.includes(word))) {
+                const warningDiv = document.createElement('div');
+                warningDiv.textContent = '====== 内容包含您的屏蔽词，点击查看屏蔽内容 ======';
+                warningDiv.className = 'btn btn-gray font12';
+                warningDiv.style.marginBottom = '2px';
+                warningDiv.onclick = () => {
+                  warningDiv.previousElementSibling.style.display = 'block';
+                  warningDiv.style.display = 'none';
+                };
 
+                post.style.display = 'none';
+                post.insertAdjacentElement('afterend', warningDiv);
+              }
+            }
+          })
+        }
+      };
 
       // AJAX 获取奖杯评论并添加数据到对象代理中，由对象代理的 set 函数触发更新
       const getTipContent = (t) => {
@@ -999,6 +1022,7 @@
               if (comments) {
                 filterBlockUser(comments, 'ul.list>li', 'div.ml64>.meta.pb10>.psnnode');
                 filterBlockUser(comments, 'ul.sonlist>li', '.content>.psnnode');
+                filterBlockWords(comments, 'ul.list>li', 'div.ml64>div.content.pb10');
                 tipTD.appendChild(comments);
               } else if (posts) {
                 const listdiv = document.createElement('div');
@@ -1007,6 +1031,7 @@
                   listdiv.appendChild(post);
                 })
                 filterBlockUser(listdiv, '.list>.post', '.meta>.psnnode');
+                filterBlockWords(listdiv, '.list>.post', 'div.ml64>div.content.pb10');
                 tipTD.appendChild(listdiv);
               }
               tipTR.appendChild(tipTD);
