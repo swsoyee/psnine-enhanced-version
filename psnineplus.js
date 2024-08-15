@@ -882,7 +882,7 @@
       4. 阻止页面自带排序功能的 a 跳转，由脚本控制
 
       argues：应该只限定在自己的页面，还是别人的页面也可以？
-      代码中没有用到与个人信息有关的东西，但不知道会不会有未预料的 bug。 
+      代码中没有用到与个人信息有关的东西，但不知道会不会有未预料的 bug。
       -> 还真有，当这个游戏不在个人奖杯页时，table.list 只有三列.
 
     */
@@ -907,58 +907,56 @@
       GM_addStyle('table.list td > p > em.alert-success{cursor:pointer}');
 
       const trophyTables = Array.from(document.querySelectorAll('table.list')); // every dlc has one table
-      const thisPageTrophyList = trophyTables.flatMap((table) => {
-        return Array.from(table.querySelectorAll('tr[id]')).map(tr => {
-          const ID = parseInt(tr.id, 10);
-          const tds = Array.from(tr.querySelectorAll('td'));
-          const trophyLink = tds[0].querySelector('a').href;
-          const trophyTypeMatch = tds[0].className.match(/\b(t1|t2|t3|t4)\b/);
-          const trophyType = trophyTypeMatch ? trophyTypeMatch[1] : '';
-          const tipNumberEle = tds[1].querySelector('p em.alert-success b');
-          const tipNumber = tipNumberEle ? parseInt(tipNumberEle.innerText, 10) : 0;
-          const earned = tds.length === 4 && !!tds[2].querySelector('em');
-          const percentage = parseFloat(tds[tds.length - 1].innerText) || 0;
-          return {
-            ID,
-            trophyLink,
-            trophyType,
-            tipNumber,
-            earned,
-            percentage,
-            trDom: tr,
-            table: table,
-            tipListDom: null,
-            tipShow: false,
-          };
-        });
-      })
+      const thisPageTrophyList = trophyTables.flatMap((table) => Array.from(table.querySelectorAll('tr[id]')).map((tr) => {
+        const ID = parseInt(tr.id, 10);
+        const tds = Array.from(tr.querySelectorAll('td'));
+        const trophyLink = tds[0].querySelector('a').href;
+        const trophyTypeMatch = tds[0].className.match(/\b(t1|t2|t3|t4)\b/);
+        const trophyType = trophyTypeMatch ? trophyTypeMatch[1] : '';
+        const tipNumberEle = tds[1].querySelector('p em.alert-success b');
+        const tipNumber = tipNumberEle ? parseInt(tipNumberEle.innerText, 10) : 0;
+        const earned = tds.length === 4 && !!tds[2].querySelector('em');
+        const percentage = parseFloat(tds[tds.length - 1].innerText) || 0;
+        return {
+          ID,
+          trophyLink,
+          trophyType,
+          tipNumber,
+          earned,
+          percentage,
+          trDom: tr,
+          table,
+          tipListDom: null,
+          tipShow: false,
+        };
+      }));
 
       // 添加对象代理以便数据更新后自动渲染对应 DOM，并且在 tipShow 为 true 时自动加载
-      const myTrophyList = thisPageTrophyList.map((item) => {
-        return new Proxy(item, {
-          set: (target, prop, value) => {
-            let flag = false;
-            if (prop === 'tipListDom' || prop === 'tipShow') { flag = true; }
-            target[prop] = value;
-            // eslint-disable-next-line no-use-before-define
-            if (flag) { refreshTrophyTip(); }
-            return true;
-          },
-        })
-      });
+      const myTrophyList = thisPageTrophyList.map((item) => new Proxy(item, {
+        set: (target, prop, value) => {
+          let flag = false;
+          if (prop === 'tipListDom' || prop === 'tipShow') { flag = true; }
+          target[prop] = value;
+          // eslint-disable-next-line no-use-before-define
+          if (flag) { refreshTrophyTip(); }
+          return true;
+        },
+      }));
 
       // 更新 tipListDom，判断每个 tr[id] 紧邻的下一个元素是否为 tr[id]
       const refreshTrophyTip = () => {
+        // eslint-disable-next-line no-use-before-define
         mutationOff();
-        myTrophyList.forEach((t) => {
+        myTrophyList.filter((t) => t.tipListDom).forEach((t) => {
           if (t.trDom.style.display !== 'none' && t.tipShow === true) { // 应当显示
-            if (t.tipListDom) { t.trDom.insertAdjacentElement('afterend', t.tipListDom); } // 插入或移动
-          } else {  // 不显示
-            if (t.tipListDom) { t.tipListDom.remove() } // 重复 remove() 无影响
+            t.trDom.insertAdjacentElement('afterend', t.tipListDom);// 插入或移动
+          } else {
+            t.tipListDom.remove(); // 重复 remove() 无影响
           }
-        })
+        });
+        // eslint-disable-next-line no-use-before-define
         mutationOn();
-      }
+      };
 
       // AJAX 获取奖杯评论并添加数据到对象代理中，由对象代理的 set 函数触发更新
       const getTipContent = (t) => {
@@ -982,9 +980,9 @@
               tipTR.appendChild(tipTD);
               t.tipListDom = tipTR;
             }
-            return true
+            return true;
           },
-          error: (e) => { reject(e); },
+          error: (e) => { console.log('getTipContent error', e); },
         });
       };
 
@@ -1008,28 +1006,26 @@
         }
       });
 
-      // 为每个 trophyTable 添加 mutation observer 
+      // 定义 trophyTables 的 mutation on off 函数
       const observers = [];
       const mutationOff = () => {
-        observers.forEach(worker => worker.observer.disconnect());
-      }
-      const mutationOn = () => {
-        observers.forEach(worker => worker.observer.observe(worker.target, worker.config));
-      }
-      const handleMutation = () => {
-        mutationOff()
-        refreshTrophyTip()
-        mutationOn()
+        observers.forEach((worker) => worker.observer.disconnect());
       };
-      trophyTables.forEach(table => {
+      const mutationOn = () => {
+        observers.forEach((worker) => worker.observer.observe(worker.target, worker.config));
+      };
+      const handleMutation = () => {
+        mutationOff();
+        refreshTrophyTip();
+        mutationOn();
+      };
+      trophyTables.forEach((table) => {
         const observer = new MutationObserver(handleMutation);
         const target = table.querySelector('tbody');
         const config = { attributes: true, childList: true, subtree: true };
         observers.push({ observer, target, config });
-        mutationOn()
+        mutationOn();
       });
-
-
 
       // 添加 『展开全部未完成奖杯 Tips』文字按钮
       GM_addStyle('table.list tr:first-child td {position: relative;}');
@@ -1074,7 +1070,7 @@
             const t = tasklist.shift();
             t.tipShow = true;
             getTipContent(t);
-            setTimeout(() => { recursiveLoad() }, 1000);
+            setTimeout(() => { recursiveLoad(); }, 1000);
           } else {
             multipleTipLoadingFlag = false;
             expandUndoneBtn.innerText = openUndoneTipFlag ? '展开未完成奖杯 Tips' : '收起未完成奖杯 Tips';
