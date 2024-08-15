@@ -896,8 +896,8 @@
     const gameTrophyPageRegex = new RegExp('psngame/\\d+\\?psnid=');
     if (gameTrophyPageRegex.test(window.location.href)) {
 
-      // const height = Math.min(Math.max(window.innerHeight - 200, 320), 800);
-      // GM_addStyle(`.tipContainer ul.list {max-height:${height}px; overflow-y:auto;}`);
+      const height = Math.min(Math.max(window.innerHeight - 100, 320), 1200);
+      GM_addStyle(`.tipContainer ul.list {max-height:${height}px; overflow-y:auto;}`);
       GM_addStyle('.tipContainer { padding: 0; margin: 0; border-left: 14px solid #ffbf00;}');
       GM_addStyle('.tipContainer ul.list li {padding: 4px 14px 4px 8px;}');
       GM_addStyle('.tipContainer ul.list li:first-child { padding:4px 14px 4px 8px;}');
@@ -969,12 +969,17 @@
               const page = document.createElement('html');
               page.innerHTML = data;
               const comments = page.querySelector('ul.list');
+              const posts = page.querySelector('#tipsContainer');
               // wrap and add to dataset
               const tipTR = document.createElement('tr');
               const tipTD = document.createElement('td');
               tipTD.colSpan = 4;
               tipTD.classList.add('tipContainer');
-              tipTD.appendChild(comments);
+              if (comments) {
+                tipTD.appendChild(comments);
+              } else if (posts) {
+                tipTD.appendChild(posts);
+              }
               tipTR.appendChild(tipTD);
               t.tipListDom = tipTR;
             }
