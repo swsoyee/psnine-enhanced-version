@@ -895,10 +895,14 @@
     // if (myGameTrophyPageRegex.test(window.location.href)) {
     const gameTrophyPageRegex = new RegExp('psngame/\\d+\\?psnid=');
     if (gameTrophyPageRegex.test(window.location.href)) {
+
+      // const height = Math.min(Math.max(window.innerHeight - 200, 320), 800);
+      // GM_addStyle(`.tipContainer ul.list {max-height:${height}px; overflow-y:auto;}`);
       GM_addStyle('.tipContainer { padding: 0; margin: 0; border-left: 14px solid #ffbf00;}');
       GM_addStyle('.tipContainer ul.list li {padding: 4px 14px 4px 8px;}');
       GM_addStyle('.tipContainer ul.list li:first-child { padding:4px 14px 4px 8px;}');
       GM_addStyle('table.list td > p > em.alert-success{cursor:pointer}');
+      GM_addStyle('table.list td > p > em.alert-success::after{content:" ▼"}');
 
       const trophyTables = Array.from(document.querySelectorAll('table.list')); // every dlc has one table
       const thisPageTrophyList = trophyTables.flatMap((table) => Array.from(table.querySelectorAll('tr[id]')).map((tr) => {
@@ -982,15 +986,14 @@
 
       // 为 trophy column 即 td[1] 添加 click 事件，开关切换 tipShow
       myTrophyList.forEach((t) => {
-        const trophyTitleEle = t.trDom.querySelectorAll('td')[1];
-        if (trophyTitleEle.querySelector('em.alert-success')) {
+        const column = t.trDom.querySelectorAll('td')[1];
+        const trophyTipEle = column.querySelector('p em.alert-success');
+        if (trophyTipEle) {
           const throttleGetTipContent = throttleDebounce(() => {
             getTipContent(t);
             t.tipShow = true;
-          }, 2000);
-          trophyTitleEle.addEventListener('click', (event) => {
-            event.stopImmediatePropagation();
-            event.preventDefault();
+          }, 1000);
+          trophyTipEle.addEventListener('click', (event) => {
             if (!t.tipListDom) {
               throttleGetTipContent(event);
             } else {
