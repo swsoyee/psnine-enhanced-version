@@ -897,7 +897,7 @@
     if (gameTrophyPageRegex.test(window.location.href)) {
 
       const height = Math.min(Math.max(window.innerHeight - 100, 320), 1200);
-      GM_addStyle(`.tipContainer ul.list {max-height:${height}px; overflow-y:auto;}`);
+      GM_addStyle(`.tipContainer .list {max-height:${height}px; overflow-y:auto;}`);
       GM_addStyle('.tipContainer { padding: 0; margin: 0; border-left: 14px solid #ffbf00;}');
       GM_addStyle('.tipContainer ul.list li {padding: 4px 14px 4px 8px;}');
       GM_addStyle('.tipContainer ul.list li:first-child { padding:4px 14px 4px 8px;}');
@@ -958,6 +958,7 @@
 
       // AJAX 获取奖杯评论并添加数据到对象代理中，由对象代理的 set 函数触发更新
       const getTipContent = (t) => {
+        console.log(t)
         $.ajax({
           type: 'GET',
           url: `${t.trophyLink}`,
@@ -969,7 +970,7 @@
               const page = document.createElement('html');
               page.innerHTML = data;
               const comments = page.querySelector('ul.list');
-              const posts = page.querySelector('#tipsContainer');
+              const posts = page.querySelectorAll('div.post');
               // wrap and add to dataset
               const tipTR = document.createElement('tr');
               const tipTD = document.createElement('td');
@@ -978,7 +979,12 @@
               if (comments) {
                 tipTD.appendChild(comments);
               } else if (posts) {
-                tipTD.appendChild(posts);
+                const listdiv = document.createElement('div');
+                listdiv.classList.add('list');
+                posts.forEach((post) => {
+                  listdiv.appendChild(post);
+                })
+                tipTD.appendChild(listdiv);
               }
               tipTR.appendChild(tipTD);
               t.tipListDom = tipTR;
