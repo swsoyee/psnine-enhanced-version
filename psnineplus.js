@@ -882,8 +882,9 @@
       4. 阻止页面自带排序功能的 a 跳转，由脚本控制
 
       argues：应该只限定在自己的页面，还是别人的页面也可以？
-      虽然代码上支持所有人的页面都可以，但感觉没啥意义。
-      代码中没有用到与个人信息有关的东西，但不知道会不会有未预料的 bug。
+      代码中没有用到与个人信息有关的东西，但不知道会不会有未预料的 bug。 
+      -> 还真有，当这个游戏不在个人奖杯页时，table.list 只有三列.
+
     */
 
     const throttleDebounce = (func, delay) => {
@@ -905,54 +906,62 @@
       GM_addStyle('.tipContainer ul.list li:first-child { padding:4px 14px 4px 8px;}');
       GM_addStyle('table.list td > p > em.alert-success{cursor:pointer}');
 
-      const trophyTable = document.querySelector('table.list');
-      const thisPageTrophyList = Array.from(trophyTable.querySelectorAll('tr[id]')).map((tr) => {
-        const ID = parseInt(tr.id, 10);
-        const tds = tr.querySelectorAll('td');
-        const trophyLink = tds[0].querySelector('a').href;
-        const trophyTypeMatch = tds[0].className.match(/\b(t1|t2|t3|t4)\b/);
-        const trophyType = trophyTypeMatch ? trophyTypeMatch[1] : '';
-        const tipNumberEle = tds[1].querySelector('p em.alert-success b');
-        const tipNumber = tipNumberEle ? parseInt(tipNumberEle.innerText, 10) : 0;
-        const earned = !!tds[2].querySelector('em');
-        const percentage = parseFloat(tds[3].innerText) || 0;
-        return {
-          ID,
-          trophyLink,
-          trophyType,
-          tipNumber,
-          earned,
-          percentage,
-          trDom: tr,
-          tipListDom: null,
-          tipShow: false,
-        };
-      });
+      const trophyTables = Array.from(document.querySelectorAll('table.list')); // every dlc has one table
+      const thisPageTrophyList = trophyTables.flatMap((table) => {
+        return Array.from(table.querySelectorAll('tr[id]')).map(tr => {
+          const ID = parseInt(tr.id, 10);
+          const tds = Array.from(tr.querySelectorAll('td'));
+          const trophyLink = tds[0].querySelector('a').href;
+          const trophyTypeMatch = tds[0].className.match(/\b(t1|t2|t3|t4)\b/);
+          const trophyType = trophyTypeMatch ? trophyTypeMatch[1] : '';
+          const tipNumberEle = tds[1].querySelector('p em.alert-success b');
+          const tipNumber = tipNumberEle ? parseInt(tipNumberEle.innerText, 10) : 0;
+          const earned = tds.length === 4 && !!tds[2].querySelector('em');
+          const percentage = parseFloat(tds[tds.length - 1].innerText) || 0;
+          return {
+            ID,
+            trophyLink,
+            trophyType,
+            tipNumber,
+            earned,
+            percentage,
+            trDom: tr,
+            table: table,
+            tipListDom: null,
+            tipShow: false,
+          };
+        });
+      })
 
       // 添加对象代理以便数据更新后自动渲染对应 DOM，并且在 tipShow 为 true 时自动加载
-      const myTrophyList = thisPageTrophyList.map((item) => new Proxy(item, {
-        set: (target, prop, value) => {
-          let flag = false;
-          if (prop === 'tipListDom' || prop === 'tipShow') { flag = true; }
-          target[prop] = value;
-          // eslint-disable-next-line no-use-before-define
-          if (flag) { refreshTrophyTip(); }
-          return true;
-        },
-      }));
+      const myTrophyList = thisPageTrophyList.map((item) => {
+        return new Proxy(item, {
+          set: (target, prop, value) => {
+            let flag = false;
+            if (prop === 'tipListDom' || prop === 'tipShow') { flag = true; }
+            target[prop] = value;
+            // eslint-disable-next-line no-use-before-define
+            if (flag) { refreshTrophyTip(); }
+            return true;
+          },
+        })
+      });
 
-      // 无论之前何种状态，都先清空 tipListDom，然后重新按 trDom 顺序插入
+      // 更新 tipListDom，判断每个 tr[id] 紧邻的下一个元素是否为 tr[id]
       const refreshTrophyTip = () => {
+        mutationOff();
         myTrophyList.forEach((t) => {
-          if (t.tipListDom) t.tipListDom.remove();
-          if (t.tipShow === true && t.trDom.style.display !== 'none' && t.tipListDom) {
-            t.trDom.insertAdjacentElement('afterend', t.tipListDom);
+          if (t.trDom.style.display !== 'none' && t.tipShow === true) { // 应当显示
+            if (t.tipListDom) { t.trDom.insertAdjacentElement('afterend', t.tipListDom); } // 插入或移动
+          } else {  // 不显示
+            if (t.tipListDom) { t.tipListDom.remove() } // 重复 remove() 无影响
           }
-        });
-      };
+        })
+        mutationOn();
+      }
 
-      // AJAX 获取奖杯评论并更新到对象代理中
-      const getTipContent = (t) => new Promise((resolve, reject) => {
+      // AJAX 获取奖杯评论并添加数据到对象代理中，由对象代理的 set 函数触发更新
+      const getTipContent = (t) => {
         $.ajax({
           type: 'GET',
           url: `${t.trophyLink}`,
@@ -972,12 +981,12 @@
               tipTD.appendChild(comments);
               tipTR.appendChild(tipTD);
               t.tipListDom = tipTR;
-              resolve(true);
             }
+            return true
           },
           error: (e) => { reject(e); },
         });
-      });
+      };
 
       // 为 trophy column 即 td[1] 添加 click 事件，开关切换 tipShow
       myTrophyList.forEach((t) => {
@@ -999,14 +1008,28 @@
         }
       });
 
-      // 创建一个 MutationObserver 实例， 监听 table.list 的变化，避免多处调用 refreshTrophyTip
-      const observingConfig = { attributes: true, childList: true, subtree: true };
-      const observer = new MutationObserver(() => {
-        observer.disconnect();
-        refreshTrophyTip();
-        observer.observe(trophyTable, observingConfig);
+      // 为每个 trophyTable 添加 mutation observer 
+      const observers = [];
+      const mutationOff = () => {
+        observers.forEach(worker => worker.observer.disconnect());
+      }
+      const mutationOn = () => {
+        observers.forEach(worker => worker.observer.observe(worker.target, worker.config));
+      }
+      const handleMutation = () => {
+        mutationOff()
+        refreshTrophyTip()
+        mutationOn()
+      };
+      trophyTables.forEach(table => {
+        const observer = new MutationObserver(handleMutation);
+        const target = table.querySelector('tbody');
+        const config = { attributes: true, childList: true, subtree: true };
+        observers.push({ observer, target, config });
+        mutationOn()
       });
-      observer.observe(trophyTable, observingConfig);
+
+
 
       // 添加 『展开全部未完成奖杯 Tips』文字按钮
       GM_addStyle('table.list tr:first-child td {position: relative;}');
@@ -1021,12 +1044,12 @@
       expandAllBtn.innerText = '展开所有奖杯 Tips';
       expandBtnContainer.appendChild(expandUndoneBtn);
       expandBtnContainer.appendChild(expandAllBtn);
-      trophyTable.querySelector('tr td div').appendChild(expandBtnContainer);
+      trophyTables[0].querySelector('tr td div').appendChild(expandBtnContainer);
 
       // click 事件的 multipleTipLoading 函数
       let multipleTipLoadingFlag = false;
-      let openAllTipFlag = true; let
-        openUndoneTipFlag = true;
+      let openAllTipFlag = true;
+      let openUndoneTipFlag = true;
 
       const multipleTipLoading = (type) => {
         if (type === 'undone') {
@@ -1046,13 +1069,12 @@
         let tasklist = myTrophyList.filter((t) => !t.tipListDom && t.tipNumber > 0);
         if (type === 'undone') { tasklist = tasklist.filter((t) => !t.earned); }
 
-        async function recursiveLoad() {
+        function recursiveLoad() {
           if (tasklist.length > 0) {
             const t = tasklist.shift();
             t.tipShow = true;
-            await getTipContent(t);
-            await new Promise((resolve) => { setTimeout(() => { resolve(); }, 300); });
-            await recursiveLoad();
+            getTipContent(t);
+            setTimeout(() => { recursiveLoad() }, 1000);
           } else {
             multipleTipLoadingFlag = false;
             expandUndoneBtn.innerText = openUndoneTipFlag ? '展开未完成奖杯 Tips' : '收起未完成奖杯 Tips';
@@ -1093,10 +1115,9 @@
           myTrophyList.sort((a, b) => (a.percentage - b.percentage) * (sortFlag.percentage ? 1 : -1));
         }
         sortFlag[type] = !sortFlag[type];
-        const tbody = document.querySelector('table.list tbody');
         myTrophyList.forEach((item) => {
           item.trDom.remove();
-          tbody.appendChild(item.trDom);
+          item.table.appendChild(item.trDom);
         });
       };
 
