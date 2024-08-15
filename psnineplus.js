@@ -402,7 +402,7 @@
         $('body,html').animate({
           scrollTop: document.body.clientHeight,
         },
-          500);
+        500);
       }).css({
         cursor: 'pointer',
       });
@@ -895,7 +895,6 @@
     // if (myGameTrophyPageRegex.test(window.location.href)) {
     const gameTrophyPageRegex = new RegExp('psngame/\\d+\\?psnid=');
     if (gameTrophyPageRegex.test(window.location.href)) {
-
       const height = Math.min(Math.max(window.innerHeight - 100, 320), 1200);
       GM_addStyle(`.tipContainer .list {max-height:${height}px; overflow-y:auto;}`);
       GM_addStyle('.tipContainer { padding: 0; margin: 0; border-left: 14px solid #ffbf00;}');
@@ -941,7 +940,6 @@
         },
       }));
 
-
       // 更新 tipListDom，判断每个 tr[id] 紧邻的下一个元素是否为 tr[id]
       const refreshTrophyTip = () => {
         // eslint-disable-next-line no-use-before-define
@@ -965,14 +963,14 @@
         const items = doc.querySelectorAll(itemSelector);
         if (items.length > 0) {
           items.forEach((item) => {
-            const authorEle = item.querySelector(itemAuthorSelector)
+            const authorEle = item.querySelector(itemAuthorSelector);
             if (authorEle) {
               const author = authorEle.innerText.toLowerCase();
               if (userListLowerCase.includes(author.toLowerCase())) {
                 item.remove();
               }
             }
-          })
+          });
         }
       };
       const filterBlockWords = (doc, itemSelector, contentSelector) => {
@@ -996,13 +994,13 @@
                 post.insertAdjacentElement('afterend', warningDiv);
               }
             }
-          })
+          });
         }
       };
 
       // AJAX 获取奖杯评论并添加数据到对象代理中，由对象代理的 set 函数触发更新
       const getTipContent = (t) => {
-        console.log(t)
+        console.log(t);
         $.ajax({
           type: 'GET',
           url: `${t.trophyLink}`,
@@ -1030,7 +1028,7 @@
                 listdiv.classList.add('list');
                 posts.forEach((post) => {
                   listdiv.appendChild(post);
-                })
+                });
                 filterBlockUser(listdiv, '.list>.post', '.meta>.psnnode');
                 filterBlockWords(listdiv, '.list>.post', 'div.ml64>div.content.pb10');
                 tipTD.appendChild(listdiv);
@@ -1076,7 +1074,7 @@
         mutations.forEach((mutation) => {
           if (mutation.target.matches('tr.trophy')
           ) { refreshFlag = true; }
-        })
+        });
         if (refreshFlag) {
           mutationOff();
           refreshTrophyTip();
@@ -1090,7 +1088,6 @@
         observers.push({ observer, target, config });
         mutationOn();
       });
-
 
       // 一次性展开不能直接开放给所有用户，可能造成服务器负担
       const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight'];
@@ -1574,7 +1571,7 @@
             .append(`&nbsp;<a class="psnnode" id="hot" style="background-color: ${tagBackgroundColor === 'rgb(43, 43, 43)'
               ? 'rgb(125 69 67)' // 暗红色
               : 'rgb(217, 83, 79)' // 鲜红色
-              };color: rgb(255, 255, 255);">🔥热门&nbsp;</a>`);
+            };color: rgb(255, 255, 255);">🔥热门&nbsp;</a>`);
         }
       });
     };
