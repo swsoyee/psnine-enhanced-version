@@ -957,7 +957,8 @@
         mutationOn();
       };
 
-
+      // 独立实现黑名单与屏蔽词，因为只在 getTipContent() 中用到一次。
+      // 本脚本中旧版的黑名单与屏蔽词是基于页面当前 dom 渲染的，会在 refreshTrophyTip 后重置
       const userListLowerCase = settings.blockList.map((user) => user.toLowerCase());
       const blockWordsList = settings.blockWordsList.map((word) => word.toLowerCase());
       const filterBlockUser = (doc, itemSelector, itemAuthorSelector) => {
@@ -1070,13 +1071,17 @@
       const mutationOn = () => {
         observers.forEach((worker) => worker.observer.observe(worker.target, worker.config));
       };
-      const handleMutation = (mutation) => {
-        console.log(mutation.length);
-        // if mutation target is not tr, ignore
-        // if (!mutation.target || !mutation.target.tagName !== 'TR') return;
-        mutationOff();
-        refreshTrophyTip();
-        mutationOn();
+      const handleMutation = (mutations) => {
+        let refreshFlag = false;
+        mutations.forEach((mutation) => {
+          if (mutation.target.matches('tr.trophy')
+          ) { refreshFlag = true; }
+        })
+        if (refreshFlag) {
+          mutationOff();
+          refreshTrophyTip();
+          mutationOn();
+        }
       };
       trophyTables.forEach((table) => {
         const observer = new MutationObserver(handleMutation);
