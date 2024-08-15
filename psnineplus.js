@@ -953,11 +953,28 @@
             t.tipListDom.remove(); // 重复 remove() 无影响
           }
         });
-        filterUserPost();
-        filterBlockWorld();
         // eslint-disable-next-line no-use-before-define
         mutationOn();
       };
+
+
+      const userListLowerCase = settings.blockList.map((user) => user.toLowerCase());
+      const blockWordsList = settings.blockWordsList.map((word) => word.toLowerCase());
+      const filterBlockUser = (doc, itemSelector, itemAuthorSelector) => {
+        const items = doc.querySelectorAll(itemSelector);
+        if (items.length > 0) {
+          items.forEach((item) => {
+            const authorEle = item.querySelector(itemAuthorSelector)
+            if (authorEle) {
+              const author = authorEle.innerText.toLowerCase();
+              if (userListLowerCase.includes(author.toLowerCase())) {
+                item.remove();
+              }
+            }
+          })
+        }
+      };
+
 
       // AJAX 获取奖杯评论并添加数据到对象代理中，由对象代理的 set 函数触发更新
       const getTipContent = (t) => {
@@ -980,6 +997,8 @@
               tipTD.colSpan = 4;
               tipTD.classList.add('tipContainer');
               if (comments) {
+                filterBlockUser(comments, 'ul.list>li', 'div.ml64>.meta.pb10>.psnnode');
+                filterBlockUser(comments, 'ul.sonlist>li', '.content>.psnnode');
                 tipTD.appendChild(comments);
               } else if (posts) {
                 const listdiv = document.createElement('div');
@@ -987,6 +1006,7 @@
                 posts.forEach((post) => {
                   listdiv.appendChild(post);
                 })
+                filterBlockUser(listdiv, '.list>.post', '.meta>.psnnode');
                 tipTD.appendChild(listdiv);
               }
               tipTR.appendChild(tipTD);
@@ -1026,8 +1046,9 @@
         observers.forEach((worker) => worker.observer.observe(worker.target, worker.config));
       };
       const handleMutation = (mutation) => {
+        console.log(mutation.length);
         // if mutation target is not tr, ignore
-        if (!mutation.target.closest('tr')) return;
+        // if (!mutation.target || !mutation.target.tagName !== 'TR') return;
         mutationOff();
         refreshTrophyTip();
         mutationOn();
@@ -1743,7 +1764,6 @@
         || windowHref.indexOf('trade') > -1 // 交易回复
         || windowHref.match(/\/battle\/[1-9][0-9]+/) !== null // 约战回复
         || windowHref.match(/\/psnid\/[^/]+\/comment/) !== null // 个人主页留言
-        || windowHref.match(/psngame\/\d+\?psnid=/) !== null // 游戏奖杯页在展开 tip 后
       ) {
         FilterWordRegular('div.ml64>div.content.pb10');
       }
