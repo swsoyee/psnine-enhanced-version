@@ -402,7 +402,7 @@
         $('body,html').animate({
           scrollTop: document.body.clientHeight,
         },
-        500);
+          500);
       }).css({
         cursor: 'pointer',
       });
@@ -943,7 +943,7 @@
       // 更新 tipListDom，判断每个 tr[id] 紧邻的下一个元素是否为 tr[id]
       const refreshTrophyTip = () => {
         // eslint-disable-next-line no-use-before-define
-        mutationOff();
+        mutationsOff();
         myTrophyList.filter((t) => t.tipListDom).forEach((t) => {
           if (t.trDom.style.display !== 'none' && t.tipShow === true) { // 应当显示
             t.trDom.insertAdjacentElement('afterend', t.tipListDom);// 插入或移动
@@ -952,7 +952,7 @@
           }
         });
         // eslint-disable-next-line no-use-before-define
-        mutationOn();
+        mutationsOn();
       };
 
       // 独立实现黑名单与屏蔽词，因为只在 getTipContent() 中用到一次。
@@ -1063,22 +1063,21 @@
 
       // 定义 trophyTables 的 mutation on off 函数
       const observers = [];
-      const mutationOff = () => {
+      const mutationsOff = () => {
         observers.forEach((worker) => worker.observer.disconnect());
       };
-      const mutationOn = () => {
+      const mutationsOn = () => {
         observers.forEach((worker) => worker.observer.observe(worker.target, worker.config));
       };
       const handleMutation = (mutations) => {
         let refreshFlag = false;
         mutations.forEach((mutation) => {
+          console.log('mutation element: ', mutation.target);
           if (mutation.target.matches('tr.trophy')
           ) { refreshFlag = true; }
         });
         if (refreshFlag) {
-          mutationOff();
           refreshTrophyTip();
-          mutationOn();
         }
       };
       trophyTables.forEach((table) => {
@@ -1086,7 +1085,7 @@
         const target = table.querySelector('tbody');
         const config = { attributes: true, childList: true, subtree: true };
         observers.push({ observer, target, config });
-        mutationOn();
+        mutationsOn();
       });
 
       // 一次性展开不能直接开放给所有用户，可能造成服务器负担
@@ -1571,7 +1570,7 @@
             .append(`&nbsp;<a class="psnnode" id="hot" style="background-color: ${tagBackgroundColor === 'rgb(43, 43, 43)'
               ? 'rgb(125 69 67)' // 暗红色
               : 'rgb(217, 83, 79)' // 鲜红色
-            };color: rgb(255, 255, 255);">🔥热门&nbsp;</a>`);
+              };color: rgb(255, 255, 255);">🔥热门&nbsp;</a>`);
         }
       });
     };
