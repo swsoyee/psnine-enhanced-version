@@ -876,7 +876,8 @@
 
     /*
       在奖杯页提供扩展功能，把每个奖杯第一页的评论直接展示在当前页面。
-      可以单点展开一个奖杯的 tips，也可以一次性展开所有奖杯 tips。
+      可以单点展开一个奖杯的 tips，
+      // 一次性展开所有奖杯 tips 的逻辑可能会造成服务器压力过大，考虑隐藏
       同时改进页面默认的排序功能并阻止页面跳转行为。
     */
 
@@ -1020,76 +1021,91 @@
         mutationOn();
       });
 
-      // 添加 『展开全部未完成奖杯 Tips』文字按钮
-      GM_addStyle('table.list tr:first-child td {position: relative;}');
-      GM_addStyle('table.list tr .ml100 p#expand { font-size: 12px; position: absolute; right: 12%; bottom: 0; padding: 0;margin: 0;}');
-      GM_addStyle('table.list tr .ml100 p#expand a { cursor: pointer; text-decoration: none; color: #999; margin: 0 4px; }');
 
-      const expandBtnContainer = document.createElement('p');
-      expandBtnContainer.id = 'expand';
-      const expandUndoneBtn = document.createElement('a');
-      expandUndoneBtn.innerText = '展开未完成奖杯 Tips';
-      const expandAllBtn = document.createElement('a');
-      expandAllBtn.innerText = '展开所有奖杯 Tips';
-      expandBtnContainer.appendChild(expandUndoneBtn);
-      expandBtnContainer.appendChild(expandAllBtn);
-      trophyTables[0].querySelector('tr td div').appendChild(expandBtnContainer);
+      // 一次性展开不能直接开放给所有用户，可能造成服务器负担
+      const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight'];
+      let currentStep = 0;
+      window.addEventListener('keydown', (e) => {
+        if (e.key === konamiCode[currentStep]) {
+          currentStep += 1;
+          if (currentStep === konamiCode.length) {
+            // 添加 『展开全部未完成奖杯 Tips』文字按钮
+            GM_addStyle('table.list tr:first-child td {position: relative;}');
+            GM_addStyle('table.list tr .ml100 p#expand { font-size: 12px; position: absolute; right: 12%; bottom: 0; padding: 0;margin: 0;}');
+            GM_addStyle('table.list tr .ml100 p#expand a { cursor: pointer; text-decoration: none; color: #999; margin: 0 4px; }');
 
-      // click 事件的 multipleTipLoading 函数
-      let multipleTipLoadingFlag = false;
-      let openAllTipFlag = true;
-      let openUndoneTipFlag = true;
+            const expandBtnContainer = document.createElement('p');
+            expandBtnContainer.id = 'expand';
+            const expandUndoneBtn = document.createElement('a');
+            expandUndoneBtn.innerText = '展开未完成奖杯 Tips';
+            const expandAllBtn = document.createElement('a');
+            expandAllBtn.innerText = '展开所有奖杯 Tips';
+            expandBtnContainer.appendChild(expandUndoneBtn);
+            expandBtnContainer.appendChild(expandAllBtn);
+            trophyTables[0].querySelector('tr td div').appendChild(expandBtnContainer);
 
-      const multipleTipLoading = (type) => {
-        if (type === 'undone') {
-          myTrophyList.filter((t) => !t.earned).forEach((t) => { t.tipShow = openUndoneTipFlag; });
-          openUndoneTipFlag = !openUndoneTipFlag;
-          expandUndoneBtn.innerText = '加载中 ...';
-          expandAllBtn.innerText = '等待中 ...';
-        } else {
-          myTrophyList.forEach((t) => { t.tipShow = openAllTipFlag; });
-          openAllTipFlag = !openAllTipFlag;
-          expandAllBtn.innerText = '加载中 ...';
-          expandUndoneBtn.innerText = '等待中 ...';
-        }
+            // click 事件的 multipleTipLoading 函数
+            let multipleTipLoadingFlag = false;
+            let openAllTipFlag = true;
+            let openUndoneTipFlag = true;
 
-        multipleTipLoadingFlag = true;
+            const multipleTipLoading = (type) => {
+              if (type === 'undone') {
+                myTrophyList.filter((t) => !t.earned).forEach((t) => { t.tipShow = openUndoneTipFlag; });
+                openUndoneTipFlag = !openUndoneTipFlag;
+                expandUndoneBtn.innerText = '加载中 ...';
+                expandAllBtn.innerText = '等待中 ...';
+              } else {
+                myTrophyList.forEach((t) => { t.tipShow = openAllTipFlag; });
+                openAllTipFlag = !openAllTipFlag;
+                expandAllBtn.innerText = '加载中 ...';
+                expandUndoneBtn.innerText = '等待中 ...';
+              }
 
-        let tasklist = myTrophyList.filter((t) => !t.tipListDom && t.tipNumber > 0);
-        if (type === 'undone') { tasklist = tasklist.filter((t) => !t.earned); }
+              multipleTipLoadingFlag = true;
 
-        function recursiveLoad() {
-          if (tasklist.length > 0) {
-            const t = tasklist.shift();
-            t.tipShow = true;
-            getTipContent(t);
-            setTimeout(() => { recursiveLoad(); }, 1000);
-          } else {
-            multipleTipLoadingFlag = false;
-            expandUndoneBtn.innerText = openUndoneTipFlag ? '展开未完成奖杯 Tips' : '收起未完成奖杯 Tips';
-            expandAllBtn.innerText = openAllTipFlag ? '展开所有奖杯 Tips' : '收起所有奖杯 Tips';
-            return true;
+              let tasklist = myTrophyList.filter((t) => !t.tipListDom && t.tipNumber > 0);
+              if (type === 'undone') { tasklist = tasklist.filter((t) => !t.earned); }
+
+              function recursiveLoad() {
+                if (tasklist.length > 0) {
+                  const t = tasklist.shift();
+                  t.tipShow = true;
+                  getTipContent(t);
+                  setTimeout(() => { recursiveLoad(); }, 1000);
+                } else {
+                  multipleTipLoadingFlag = false;
+                  expandUndoneBtn.innerText = openUndoneTipFlag ? '展开未完成奖杯 Tips' : '收起未完成奖杯 Tips';
+                  expandAllBtn.innerText = openAllTipFlag ? '展开所有奖杯 Tips' : '收起所有奖杯 Tips';
+                  return true;
+                }
+                return false;
+              }
+              recursiveLoad();
+            };
+
+            // 为 expandAllBtn 添加 click 事件
+            expandAllBtn.addEventListener('click', (event) => {
+              event.stopImmediatePropagation();
+              event.preventDefault();
+              if (multipleTipLoadingFlag === true) return;
+              multipleTipLoading();
+            });
+
+            // 为 expandUndoneBtn 添加 click 事件
+            expandUndoneBtn.addEventListener('click', (event) => {
+              event.stopImmediatePropagation();
+              event.preventDefault();
+              if (multipleTipLoadingFlag === true) return;
+              multipleTipLoading('undone');
+            });
           }
-          return false;
+        } else {
+          currentStep = 0;
         }
-        recursiveLoad();
-      };
-
-      // 为 expandAllBtn 添加 click 事件
-      expandAllBtn.addEventListener('click', (event) => {
-        event.stopImmediatePropagation();
-        event.preventDefault();
-        if (multipleTipLoadingFlag === true) return;
-        multipleTipLoading();
       });
 
-      // 为 expandUndoneBtn 添加 click 事件
-      expandUndoneBtn.addEventListener('click', (event) => {
-        event.stopImmediatePropagation();
-        event.preventDefault();
-        if (multipleTipLoadingFlag === true) return;
-        multipleTipLoading('undone');
-      });
+
 
       // 取消奖杯排序菜单的页面跳转，并重新实现排序
       const sortFlag = { XMB: true, trophyType: true, percentage: true };
