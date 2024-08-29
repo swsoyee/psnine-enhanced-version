@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      1.0.28
+// @version      1.0.29
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // eslint-disable-next-line max-len
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
@@ -22,7 +22,7 @@
 // @grant        GM_getValue
 // @run-at       document-start
 // ==/UserScript==
-/* globals $, Highcharts, tippy */
+/* globals $, Highcharts, tippy, GM_getValue, GM_setValue */
 
 (function () {
   const settings = {
@@ -402,7 +402,7 @@
         $('body,html').animate({
           scrollTop: document.body.clientHeight,
         },
-          500);
+        500);
       }).css({
         cursor: 'pointer',
       });
@@ -729,6 +729,7 @@
          2. 当用户进行异常操作时，需要自行通过翻页刷新数据
      */
 
+    // 测试用清除数据
     // GM_setValue('personalGameCompletions', []);
     // console.log(GM_getValue('personalGameCompletions', []));
     // GM_setValue('personalGameCompletionsLastUpdate', []);
@@ -833,12 +834,9 @@
     // 获取个人 ID
     const myHomePage = document.querySelectorAll('ul.r li.dropdown ul li a')[0].href;
     const myUserId = myHomePage.match(/\/psnid\/([A-Za-z0-9_-]+)/)[1] || '*';
-    const myGamePageURLRegex = new RegExp(`psnid/${myUserId}/?(?:psngame(?:\\?page=(\\d+))?|$)`);
-    // match: https://psnine.com/psnid/kaikaiiiiiiiwu
-    // match: https://psnine.com/psnid/kaikaiiiiiiiwu/
-    // match: https://psnine.com/psnid/kaikaiiiiiiiwu/psngame
-    // match: https://psnine.com/psnid/kaikaiiiiiiiwu/psngame?page=2
-    // dismatch: https://psnine.com/psnid/kaikaiiiiiiiwu/comment
+    // const myGamePageURLRegex = new RegExp(`psnid/${myUserId}/?(?:psngame(?:\\?page=(\\d+))?|$)`);
+    const myHomepageURLRegex = new RegExp(`psnid/${myUserId}/?`);
+    const myGamePageURLRegex = new RegExp(`psnid/${myUserId}/psngame(?:\\?page=(\\d+))?`);
 
     // 后台更新频次控制
     const bgUpdateMyGameCompletion = () => {
@@ -851,23 +849,380 @@
 
     // 在用户浏览个人页面或个人游戏列表页时，无视 Interval 白嫖一次数据更新
     if (myGamePageURLRegex.test(window.location.href)) {
-      const pagesUpdateTime = GM_getValue('personalGameCompletionsLastUpdate', []);
       const pageid = parseInt(window.location.href.match(myGamePageURLRegex)[1], 10) || 1;
-
       const { totalItems, thisPageCompletions } = parseCompletionPage(document);
       const { totalRecords } = updateCompletions(thisPageCompletions);
 
+      const pagesUpdateTime = GM_getValue('personalGameCompletionsLastUpdate', []);
       pagesUpdateTime[pageid - 1] = new Date().getTime();
       GM_setValue('personalGameCompletionsLastUpdate', pagesUpdateTime);
+
       if (totalRecords < totalItems || totalItems === 0) {
         const nextPageID = pageid === 1 ? 2 : 1;
         loadGameCompletions(myUserId, nextPageID);
       }
+    } else if (myHomepageURLRegex.test(window.location.href)) {
+      const { thisPageCompletions } = parseCompletionPage(document);
+      updateCompletions(thisPageCompletions);
+
+      const pagesUpdateTime = GM_getValue('personalGameCompletionsLastUpdate', []);
+      pagesUpdateTime[0] = new Date().getTime();
+      GM_setValue('personalGameCompletionsLastUpdate', pagesUpdateTime);
     } else {
       bgUpdateMyGameCompletion(); // 定时更新
     }
 
-    /// /////////////////////////////////////////////////////////////////////////////
+    /// /////////////////////////////////////////////////////////////////////////////////
+
+    /*  在奖杯页提供扩展功能，把每个奖杯页的评论直接展示在当前页面。
+        可以单点展开一个奖杯的 tips。
+        // 一次性展开所有奖杯 tips 的逻辑可能会造成服务器压力过大，已隐藏
+        同时改进页面默认的排序功能并阻止页面跳转行为。
+    */
+
+    // 节流，防止用户多次点击
+    const throttleDebounce = (func, delay) => {
+      let timeout = null;
+      return (...args) => {
+        if (!timeout) {
+          func.apply(this, args);
+          timeout = setTimeout(() => { timeout = null; }, delay);
+        }
+      };
+    };
+
+    // const myGameTrophyPageRegex = new RegExp(`psngame/(\\d+)\\?psnid=${myUserId}`);
+    // if (myGameTrophyPageRegex.test(window.location.href)) {
+    // 不再限制到自己的游戏页，现在在别人的游戏页也会执行
+    const gameTrophyPageRegex = new RegExp('psngame/\\d+\\?psnid=');
+    if (gameTrophyPageRegex.test(window.location.href)) {
+      const height = Math.min(Math.max(window.innerHeight - 100, 320), 1200);
+      GM_addStyle(`.tipContainer .list {max-height:${height}px; overflow-y:auto;}`);
+      GM_addStyle('.tipContainer { padding: 0; margin: 0; border-left: 14px solid #ffbf00;}');
+      GM_addStyle('.tipContainer ul.list li {padding: 4px 14px 4px 8px;}');
+      GM_addStyle('.tipContainer ul.list li:first-child { padding:4px 14px 4px 8px;}');
+      GM_addStyle('table.list td > p > em.alert-success{cursor:pointer}');
+      GM_addStyle('table.list td > p > em.alert-success::after{content:" ▼"}');
+
+      const trophyTables = Array.from(document.querySelectorAll('table.list')); // every dlc has one table
+      const thisPageTrophyList = trophyTables
+        .flatMap((table) => Array.from(table.querySelectorAll('tr[id]'))
+          .map((tr) => {
+            const ID = parseInt(tr.id, 10);
+            const tds = Array.from(tr.querySelectorAll('td'));
+            const trophyLink = tds[0].querySelector('a').href;
+            const trophyTypeMatch = tds[0].className.match(/\b(t1|t2|t3|t4)\b/);
+            const trophyType = trophyTypeMatch ? trophyTypeMatch[1] : '';
+            const tipNumberEle = tds[1].querySelector('p em.alert-success b');
+            const tipNumber = tipNumberEle ? parseInt(tipNumberEle.innerText, 10) : 0;
+            const earned = tds.length === 4 && !!tds[2].querySelector('em');
+            const percentage = parseFloat(tds[tds.length - 1].innerText) || 0;
+            return {
+              ID,
+              trophyLink,
+              trophyType,
+              tipNumber,
+              earned,
+              percentage,
+              trDom: tr,
+              table,
+              tipListDom: null,
+              tipShow: false,
+            };
+          }));
+
+      // 添加对象代理以便数据更新后自动渲染对应 DOM，并且在 tipShow 为 true 时自动加载
+      const myTrophyList = thisPageTrophyList.map((item) => new Proxy(item, {
+        set: (target, prop, value) => {
+          let flag = false;
+          if (prop === 'tipListDom' || prop === 'tipShow') { flag = true; }
+          target[prop] = value;
+          // eslint-disable-next-line no-use-before-define
+          if (flag) { refreshTrophyTip(); }
+          return true;
+        },
+      }));
+
+      // 根据当前状态刷新 tipListDom，维护列表的正常展示顺序
+      const refreshTrophyTip = () => {
+        // eslint-disable-next-line no-use-before-define
+        mutationsOff();
+        myTrophyList.filter((t) => t.tipListDom).forEach((t) => {
+          if (t.trDom.style.display !== 'none' && t.tipShow === true) { // 应当显示
+            t.trDom.insertAdjacentElement('afterend', t.tipListDom); // 插入或移动
+          } else {
+            t.tipListDom.remove(); // 不显示则移出文档，重复 remove() 无影响
+          }
+        });
+        // eslint-disable-next-line no-use-before-define
+        mutationsOn();
+      };
+
+      // 独立实现黑名单与屏蔽词，因为只在 getTipContent() 中用到一次。
+      // 旧版的黑名单与屏蔽词函数是基于页面当前 dom 渲染的，会在 refreshTrophyTip 后重置
+      const userListLowerCase = settings.blockList.map((user) => user.toLowerCase());
+      const blockWordsList = settings.blockWordsList.map((word) => word.toLowerCase());
+      const filterBlockUser = (rootEle, itemSelector, itemAuthorSelector) => {
+        const items = rootEle.querySelectorAll(itemSelector);
+        if (items.length > 0) {
+          items.forEach((item) => {
+            const authorEle = item.querySelector(itemAuthorSelector);
+            if (authorEle) {
+              const author = authorEle.innerText.toLowerCase();
+              if (userListLowerCase.includes(author.toLowerCase())) {
+                item.remove();
+              }
+            }
+          });
+        }
+      };
+      const filterBlockWords = (rootEle, itemSelector, contentSelector) => {
+        const posts = rootEle.querySelectorAll(itemSelector);
+        if (posts.length > 0) {
+          posts.forEach((post) => {
+            const contentEle = post.querySelector(contentSelector);
+            if (contentEle) {
+              const content = contentEle.textContent.toLowerCase();
+              if (blockWordsList.some((word) => content.includes(word))) {
+                const warningDiv = document.createElement('div');
+                warningDiv.textContent = '====== 内容包含您的屏蔽词，点击查看屏蔽内容 ======';
+                warningDiv.className = 'btn btn-gray font12';
+                warningDiv.style.marginBottom = '2px';
+                warningDiv.onclick = () => {
+                  warningDiv.previousElementSibling.style.display = 'block';
+                  warningDiv.style.display = 'none';
+                };
+                post.style.display = 'none';
+                post.insertAdjacentElement('afterend', warningDiv);
+              }
+            }
+          });
+        }
+      };
+
+      // AJAX 获取奖杯评论并添加数据到对象代理中，由对象代理的 set 函数自行触发更新
+      const getTipContent = (t) => {
+        $.ajax({
+          type: 'GET',
+          url: `${t.trophyLink}`,
+          dataType: 'html',
+          async: true,
+          success: (data, status) => {
+            if (status === 'success') {
+              // get content from page
+              const page = document.createElement('html');
+              page.innerHTML = data;
+
+              // 两种不同的列表页面样式，一种是ul.list 列表，一种是 div.post DOM 组
+              const comments = page.querySelector('ul.list');
+              const posts = page.querySelectorAll('div.post');
+
+              // wrap for table
+              const tipTR = document.createElement('tr');
+              const tipTD = document.createElement('td');
+              tipTD.colSpan = 4;
+              tipTD.classList.add('tipContainer');
+              tipTR.appendChild(tipTD);
+
+              if (comments) {
+                // blacklist and block words
+                filterBlockUser(comments, 'ul.list>li', 'div.ml64>.meta.pb10>.psnnode');
+                filterBlockUser(comments, 'ul.sonlist>li', '.content>.psnnode');
+                filterBlockWords(comments, 'ul.list>li', 'div.ml64>div.content.pb10');
+
+                tipTD.appendChild(comments);
+              } else if (posts) {
+                // 包裹 .list 以便适用于同一套 CSS 样式
+                const listdiv = document.createElement('div');
+                posts.forEach((post) => { listdiv.appendChild(post); });
+                listdiv.classList.add('list');
+
+                // blacklist and block words
+                filterBlockUser(listdiv, '.list>.post', '.meta>.psnnode');
+                filterBlockWords(listdiv, '.list>.post', 'div.ml64>div.content.pb10');
+
+                tipTD.appendChild(listdiv);
+              }
+
+              t.tipListDom = tipTR;
+            }
+            return true;
+          },
+          error: (e) => { console.log('getTipContent error', e); },
+        });
+      };
+
+      // 为 trophy tip badges 添加 click 事件，开关切换 tipShow
+      myTrophyList.forEach((t) => {
+        const mainColumn = t.trDom.querySelectorAll('td')[1];
+        const trophyTipEle = mainColumn.querySelector('p em.alert-success');
+
+        if (trophyTipEle) {
+          const throttleGetTipContent = throttleDebounce(() => {
+            getTipContent(t);
+            t.tipShow = true;
+          }, 2000);
+
+          trophyTipEle.addEventListener('click', (event) => {
+            if (!t.tipListDom) {
+              throttleGetTipContent(event);
+            } else {
+              t.tipShow = !t.tipShow; // 当状态变化时会触发 set 函数
+            }
+          });
+        }
+      });
+
+      // 定义 trophyTables 的 mutation on off 函数
+      const observers = [];
+      const mutationsOff = () => {
+        observers.forEach((worker) => worker.observer.disconnect());
+      };
+      const mutationsOn = () => {
+        observers.forEach((worker) => worker.observer.observe(worker.target, worker.config));
+      };
+      const handleMutation = (mutations) => {
+        let refreshFlag = false;
+        mutations.forEach((mutation) => {
+          if (mutation.target.matches('tr.trophy')
+          ) { refreshFlag = true; }
+        });
+        if (refreshFlag) {
+          refreshTrophyTip();
+        }
+      };
+      trophyTables.forEach((table) => {
+        const observer = new MutationObserver(handleMutation);
+        const target = table.querySelector('tbody');
+        const config = { attributes: true, childList: true, subtree: true };
+        observers.push({ observer, target, config });
+        mutationsOn();
+      });
+
+      // 一次性展开不能直接开放给所有用户，可能造成服务器负担
+      const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight'];
+      let currentStep = 0;
+      window.addEventListener('keydown', (e) => {
+        if (e.key === konamiCode[currentStep]) {
+          currentStep += 1;
+          if (currentStep === konamiCode.length) {
+            // 添加 『展开全部未完成奖杯 Tips』文字按钮
+            GM_addStyle('table.list tr:first-child td {position: relative;}');
+            GM_addStyle('table.list tr .ml100 p#expand { font-size: 12px; position: absolute; right: 12%; bottom: 0; padding: 0;margin: 0;}');
+            GM_addStyle('table.list tr .ml100 p#expand a { cursor: pointer; text-decoration: none; color: #999; margin: 0 4px; }');
+
+            // add text button
+            const expandBtnContainer = document.createElement('p');
+            expandBtnContainer.id = 'expand';
+            const expandUndoneBtn = document.createElement('a');
+            expandUndoneBtn.innerText = '展开未完成奖杯 Tips';
+            const expandAllBtn = document.createElement('a');
+            expandAllBtn.innerText = '展开所有奖杯 Tips';
+            expandBtnContainer.appendChild(expandUndoneBtn);
+            expandBtnContainer.appendChild(expandAllBtn);
+            trophyTables[0].querySelector('tr td div').appendChild(expandBtnContainer);
+
+            // click 事件的 multipleTipLoading 函数
+            let multipleTipLoadingFlag = false;
+            let openAllTipFlag = true;
+            let openUndoneTipFlag = true;
+
+            const multipleTipLoading = (type) => {
+              if (type === 'undone') {
+                myTrophyList.filter((t) => !t.earned).forEach((t) => { t.tipShow = openUndoneTipFlag; });
+                openUndoneTipFlag = !openUndoneTipFlag;
+                expandUndoneBtn.innerText = '加载中 ...';
+                expandAllBtn.innerText = '等待中 ...';
+              } else {
+                myTrophyList.forEach((t) => { t.tipShow = openAllTipFlag; });
+                openAllTipFlag = !openAllTipFlag;
+                expandAllBtn.innerText = '加载中 ...';
+                expandUndoneBtn.innerText = '等待中 ...';
+              }
+
+              multipleTipLoadingFlag = true;
+
+              let tasklist = myTrophyList.filter((t) => !t.tipListDom && t.tipNumber > 0);
+              if (type === 'undone') { tasklist = tasklist.filter((t) => !t.earned); }
+
+              function recursiveLoad() {
+                if (tasklist.length > 0) {
+                  const t = tasklist.shift();
+                  t.tipShow = true;
+                  getTipContent(t);
+                  setTimeout(() => { recursiveLoad(); }, 1500);
+                } else {
+                  multipleTipLoadingFlag = false;
+                  expandUndoneBtn.innerText = openUndoneTipFlag ? '展开未完成奖杯 Tips' : '收起未完成奖杯 Tips';
+                  expandAllBtn.innerText = openAllTipFlag ? '展开所有奖杯 Tips' : '收起所有奖杯 Tips';
+                  return true;
+                }
+                return false;
+              }
+              recursiveLoad();
+            };
+
+            // 为 expandAllBtn 添加 click 事件
+            expandAllBtn.addEventListener('click', (event) => {
+              event.stopImmediatePropagation();
+              event.preventDefault();
+              if (multipleTipLoadingFlag === true) return;
+              multipleTipLoading();
+            });
+
+            // 为 expandUndoneBtn 添加 click 事件
+            expandUndoneBtn.addEventListener('click', (event) => {
+              event.stopImmediatePropagation();
+              event.preventDefault();
+              if (multipleTipLoadingFlag === true) return;
+              multipleTipLoading('undone');
+            });
+          }
+        } else {
+          currentStep = 0;
+        }
+      });
+
+      // 取消奖杯排序菜单的页面跳转，并重新实现排序
+      const sortFlag = { XMB: true, trophyType: true, percentage: true };
+      const sortByType = (type) => {
+        if (type === 'XMB') {
+          myTrophyList.sort((a, b) => (sortFlag.XMB ? a.ID - b.ID : b.ID - a.ID));
+        }
+        if (type === 'trophyType') {
+          myTrophyList.sort((a, b) => a.trophyType.localeCompare(b.trophyType) * (sortFlag.trophyType ? 1 : -1));
+        }
+        if (type === 'percentage') {
+          myTrophyList.sort((a, b) => (a.percentage - b.percentage) * (sortFlag.percentage ? 1 : -1));
+        }
+        sortFlag[type] = !sortFlag[type];
+        myTrophyList.forEach((item) => {
+          item.trDom.remove();
+          item.table.appendChild(item.trDom);
+        });
+      };
+
+      const sortMenuItemsEle = document.querySelectorAll('div.main div.box ul.dropmenu > li.dropdown > ul >li');
+      sortMenuItemsEle[0].addEventListener('click', (event) => {
+        event.stopImmediatePropagation();
+        event.preventDefault();
+        sortByType('XMB');
+      });
+
+      sortMenuItemsEle[1].addEventListener('click', (event) => {
+        event.stopImmediatePropagation();
+        event.preventDefault();
+        sortByType('trophyType');
+      });
+
+      sortMenuItemsEle[2].addEventListener('click', (event) => {
+        event.stopImmediatePropagation();
+        event.preventDefault();
+        sortByType('percentage');
+      });
+    }
+
+    /// //////////////////////////////////////////////////////////////////////////////
 
     if (
       /psnid\/[A-Za-z0-9_-]+\/?$/.test(window.location.href)
@@ -1227,7 +1582,7 @@
             .append(`&nbsp;<a class="psnnode" id="hot" style="background-color: ${tagBackgroundColor === 'rgb(43, 43, 43)'
               ? 'rgb(125 69 67)' // 暗红色
               : 'rgb(217, 83, 79)' // 鲜红色
-              };color: rgb(255, 255, 255);">🔥热门&nbsp;</a>`);
+            };color: rgb(255, 255, 255);">🔥热门&nbsp;</a>`);
         }
       });
     };
@@ -1404,7 +1759,10 @@
           FilterRegular('div.ml64>.meta>.psnnode', 'div.post'); // 主页帖回复、交易帖回复、约战帖回复
         } else if (windowHref.match(/\/my\/notice/)) {
           FilterRegular('.psnnode', 'li'); // 消息通知
-        } else if (windowHref.indexOf('trophy') > -1 || windowHref.match(/\/psnid\/[^/]+\/comment/) !== null) {
+        } else if (windowHref.indexOf('trophy') > -1
+          || windowHref.match(/\/psnid\/[^/]+\/comment/) !== null
+          || windowHref.match(/psngame\/\d+\?psnid=/) !== null
+        ) {
           FilterRegular('div.ml64>.meta.pb10>.psnnode', 'li'); // 奖杯TIPS、个人主页留言
           FilterRegular('ul.sonlist .content>.psnnode', 'ul.sonlist>li'); // 奖杯TIPS二级回复、个人主页留言二级回复
         } else if (windowHref.match(/\/psngame\/[1-9][0-9]+\/comment/) !== null) {
@@ -2558,10 +2916,11 @@
 
     const addTrophySortByTimestamp = () => {
       $('div.main ul.dropmenu > li.dropdown > ul').eq(0).append('<li id="sortTrophiesByTimestamp"><a>获得时间</a></li>');
+      $('#sortTrophiesByTimestamp').css('cursor', 'pointer');
       $('#sortTrophiesByTimestamp').click(() => {
         sortTrophiesByTimestamp();
-        $('#sortTrophiesByTimestamp').remove();
-        $('div.main ul.dropmenu > li.dropdown').removeClass('hover');
+        // $('#sortTrophiesByTimestamp').remove();
+        // $('div.main ul.dropmenu > li.dropdown').removeClass('hover');
       });
     };
 
