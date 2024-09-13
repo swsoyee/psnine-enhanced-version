@@ -52,7 +52,10 @@
   
   /*回帖背景色*/
   .list li,.box .post,td, th {
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid #555;
+  }
+  .list li:nth-last-child(1),th:nth-last-child(1){
+    border-bottom: none;
   }
   
   /*回帖用户名底色*/
@@ -87,7 +90,12 @@
   {
     background: #4b4b4b !important;
   }
-  
+  .alert-error{
+    color: #ec6666;
+  }
+  .text-error{
+    color: #ec6666 !important;
+  }
   h1,
   .title2
   {
@@ -142,6 +150,7 @@
   /*交易页面*/
   .tradelist li {
     color: white !important;
+    border-bottom: 1px solid #666;
   }
   
   /*主题贴中的表格底色*/
@@ -172,6 +181,7 @@
   /* 交易问答等页面中楼中楼的颜色 */
   .list li .sonlist li {
       background-color: #333;
+      border-color: #555;
   }
   /* tags底色 */
   .node {
@@ -183,7 +193,11 @@
   }
   /* 查看更早评论按键底色 */
   .btn-gray {
-      background-color: #666;
+    background-color: #666;
+  }
+  .btn-white {
+    background-color: #444;
+    color: #999 !important;
   }
 
   /* 奖杯列表比天梯的排序栏 */
@@ -198,4 +212,22 @@
     border-color: #3498db;
     background-color: #3498db;
   }
+  /* 奖杯列表展开后的阴影颜色 */
+  .tipContainer > .list{
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 100px inset !important;
+  }
+  /* 回溯回复内容的背景色 */
+  .replyTraceback{
+    background: rgba(0, 0, 0, 0.2) !important;
+  }
+
+  /* 侧边的小标签 */
+  .sidetitle{
+    background: #222;
+  }
+  /* 输入框 */
+  form[method="POST"]{
+    color: #999;
+  }
 }
+

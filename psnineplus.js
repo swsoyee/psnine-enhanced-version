@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
@@ -128,7 +129,8 @@
         node.id = 'nightModeStyle';
         node.type = 'text/css';
         node.appendChild(document.createTextNode(`
-        li[style="background:#f5faec"]{background:#344836 !important;}li[style="background:#fdf7f7"]{background:#4f3945 !important;}li[style="background:#faf8f0"]{background:#4e4c39 !important;}li[style="background:#f4f8fa"]{background:#505050 !important;}span[style="color:blue;"]{color:#64a5ff !important;}span[style="color:red;"],span[style="color:#a10000"]{color:#ff6464 !important;}span[style="color:brown;"]{color:#ff8864 !important;}.tit3{color:white !important;}.mark{background:#bbb !important;color:#bbb;}body.bg{background:#2b2b2b !important;}.list li,.box .post,td,th{border-bottom:1px solid #333;}.psnnode{background:#656565;}.box{background:#3d3d3d !important;}.title a{color:#bbb;}.text-strong,strong,.storeinfo,.content{color:#bbb !important;}.alert-warning,.alert-error,.alert-success,.alert-info{background:#4b4b4b !important;}h1,.title2{color:#ffffff !important;}.twoge{color:#ffffff !important;}.inav{background:#3d3d3d !important;}.inav li.current{background:#4b4b4b !important;}.ml100 p{color:#ffffff !important;}.t1{background:#657caf !important;}.t2{background:#845e2f !important;}.t3{background:#707070 !important;}.t4{background:#8b4d2d !important;}blockquote{background:#bababa !important;}.text-gray{color:#bbb !important;}.tradelist li{color:white !important;}.tbl{background:#3c3c3c !important;}.genelist li:hover,.touchclick:hover{background:#333 !important;}.showbar{background:radial-gradient(at center top,#7B8492,#3c3c3c);}.darklist,.cloud{background-color:#3c3c3c;}.side .hd3,.header,.dropdown ul{background-color:#222;}.list li .sonlist li{background-color:#333;}.node{background-color:#3b4861;}.rep{background-color:#3b4861;}.btn-gray{background-color:#666;}.dropmenu .o_btn{margin-right:0;color:#bbb;border-color:#bbb;}.dropmenu .o_btn.select{margin-right:0;color:#fff;border-color:#3498db;background-color:#3498db;}`));
+          li[style="background:#f5faec"]{background:#344836 !important;}li[style="background:#fdf7f7"]{background:#4f3945 !important;}li[style="background:#faf8f0"]{background:#4e4c39 !important;}li[style="background:#f4f8fa"]{background:#505050 !important;}span[style="color:blue;"]{color:#64a5ff !important;}span[style="color:red;"],span[style="color:#a10000"]{color:#ff6464 !important;}span[style="color:brown;"]{color:#ff8864 !important;}.tit3{color:white !important;}.mark{background:#bbb !important;color:#bbb;}body.bg{background:#2b2b2b !important;}.list li,.box .post,td,th{border-bottom:1px solid #555;}.list li:nth-last-child(1),th:nth-last-child(1){border-bottom:none;}.psnnode{background:#656565;}.box{background:#3d3d3d !important;}.title a{color:#bbb;}.text-strong,strong,.storeinfo,.content{color:#bbb !important;}.alert-warning,.alert-error,.alert-success,.alert-info{background:#4b4b4b !important;}.alert-error{color:#ec6666;}.text-error{color:#ec6666 !important;}h1,.title2{color:#ffffff !important;}.twoge{color:#ffffff !important;}.inav{background:#3d3d3d !important;}.inav li.current{background:#4b4b4b !important;}.ml100 p{color:#ffffff !important;}.t1{background:#657caf !important;}.t2{background:#845e2f !important;}.t3{background:#707070 !important;}.t4{background:#8b4d2d !important;}blockquote{background:#bababa !important;}.text-gray{color:#bbb !important;}.tradelist li{color:white !important;border-bottom:1px solid #666;}.tbl{background:#3c3c3c !important;}.genelist li:hover,.touchclick:hover{background:#333 !important;}.showbar{background:radial-gradient(at center top,#7B8492,#3c3c3c);}.darklist,.cloud{background-color:#3c3c3c;}.side .hd3,.header,.dropdown ul{background-color:#222;}.list li .sonlist li{background-color:#333;border-color:#555;}.node{background-color:#3b4861;}.rep{background-color:#3b4861;}.btn-gray{background-color:#666;}.btn-white{background-color:#444;color:#999 !important;}.dropmenu .o_btn{margin-right:0;color:#bbb;border-color:#bbb;}.dropmenu .o_btn.select{margin-right:0;color:#fff;border-color:#3498db;background-color:#3498db;}.tipContainer > .list{box-shadow:rgba(0,0,0,0.2) 0px 0px 100px inset !important;}.replyTraceback{background:rgba(0,0,0,0.2) !important;}.sidetitle{background:#222;}form[method="POST"]{color:#999;}
+        `));
         const heads = document.getElementsByTagName('head');
         if (heads.length > 0) {
           heads[0].appendChild(node);
@@ -176,7 +178,6 @@
         });
       }
     };
-
     showMarkMessage(settings.hoverUnmark);
   }
 
@@ -897,12 +898,12 @@
     const gameTrophyPageRegex = new RegExp('psngame/\\d+\\?psnid=');
     if (gameTrophyPageRegex.test(window.location.href)) {
       const height = Math.min(Math.max(window.innerHeight - 100, 320), 1200);
-      GM_addStyle(`.tipContainer .list {max-height:${height}px; overflow-y:auto;}`);
-      GM_addStyle('.tipContainer { padding: 0; margin: 0; border-left: 14px solid #ffbf00;}');
-      GM_addStyle('.tipContainer ul.list li {padding: 4px 14px 4px 8px;}');
-      GM_addStyle('.tipContainer ul.list li:first-child { padding:4px 14px 4px 8px;}');
+      GM_addStyle(`.tipContainer > .list {max-height:${height}px; overflow-y:auto; box-shadow:inset 0 0 100px rgba(0,0,0,0.05); padding: 10px 0; border-left: 2px solid #00a8e6;}`);
+      GM_addStyle('.tipContainer { padding: 10px 10px 10px 84px; margin: 0;}');
+      GM_addStyle('.tipContainer > ul.list > li {padding: 4px 14px 4px 8px;}');
+      GM_addStyle('.tipContainer > ul.list > li:first-child { padding:4px 14px 4px 8px;}');
       GM_addStyle('table.list td > p > em.alert-success{cursor:pointer}');
-      GM_addStyle('table.list td > p > em.alert-success::after{content:" ▼"}');
+      GM_addStyle('table.list td > p > em.alert-success::after{content:""; width:0; height:0px; border-top:5px solid #659f13; border-left: 5px solid transparent; border-right: 5px solid transparent; margin-left: 7px; display: inline-block; position: relative; top: -2px}');
 
       const trophyTables = Array.from(document.querySelectorAll('table.list')); // every dlc has one table
       const thisPageTrophyList = trophyTables
@@ -1431,10 +1432,9 @@
         if (allSource.length <= 0) return;
         GM_addStyle(
           `.replyTraceback {
-                        background-color: rgb(0, 0, 0, 0.05) !important;
+                        background-color: rgb(0, 0, 0, 0.04);
                         padding: 10px !important;
                         color: rgb(160, 160, 160, 1) !important;
-                        border-bottom: 1px solid !important;
                     }`,
         );
         // 悬浮框内容左对齐样式
