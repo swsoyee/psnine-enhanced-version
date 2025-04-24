@@ -2,7 +2,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      1.0.30
+// @version      1.0.31
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // eslint-disable-next-line max-len
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
@@ -368,6 +368,12 @@
       let pspcIconFixed = true;
       document.querySelectorAll('span.pf_pspc').forEach((e) => {
         if (getComputedStyle(e).backgroundColor === 'rgba(0, 0, 0, 0)') pspcIconFixed = false;
+        // 大部分游戏列表
+        $(e).closest('tr').find('td > a > img.imgbgnb').attr('height', '91');
+        // psngame页面
+        $(e).closest('div.box.pd10').children('img.imgbgnb.mr10.l.h-p').attr('height', '91');
+        // topic页面的关联奖杯列表
+        $(e).closest('ul.darklist.pd5').find('li > a.l > img').attr('height', '91');
       });
       if (!pspcIconFixed) {
         GM_addStyle(`
@@ -394,6 +400,31 @@
     };
 
     fixPspcIcon();
+
+    // 修复game页面的PS5游戏封面显示（临时）
+    const fixPs5CoverOnGamePages = () => {
+      if (/^https?:\/\/psnine\.com\/game\/\d+/g.test(window.location.href)) {
+        document.querySelectorAll('ul.darklist span.r').forEach((e) => {
+          if (/PS5/g.test(e.innerText)) {
+            const ps5Cover = $(e).closest('li').find('a > img');
+            if (ps5Cover.length > 0) { // 若为0则表示游戏使用了PS5以外版本的封面，不用进一步修复
+              ps5Cover.attr('height', '91');
+              const wrap = $(e).closest('ul.darklist');
+              const wrapStyle = wrap.attr('style');
+              const minHeightMatch = wrapStyle.match(/min-height:\s*\d+px/g);
+              if (Boolean(minHeightMatch)) {
+                // 修改min-height值，增加PS5封面高度（91）和PS4封面高度（50）的差值
+                const minHeightValNew = Number.parseInt(minHeightMatch[0].match(/\d+/g)[0]) + (91 - 50);
+                wrap.attr('style', wrapStyle.replace(minHeightMatch[0], `min-height:${minHeightValNew}px`));
+              }
+            }
+          }
+        });
+      }
+    };
+
+    fixPs5CoverOnGamePages();
+
     /*
     * 页面右下角追加点击跳转到页面底部按钮
     */
