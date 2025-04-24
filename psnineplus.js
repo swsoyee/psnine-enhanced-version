@@ -376,6 +376,7 @@
         $(e).closest('ul.darklist.pd5').find('li > a.l > img').attr('height', '91');
       });
       if (!pspcIconFixed) {
+        if (/^https?:\/\/psnine\.com\/psngame\/\d+\/?($|\?)/g.test(window.location.href)) $('table.list > tbody > tr > td > img.imgbgnb.l').attr('height', '91');
         GM_addStyle(`
               .pf_pspc {
                 font-size: 11px;
@@ -1288,6 +1289,7 @@
                   $('tbody > tr:last').after(nextGameContent);
                   isbool2 = true;
                   gamePageIndex += 1;
+                  fixPspcIcon();
                 } else {
                   $('#loadingMessage').text('没有更多游戏了...');
                 }
@@ -2113,6 +2115,7 @@
                 filterUserPost();
                 addHoverProfile();
                 addHotTag();
+                fixPspcIcon();
               },
               'html',
             );
