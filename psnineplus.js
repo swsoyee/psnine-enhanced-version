@@ -377,6 +377,7 @@
       });
       if (!pspcIconFixed) {
         if (/^https?:\/\/psnine\.com\/psngame\/\d+\/?($|\?)/g.test(window.location.href)) $('table.list > tbody > tr > td > img.imgbgnb.l').attr('height', '91');
+        if (/^https?:\/\/psnine\.com\/qa\/\d+\/?($|\?)/g.test(window.location.href)) $('div.inner.mt40 > div.main > ul.darklist > li > a.l > img').attr('height', '91');
         GM_addStyle(`
               .pf_pspc {
                 font-size: 11px;
