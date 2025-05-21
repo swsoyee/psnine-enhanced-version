@@ -373,15 +373,15 @@
       document.querySelectorAll('span.pf_pspc').forEach((e) => {
         if (getComputedStyle(e).backgroundColor === 'rgba(0, 0, 0, 0)') pspcIconFixed = false;
         // 大部分游戏列表
-        $(e).closest('tr').find('td > a > img.imgbgnb').attr('height', '91');
+        $(e).closest('tr').find('td > a > img.imgbgnb').removeAttr('height');
         // psngame页面
-        $(e).closest('div.box.pd10').children('img.imgbgnb.mr10.l.h-p').attr('height', '91');
+        $(e).closest('div.box.pd10').children('img.imgbgnb.mr10.l.h-p').removeAttr('height');
         // topic页面的关联奖杯列表
-        $(e).closest('ul.darklist.pd5').find('li > a.l > img').attr('height', '91');
+        $(e).closest('ul.darklist.pd5').find('li > a.l > img').removeAttr('height');
       });
       if (!pspcIconFixed) {
-        if (/^https?:\/\/psnine\.com\/psngame\/\d+\/?($|\?)/g.test(window.location.href)) $('table.list > tbody > tr > td > img.imgbgnb.l').attr('height', '91');
-        if (/^https?:\/\/psnine\.com\/qa\/\d+\/?($|\?)/g.test(window.location.href)) $('div.inner.mt40 > div.main > ul.darklist > li > a.l > img').attr('height', '91');
+        if (/^https?:\/\/psnine\.com\/psngame\/\d+\/?($|\?)/g.test(window.location.href)) $('table.list > tbody > tr > td > img.imgbgnb.l').removeAttr('height');
+        if (/^https?:\/\/psnine\.com\/qa\/\d+\/?($|\?)/g.test(window.location.href)) $('div.inner.mt40 > div.main > ul.darklist > li > a.l > img').removeAttr('height');
         GM_addStyle(`
               .pf_pspc {
                 font-size: 11px;
@@ -414,7 +414,7 @@
           if (/PS5/g.test(e.innerText)) {
             const ps5Cover = $(e).closest('li').find('a > img');
             if (ps5Cover.length > 0) { // 若为0则表示游戏使用了PS5以外版本的封面，不用进一步修复
-              ps5Cover.attr('height', '91');
+              ps5Cover.removeAttr('height');
               const wrap = $(e).closest('ul.darklist');
               const wrapStyle = wrap.attr('style');
               const minHeightMatch = wrapStyle.match(/min-height:\s*\d+px/g);
@@ -3440,8 +3440,7 @@
       const subcommentAlreadyExpanded = (subcommentLink) => Boolean($(subcommentLink).parents('li')[0].querySelector('div.sonlistmark.ml64.mt10 > ul.sonlist > li'));
       const subcommentLinks = [];
       commentMetas.forEach((commentMeta) => {
-        const subcommentLinkCanditates = commentMeta.querySelectorAll('span.r > a');
-        const subcommentLink = subcommentLinkCanditates.length === 2 ? subcommentLinkCanditates[1] : subcommentLinkCanditates[2]; // 他人的主评论 vs 自己的（尚可编辑的）主评论
+        const subcommentLink = commentMeta.querySelector('span.r > a:last-of-type');
         if (/评论\(\d+\)/.test(subcommentLink.innerText.trim()) && !subcommentAlreadyExpanded(subcommentLink)) subcommentLinks.push(subcommentLink);
       });
       if (subcommentLinks.length === 0) return;
