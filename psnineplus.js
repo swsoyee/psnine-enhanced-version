@@ -418,9 +418,9 @@
               const wrap = $(e).closest('ul.darklist');
               const wrapStyle = wrap.attr('style');
               const minHeightMatch = wrapStyle.match(/min-height:\s*\d+px/g);
-              if (Boolean(minHeightMatch)) {
+              if (minHeightMatch) {
                 // 修改min-height值，增加PS5封面高度（91）和PS4封面高度（50）的差值
-                const minHeightValNew = Number.parseInt(minHeightMatch[0].match(/\d+/g)[0]) + (91 - 50);
+                const minHeightValNew = Number.parseInt(minHeightMatch[0].match(/\d+/g)[0], 10) + (91 - 50);
                 wrap.attr('style', wrapStyle.replace(minHeightMatch[0], `min-height:${minHeightValNew}px`));
               }
             }
