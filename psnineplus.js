@@ -2,7 +2,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      1.0.37
+// @version      1.0.40
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // eslint-disable-next-line max-len
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
@@ -56,6 +56,10 @@
     hoverHomepage: true,
     // 功能4-3设置：汇总以获得和未获得奖杯是否默认折叠
     foldTrophySummary: false, // true则默认折叠，false则默认展开
+    // 功能4-4设置：奖杯图表默认折叠
+    foldTrophyChart: false, // true则默认折叠，false则默认展开
+    // 功能4-5设置：为获得白金杯的游戏添加额外修饰
+    platinumGlow: false, // true则为白金游戏封面添加外发光+光照浮层
     // 功能5-1设置：是否在`游戏`页面启用降低无白金游戏的图标透明度
     filterNonePlatinumAlpha: 0.2, // 透密 [0, 1] 不透明，如果设置为1则关闭该功能
     // 设置热门标签阈值
@@ -574,13 +578,72 @@
         tdElements.forEach((tr) => {
           const gameID = tr.querySelector('td.pdd15 a').href.match(/\/psngame\/(\d+)/)[1];
           const thisGameCompletion = personalGameCompletions.find((item) => item[0] === gameID);
-          if (thisGameCompletion && thisGameCompletion[1] < 100) {
+          if (thisGameCompletion) {
             // 约战页面没有显示游戏本身是否有白金，就直接默认白金底色显示了
             if (settings.nightMode) { tr.setAttribute('style', progressPlatinumBGNight(thisGameCompletion[1])); }
             if (!settings.nightMode) { tr.setAttribute('style', progressPlatinumBG(thisGameCompletion[1])); }
           }
         });
       }
+    }
+
+    // 个人主页/游戏列表页：背景进度条（含 mutationObserver 监控动态加载）
+    if ((/\/psnid\/[A-Za-z0-9_-]+\/?$/.test(window.location.href)
+      || /\/psnid\/[A-Za-z0-9_-]+\/psngame/.test(window.location.href))
+      && document.querySelector('table.list > tbody')) {
+      if (settings.platinumGlow) {
+        GM_addStyle('.platinum-sweep{position:relative;display:inline-block;}');
+        GM_addStyle('.platinum-sweep::before{content:"";position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(60deg,rgba(0, 100, 255, 0.2) 0%, rgba(220, 245, 255, 0.2) 70%, rgba(150, 200, 255, 0.5) 75%, rgba(220, 245, 255, 0.2) 95%, rgba(0, 100, 255, 0.2) 100%);pointer-events:none;}');
+        GM_addStyle('.platinum-sweep:hover::before{opacity:0;}');
+        GM_addStyle('.platinum-sweep:hover img{box-shadow:inset 0 0 0 2px rgba(0,80,220,0.6),0 0 12px 4px rgba(0,80,220,0.7)!important;}');
+      }
+      const progressPlatinumBG = (p) => `background-image: linear-gradient(90deg,#F4F8FA ${p}%,  #eaeaea ${p + 0.25}%, white ${p}%)`;
+      const progressPlatinumBGNight = (p) => `background-image: linear-gradient(90deg, #4b4b4b ${p}%,#3d3d3d ${p}%)`;
+      const progressGoldBG = (p) => `background-image: linear-gradient(90deg, #F5FAEC ${p}%, white ${p}%)`;
+      const progressGoldBGNight = (p) => `background-image: linear-gradient(90deg, #4b4b4b ${p}%, #3d3d3d ${p}%)`;
+
+      const personalGameCompletions = GM_getValue('personalGameCompletions', []);
+      const applyProgressToRow = (tr) => {
+        const gameLink = tr.querySelector('td.pd15 a');
+        if (!gameLink) return;
+        const gameID = gameLink.href.match(/\/psngame\/(\d+)/)[1];
+        if (!gameID) return;
+        const thisGameCompletion = personalGameCompletions.find((item) => item[0] === gameID);
+        if (!thisGameCompletion) return;
+        const completion = thisGameCompletion[1];
+        const hasPlatinum = thisGameCompletion[2];
+        if (completion >= 100 && !hasPlatinum) {
+          tr.setAttribute('style', settings.nightMode ? progressGoldBGNight(completion) : progressGoldBG(completion));
+        } else {
+          tr.setAttribute('style', settings.nightMode ? progressPlatinumBGNight(completion) : progressPlatinumBG(completion));
+        }
+        // 已拿白金 → 游戏封面添加蓝白色发光边框（需设置中开启）
+        if (hasPlatinum && settings.platinumGlow) {
+          const img = tr.querySelector('td.pd15 img');
+          if (img) {
+            img.style.boxShadow = 'inset 0 0 0 1px rgba(63,164,252,0.4), 0 0 8px 2px rgba(63,164,252,0.5)';
+            const wrapper = img.closest('a');
+            if (wrapper) wrapper.classList.add('platinum-sweep');
+          }
+        }
+      };
+
+      // 初始行
+      document.querySelectorAll('table.list > tbody > tr').forEach(applyProgressToRow);
+
+      // 监控动态加载的行
+      const progressObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === 1 && node.matches('tr')) {
+              applyProgressToRow(node);
+            }
+          });
+        });
+      });
+      document.querySelectorAll('table.list > tbody').forEach((tbody) => {
+        progressObserver.observe(tbody, { childList: true });
+      });
     }
 
     /* ↓↓↓ 约战监控与通知相关功能开始 ↓↓↓↓
@@ -633,7 +696,7 @@
       const result = [];
       $.ajax({
         type: 'GET',
-        url: 'https://psnine.com/battle',
+        url: `${window.location.protocol}//${window.location.hostname}/battle`,
         dataType: 'html',
         async: true,
         success(data, status) {
@@ -699,6 +762,52 @@
       });
     }
     /* ↑↑↑↑ 约战监控与通知相关功能结束 ↑↑↑↑ */
+
+    // 约战列表页：每行添加铃铛监控图标
+    if (/^https?:\/\/[^/]+\/battle\/?$/.test(window.location.href)) {
+      GM_addStyle('.bell-icon{opacity:0.5;cursor:pointer;margin-left:6px;font-size:14px;vertical-align:middle;user-select:none;filter:grayscale(1);}');
+      GM_addStyle('.bell-icon.monitored{opacity:1;color:#d4af37;filter:none;}');
+
+      document.querySelectorAll('table.list > tbody > tr').forEach((tr) => {
+        const gameLink = tr.querySelector('td.pdd15 a');
+        if (!gameLink) return;
+        const gameID = gameLink.href.match(/\/psngame\/(\d+)/)[1];
+        if (!gameID) return;
+        const p = tr.querySelector('td.pd15 p');
+        if (!p) return;
+
+        const bell = document.createElement('span');
+        bell.className = 'bell-icon';
+        bell.textContent = '🔔';
+        bell.dataset.gameId = gameID;
+        if (userBattleMonitors.includes(gameID)) {
+          bell.classList.add('monitored');
+          bell.title = '关闭该游戏约战监控';
+        } else {
+          bell.title = '打开该游戏约战监控';
+        }
+
+        p.appendChild(bell);
+
+        bell.addEventListener('click', (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          const wasMonitored = userBattleMonitors.includes(gameID);
+          if (wasMonitored) {
+            userBattleMonitors = userBattleMonitors.filter((id) => id !== gameID);
+          } else {
+            userBattleMonitors.push(gameID);
+          }
+          GM_setValue('userBattleMonitors', userBattleMonitors);
+          updateTopMenuNotice(userBattleMonitors, cacheBattleInfo.list);
+          // 同步更新所有同游戏ID的铃铛
+          document.querySelectorAll(`.bell-icon[data-game-id="${gameID}"]`).forEach((b) => {
+            b.classList.toggle('monitored', !wasMonitored);
+            b.title = wasMonitored ? '打开该游戏约战监控' : '关闭该游戏约战监控';
+          });
+        });
+      });
+    }
 
     /*
     * 自动签到功能
@@ -826,11 +935,11 @@
     };
 
     // 后台更新主函数
-    const loadGameCompletions = (userid, startPageID) => {
+    const loadGameCompletions = (userid, startPageID, onComplete, totalAddCounts = 0) => {
       // console.log(`https://psnine.com/psnid/${userid}/psngame?page=${startPageID}`)
       $.ajax({
         type: 'GET',
-        url: `https://psnine.com/psnid/${userid}/psngame?page=${startPageID}`,
+        url: `${window.location.protocol}//${window.location.hostname}/psnid/${userid}/psngame?page=${startPageID}`,
         dataType: 'html',
         async: true,
         success: (data, status) => {
@@ -859,21 +968,25 @@
             GM_setValue('personalGameCompletionsLastUpdate', pagesUpdateTime);
 
             // 根据规则计算下一页
+            const newTotal = totalAddCounts + addCounts;
             if (addCounts === thisPageCompletions.length && startPageID < totalPages - 1) {
-              setTimeout(() => { loadGameCompletions(userid, startPageID + 1); }, 5000);
+              setTimeout(() => { loadGameCompletions(userid, startPageID + 1, onComplete, newTotal); }, 5000);
               return true;
             }
             const fullfilledUpdateTime = pagesUpdateTime.concat(Array(totalPages - pagesUpdateTime.length).fill(0));
             const nextIdx = fullfilledUpdateTime.findIndex((time) => time === undefined || time === 0 || time === null);
             if (nextIdx !== -1) {
-              setTimeout(() => { loadGameCompletions(userid, nextIdx + 1); }, 5000);
+              setTimeout(() => { loadGameCompletions(userid, nextIdx + 1, onComplete, newTotal); }, 5000);
               return true;
             }
+            // 全部页面处理完毕
+            if (onComplete) onComplete(newTotal);
             return false;
           }
+          if (onComplete) onComplete(0);
           return true;
         },
-        error: (e) => { console.log('loadGameCompletions error', e); },
+        error: (e) => { console.log('loadGameCompletions error', e); if (onComplete) onComplete(0); },
       });
     };
 
@@ -884,12 +997,16 @@
     const myHomepageURLRegex = new RegExp(`psnid/${myUserId}/?`);
     const myGamePageURLRegex = new RegExp(`psnid/${myUserId}/psngame(?:\\?page=(\\d+))?`);
 
-    // 后台更新频次控制
+    // 后台更新频次控制（递增式间隔：无更新则 +1h，最多 144h；有更新则重置为 1h）
     const bgUpdateMyGameCompletion = () => {
       const pagesUpdateTime = GM_getValue('personalGameCompletionsLastUpdate', []);
+      const intervalHours = GM_getValue('personalGameCompletionInterval', 1);
       const now = new Date().getTime();
-      if (pagesUpdateTime[0] === undefined || now - pagesUpdateTime[0] > 60 * 60 * 1000) {
-        loadGameCompletions(myUserId, 1);
+      if (pagesUpdateTime[0] === undefined || now - pagesUpdateTime[0] > intervalHours * 60 * 60 * 1000) {
+        loadGameCompletions(myUserId, 1, (addCounts) => {
+          const newInterval = addCounts > 0 ? 1 : Math.min(intervalHours + 1, 144);
+          GM_setValue('personalGameCompletionInterval', newInterval);
+        });
       }
     };
 
@@ -897,8 +1014,10 @@
     if (myGamePageURLRegex.test(window.location.href)) {
       const pageid = parseInt(window.location.href.match(myGamePageURLRegex)[1], 10) || 1;
       const { totalItems, thisPageCompletions } = parseCompletionPage(document);
-      const { totalRecords } = updateCompletions(thisPageCompletions);
+      const { addCounts, totalRecords } = updateCompletions(thisPageCompletions);
 
+      // 有实质更新则重置间隔为 1h，无更新则仅刷时间戳，间隔不变
+      if (addCounts > 0) GM_setValue('personalGameCompletionInterval', 1);
       const pagesUpdateTime = GM_getValue('personalGameCompletionsLastUpdate', []);
       pagesUpdateTime[pageid - 1] = new Date().getTime();
       GM_setValue('personalGameCompletionsLastUpdate', pagesUpdateTime);
@@ -908,8 +1027,11 @@
         loadGameCompletions(myUserId, nextPageID);
       }
     } else if (myHomepageURLRegex.test(window.location.href)) {
-      const { thisPageCompletions } = parseCompletionPage(document);
-      updateCompletions(thisPageCompletions);
+      if (document.querySelector('table.list > tbody > tr')) {
+        const { thisPageCompletions } = parseCompletionPage(document);
+        const { addCounts } = updateCompletions(thisPageCompletions);
+        if (addCounts > 0) GM_setValue('personalGameCompletionInterval', 1);
+      }
 
       const pagesUpdateTime = GM_getValue('personalGameCompletionsLastUpdate', []);
       pagesUpdateTime[0] = new Date().getTime();
@@ -947,8 +1069,11 @@
       GM_addStyle('.tipContainer { padding: 10px 10px 10px 84px; margin: 0;}');
       GM_addStyle('.tipContainer > ul.list > li {padding: 4px 14px 4px 8px;}');
       GM_addStyle('.tipContainer > ul.list > li:first-child { padding:4px 14px 4px 8px;}');
-      GM_addStyle('table.list td > p > em.alert-success{cursor:pointer}');
-      GM_addStyle('table.list td > p > em.alert-success::after{content:""; width:0; height:0px; border-top:5px solid #659f13; border-left: 5px solid transparent; border-right: 5px solid transparent; margin-left: 7px; display: inline-block; position: relative; top: -2px}');
+      GM_addStyle('table.list td > p > em.alert-success{cursor:pointer; transition: color .2s ease;}');
+      GM_addStyle('table.list td > p > em.alert-success::after{content:"▼"; color:#659f13; margin-left: 6px; display: inline-block; font-size: 10px; line-height: 1; vertical-align: middle; transition: color .2s ease;}');
+      GM_addStyle('table.list td > p > em.alert-success.tipBadgeExpanded::after{content:"▲"; color:#2e8b57;}');
+      GM_addStyle('table.list td > p > em.alert-success.tipBadgeLoading::after{content:"⟳"; color:#3890ff; display:inline-block; animation:tipSpin .8s linear infinite;}');
+      GM_addStyle('@keyframes tipSpin{to{transform:rotate(360deg)}}');
 
       const trophyTables = Array.from(document.querySelectorAll('table.list')); // every dlc has one table
       const thisPageTrophyList = trophyTables
@@ -973,18 +1098,35 @@
               trDom: tr,
               table,
               tipListDom: null,
+              tipBadgeEle: null,
               tipShow: false,
+              loading: false,
             };
           }));
+
+      const updateTrophyTipBadgeState = (t) => {
+        if (t.tipBadgeEle) {
+          t.tipBadgeEle.classList.toggle('tipBadgeExpanded', t.tipShow === true && t.loading !== true);
+          t.tipBadgeEle.classList.toggle('tipBadgeLoading', t.loading === true);
+        }
+      };
 
       // 添加对象代理以便数据更新后自动渲染对应 DOM，并且在 tipShow 为 true 时自动加载
       const myTrophyList = thisPageTrophyList.map((item) => new Proxy(item, {
         set: (target, prop, value) => {
-          let flag = false;
-          if (prop === 'tipListDom' || prop === 'tipShow') { flag = true; }
           target[prop] = value;
-          // eslint-disable-next-line no-use-before-define
-          if (flag) { refreshTrophyTip(); }
+          if (prop === 'tipShow' || prop === 'loading') {
+            updateTrophyTipBadgeState(target);
+          }
+          if (prop === 'tipListDom') {
+            // eslint-disable-next-line no-use-before-define
+            refreshTrophyTip();
+            target.loading = false;
+            updateTrophyTipBadgeState(target);
+          } else if (prop === 'tipShow') {
+            // eslint-disable-next-line no-use-before-define
+            refreshTrophyTip();
+          }
           return true;
         },
       }));
@@ -1104,6 +1246,8 @@
         const trophyTipEle = mainColumn.querySelector('p em.alert-success');
 
         if (trophyTipEle) {
+          t.tipBadgeEle = trophyTipEle;
+          updateTrophyTipBadgeState(t);
           const throttleGetTipContent = throttleDebounce(() => {
             getTipContent(t);
             t.tipShow = true;
@@ -1111,9 +1255,10 @@
 
           trophyTipEle.addEventListener('click', (event) => {
             if (!t.tipListDom) {
+              t.loading = true;
               throttleGetTipContent(event);
             } else {
-              t.tipShow = !t.tipShow; // 当状态变化时会触发 set 函数
+              t.tipShow = !t.tipShow; // 直接切换 ▲/▼，无需 loading
             }
           });
         }
@@ -2776,8 +2921,14 @@
         credits: { enabled: false },
       };
       // 插入页面
+      const chartTitleStyle = `border-radius: 2px; padding:5px; background-color:${$('li.current').css('background-color')}; cursor: pointer; min-width: 780px;`;
       $('#trophyChartContainer').append(
-        '<div id="trophyRatioChart" align="left"></div>',
+        `<div class="trophyChartSection">
+          <p class="trophyChartTitle" style="${chartTitleStyle}"><span style="color:#808080;">奖杯统计图表</span><span class="foldIcon" style="float:right;"><svg style="width:12px;height:12px;vertical-align:middle;" viewBox="0 0 12 12"><polygon points="2,3 10,3 6,6" fill="#808080"/><polygon points="2,6 10,6 6,9" fill="#808080"/></svg></span></p>
+          <div class="trophyChartContent">
+            <div id="trophyRatioChart" align="left"></div>
+          </div>
+        </div>`,
       );
       Highcharts.chart('trophyRatioChart', trophyRatio);
     };
@@ -2945,7 +3096,7 @@
         credits: trophyGetTimeCredits,
       };
       // 插入页面
-      $('#trophyChartContainer').append(
+      $('.trophyChartContent').append(
         '<div id="trophyGetTimeChart" align="left"></div>',
       );
       Highcharts.chart('trophyGetTimeChart', trophyGetTime);
@@ -2975,7 +3126,7 @@
     * 功能：汇总以获得和未获得奖杯
     */
     const addEarnedTrophiesSummary = () => {
-      const trophyTitleStyle = `border-radius: 2px; padding:5px; background-color:${$('li.current').css('background-color')};`;
+      const trophyTitleStyle = `border-radius: 2px; padding:5px; background-color:${$('li.current').css('background-color')}; min-width: 780px;`;
       // tippy弹出框的样式
       GM_addStyle(`.tippy-tooltip.psnine-theme {background-color: ${$('.box').css('background-color')};}`);
       // 奖杯tips颜色
@@ -3021,7 +3172,7 @@
           trophySubText += `<span class=${summaryTrophyDict[i][0]}> ${summaryTrophyDict[i][1]}${object.parent().parent(i).length}</span>`;
         });
         $(`.${className}> .trophyCount`).append(
-          `<span style='color:#808080;'>${title}：${trophySubText}<span class='text-strong'> 总${object.length}</span></span>`,
+          `<span style='color:#808080;'>${title}：${trophySubText}<span class='text-strong'> 总${object.length}</span></span><span class="foldIcon" style="float:right;"><svg style="width:12px;height:12px;vertical-align:middle;" viewBox="0 0 12 12"><polygon points="2,3 10,3 6,6" fill="#808080"/><polygon points="2,6 10,6 6,9" fill="#808080"/></svg></span>`,
         );
       };
       // 创建已获得奖杯汇总框
@@ -3032,12 +3183,19 @@
       $('span[id^="notEarnedTrophySmall"] > a > img').css({ filter: 'grayscale(100%)' });
       // 折叠奖杯汇总
       // 奖杯图标设置为不可见
+      const foldIconDown = '<svg style="width:12px;height:12px;vertical-align:middle;" viewBox="0 0 12 12"><polygon points="2,3 10,3 6,6" fill="#808080"/><polygon points="2,6 10,6 6,9" fill="#808080"/></svg>';
+      const foldIconUp = '<svg style="width:12px;height:12px;vertical-align:middle;" viewBox="0 0 12 12"><polygon points="2,6 10,6 6,3" fill="#808080"/><polygon points="2,9 10,9 6,6" fill="#808080"/></svg>';
       if (settings.foldTrophySummary) {
         $('.trophyContainer').css('display', 'none');
+      } else {
+        $('.trophyCount .foldIcon').html(foldIconUp);
       }
       // 单击奖杯汇总标题后展开奖杯图标
       $('.trophyCount').click(function () {
-        $(this).next().slideToggle();
+        const content = $(this).next();
+        const isVisible = content.is(':visible');
+        content.slideToggle();
+        $(this).find('.foldIcon').html(isVisible ? foldIconDown : foldIconUp);
       });
     };
 
@@ -3060,6 +3218,22 @@
           addTrophySortByTimestamp();
           // 汇总以获得和未获得奖杯
           addEarnedTrophiesSummary();
+          // 奖杯图表折叠功能
+          GM_addStyle('.foldIcon{opacity:0;transition:opacity .2s ease;}');
+          GM_addStyle('.trophyChartTitle:hover .foldIcon,.trophyCount:hover .foldIcon{opacity:1;}');
+          const foldIconDown = '<svg style="width:12px;height:12px;vertical-align:middle;" viewBox="0 0 12 12"><polygon points="2,3 10,3 6,6" fill="#808080"/><polygon points="2,6 10,6 6,9" fill="#808080"/></svg>';
+          const foldIconUp = '<svg style="width:12px;height:12px;vertical-align:middle;" viewBox="0 0 12 12"><polygon points="2,6 10,6 6,3" fill="#808080"/><polygon points="2,9 10,9 6,6" fill="#808080"/></svg>';
+          $('.trophyChartTitle').click(function () {
+            const content = $(this).next();
+            const isVisible = content.is(':visible');
+            content.slideToggle();
+            $(this).find('.foldIcon').html(isVisible ? foldIconDown : foldIconUp);
+          });
+          if (settings.foldTrophyChart) {
+            $('.trophyChartContent').css('display', 'none');
+          } else {
+            $('.trophyChartTitle .foldIcon').html(foldIconUp);
+          }
           return true;
         } return false;
       }, 100);
@@ -3263,7 +3437,7 @@
         .replace(/\s*[（(]VR2?(\s*可选)?[）)]\s*$/gi, '')
         .replace(/\s*Trophies\s*$/gi, '');
       function findGameVariantsBySearch(gameId, gameTitle, tryGameMeta = false) {
-        const searchUrl = `https://psnine.com/psngame?title=${encodeURIComponent(gameTitle).replaceAll('%20', '+')}`;
+        const searchUrl = `${window.location.protocol}//${window.location.hostname}/psngame?title=${encodeURIComponent(gameTitle).replaceAll('%20', '+')}`;
         fetchPageAndProcess(searchUrl, (page) => {
           const psngameMatches = $(page).find('div.min-inner.mt40 > div.box > table > tbody > tr > td.pd1015.title.lh180 > a');
           if (psngameMatches.length <= 0) return;
@@ -3284,7 +3458,7 @@
             } else {
               // 无缓存、当前页面并非奖杯列表，抓取奖杯列表页面再查询
               // eslint-disable-next-line no-use-before-define
-              fetchPageAndProcess(`https://psnine.com/psngame/${gameId}`, (_page) => { findGameVariantsByMeta(gameId, _page); });
+              fetchPageAndProcess(`${window.location.protocol}//${window.location.hostname}/psngame/${gameId}`, (_page) => { findGameVariantsByMeta(gameId, _page); });
             }
           }
         });
@@ -3343,7 +3517,7 @@
           findGameVariantsBySearch(gameId, findGameTitle(), true);
         } else {
           // 无缓存、当前页面并非奖杯列表、非搜索优先，抓取奖杯列表页面再查询
-          fetchPageAndProcess(`https://psnine.com/psngame/${gameId}`, (page) => { findGameVariantsByMeta(gameId, page, true); });
+          fetchPageAndProcess(`${window.location.protocol}//${window.location.hostname}/psngame/${gameId}`, (page) => { findGameVariantsByMeta(gameId, page, true); });
         }
       };
       if (/\/psngame\//g.test(window.location.href)) {
@@ -4187,6 +4361,7 @@
         'nightMode',
         'autoNightMode',
         'foldTrophySummary',
+        'foldTrophyChart',
         'newQaStatus',
         'hoverHomepage',
         'autoPagingInHomepage',
@@ -4202,13 +4377,14 @@
         'referGameVariants',
         'preferSearchForFindingVariants',
         'expandCollapsedSubcomments',
+        'platinumGlow',
       ]; // 只有true/false或者enum的设置项
       $('.header .dropdown ul').append(`
                 <li><a href="javascript:void(0);" id="psnine-enhanced-version-opensetting">插件设置</a></li>`);
       const visiblePageHeight = $(window.top).height();
       $('body').append(`
                 <style>.setting-panel-box{z-index:9999;background-color:#fff;transition:all .4s ease;position:fixed;left:50%;transform:translateX(-50%);top:-5000px;width:500px;box-shadow:0 0 20px rgba(0,0,0,0.3);padding:10px 0;box-sizing:border-box;border-radius:4px;max-height:${visiblePageHeight < 740 ? visiblePageHeight - 40 : 700}px;overflow-y:scroll;scrollbar-color:#dcdcdc #fff;scrollbar-width:thin}.setting-panel-box::-webkit-scrollbar{width:4px;background-color:#fff}.setting-panel-box::-webkit-scrollbar-button{display:none}.setting-panel-box::-webkit-scrollbar-thumb{background-color:#dcdcdc}.setting-panel-box.show{top:20px}.setting-panel-box h2{margin-bottom:10px;padding-left:20px}.setting-panel-box h4{margin-bottom:10px;padding-left:20px;font-weight:400;color:#1f2f3d;font-size:22px}.setting-panel-box .row{display:flex;align-items:center;justify-content:flex-start;width:100%;margin-bottom:5px;padding-left:20px;box-sizing:border-box}.setting-panel-box .row label{line-height:32px;text-align:left;font-size:14px;color:#606266;width:190px}.setting-panel-box .row .mini{line-height:26px;text-align:left;font-size:14px;color:#606266;margin:0 10px 0 0;width:50px}.setting-panel-box .row .normal{line-height:26px;text-align:left;font-size:14px;color:#606266;margin:0 10px 0 0;width:205px}.setting-panel-box .row textarea{resize:vertical;min-height:30px;border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;line-height:26px;box-sizing:border-box;width:227px;padding:0 10px}.setting-panel-box .row input{border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;height:26px;line-height:26px;display:inline-block;width:227px;padding:0 10px}.setting-panel-box .row input.slider{height:6px;background-color:#e4e7ed;margin:16px 0;border-radius:3px;position:relative;cursor:pointer;vertical-align:middle;outline:none;padding:0}.setting-panel-box .row input.slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border:2px solid #409eff;background-color:#fff;border-radius:50%;transition:.2s;user-select:none}.setting-panel-box .row input.slider::-moz-range-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border:2px solid #409eff;background-color:#fff;border-radius:50%;transition:.2s;user-select:none}.setting-panel-box .row .sliderValue{margin-left:5px}.setting-panel-box .row select{border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;height:26px;line-height:26px;display:inline-block;width:227px;padding:0 10px}.setting-panel-box .row span{line-height:32px;text-align:left;font-size:14px;color:#606266;margin-right:10px}.setting-panel-box .btnbox{display:flex;align-items:center;justify-content:center}.setting-panel-box button{-webkit-appearance:button;padding:9px 15px;font-size:12px;border-radius:3px;display:inline-block;line-height:1;white-space:nowrap;cursor:pointer;background:#fff;border:1px solid #dcdfe6;color:#606266;text-align:center;box-sizing:border-box;outline:0;margin:0;transition:.1s;font-weight:500;margin:0 10px}.setting-panel-box button:hover{color:#409eff;border-color:#c6e2ff;background-color:#ecf5ff}.setting-panel-box button.confirm{color:#fff;background-color:#3890ff}.setting-panel-box button.confirm:hover{background-color:#9ec9ff}</style>
-                <div class=setting-panel-box><h2>PSN中文网功能增强插件设置</h2><div class=row><a href=https://github.com/swsoyee/psnine-enhanced-version><img src=https://img.shields.io/github/stars/swsoyee/psnine-enhanced-version.svg?style=social></img></a></div><div class=row><label>夜间模式</label><select id=nightMode><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动夜间模式</label><select id=autoNightMode><option value="&quot;SYSTEM&quot;">跟随系统<option value="&quot;TIME&quot;">跟据时间<option value="&quot;OFF&quot;">关闭</select></div><div class=row><label>高亮用户ID</label><textarea name="" id="highlightSpecificID" cols="30" rows="2"></textarea></div><div class=row><label>黑名单ID</label><textarea name="" id="blockList" cols="30" rows="2"></textarea></div><div class=row><label>关键词屏蔽</label><textarea name="" id="blockWordsList" cols="30" rows="2"></textarea></div><div class=row><label>机因中显示被@的内容</label><select id=replyTraceback><option value=true>启用<option value=false>关闭</select></div><div class=row><label>悬浮显示刮刮卡内容</label><select id=hoverUnmark><option value=true>启用<option value=false>关闭</select></div><div class=row><label>个人主页下显示所有游戏</label><select id=autoPagingInHomepage><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动签到</label><select id=autoCheckIn><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动向后翻页数</label><input type=number class=normal id=autoPaging></div><div class=row><label>问答区状态优化</label><select id=newQaStatus><option value=true>启用<option value=false>关闭</select></div><div class=row><label>悬浮头像显示个人信息</label><select id=hoverHomepage><option value=true>启用<option value=false>关闭</select></div><div class=row><label>奖杯默认折叠</label><select id=foldTrophySummary><option value=true>启用<option value=false>关闭</select></div><div class=row><label>约战页面去掉发起人头像</label><select id=removeHeaderInBattle><option value=true>启用<option value=false>关闭</select></div><div class=row><label>机因、问答页面按最新排序</label><select id=listPostsByNew><option value=true>启用<option value=false>关闭</select></div><div class=row><label>载入全部问答答案</label><select id=showAllQAAnswers><option value=true>启用<option value=false>关闭</select></div><div class=row><label>答案按最新排列</label><select id=listQAAnswersByNew><option value=true>启用<option value=false>关闭</select></div><div class=row><label>答案显示隐藏回复</label><select id=showHiddenQASubReply><option value=true>启用<option value=false>关闭</select></div><div class=row><label>检测纯文本中的链接</label><select id=fixTextLinks><option value=true>启用<option value=false>关闭</select></div><div class=row><label>修复D7VG链接</label><select id=fixD7VGLinks><option value=true>启用<option value=false>关闭</select></div><div class=row><label>站内使用HTTPS链接</label><select id=fixHTTPLinks><option value=true>启用<option value=false>关闭</select></div><div class=row><label>尝试关联不同版本的游戏</label><select id=referGameVariants><option value=true>启用<option value=false>关闭</select></div><div class=row><label>查询游戏版本优先使用搜索</label><select id=preferSearchForFindingVariants><option value=true>启用<option value=false>关闭</select></div><div class=row><label>展开隐藏的子评论</label><select id=expandCollapsedSubcomments><option value=true>启用<option value=false>关闭</select></div><div class=row><label>无白金游戏图标透明度</label><input id=filterNonePlatinum class=slider type=range min=0 max=1 step=0.1><span id=filterNonePlatinumValue class=sliderValue></span></div><div class=row><label>热门标签回复数阈值</label><input id=hotTagThreshold class=slider type=range min=10 max=100 step=5><span id=hotTagThresholdValue class=sliderValue></span></div><div class=btnbox><button class=confirm>确定</button><button class=cancel>取消</button></div></div>`);
+                <div class=setting-panel-box><h2>PSN中文网功能增强插件设置</h2><div class=row><a href=https://github.com/swsoyee/psnine-enhanced-version><img src=https://img.shields.io/github/stars/swsoyee/psnine-enhanced-version.svg?style=social></img></a></div><div class=row><label>夜间模式</label><select id=nightMode><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动夜间模式</label><select id=autoNightMode><option value="&quot;SYSTEM&quot;">跟随系统<option value="&quot;TIME&quot;">跟据时间<option value="&quot;OFF&quot;">关闭</select></div><div class=row><label>高亮用户ID</label><textarea name="" id="highlightSpecificID" cols="30" rows="2"></textarea></div><div class=row><label>黑名单ID</label><textarea name="" id="blockList" cols="30" rows="2"></textarea></div><div class=row><label>关键词屏蔽</label><textarea name="" id="blockWordsList" cols="30" rows="2"></textarea></div><div class=row><label>机因中显示被@的内容</label><select id=replyTraceback><option value=true>启用<option value=false>关闭</select></div><div class=row><label>悬浮显示刮刮卡内容</label><select id=hoverUnmark><option value=true>启用<option value=false>关闭</select></div><div class=row><label>个人主页下显示所有游戏</label><select id=autoPagingInHomepage><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动签到</label><select id=autoCheckIn><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动向后翻页数</label><input type=number class=normal id=autoPaging></div><div class=row><label>问答区状态优化</label><select id=newQaStatus><option value=true>启用<option value=false>关闭</select></div><div class=row><label>悬浮头像显示个人信息</label><select id=hoverHomepage><option value=true>启用<option value=false>关闭</select></div><div class=row><label>奖杯默认折叠</label><select id=foldTrophySummary><option value=true>启用<option value=false>关闭</select></div><div class=row><label>奖杯图表默认折叠</label><select id=foldTrophyChart><option value=true>启用<option value=false>关闭</select></div><div class=row><label>约战页面去掉发起人头像</label><select id=removeHeaderInBattle><option value=true>启用<option value=false>关闭</select></div><div class=row><label>机因、问答页面按最新排序</label><select id=listPostsByNew><option value=true>启用<option value=false>关闭</select></div><div class=row><label>载入全部问答答案</label><select id=showAllQAAnswers><option value=true>启用<option value=false>关闭</select></div><div class=row><label>答案按最新排列</label><select id=listQAAnswersByNew><option value=true>启用<option value=false>关闭</select></div><div class=row><label>答案显示隐藏回复</label><select id=showHiddenQASubReply><option value=true>启用<option value=false>关闭</select></div><div class=row><label>检测纯文本中的链接</label><select id=fixTextLinks><option value=true>启用<option value=false>关闭</select></div><div class=row><label>修复D7VG链接</label><select id=fixD7VGLinks><option value=true>启用<option value=false>关闭</select></div><div class=row><label>站内使用HTTPS链接</label><select id=fixHTTPLinks><option value=true>启用<option value=false>关闭</select></div><div class=row><label>尝试关联不同版本的游戏</label><select id=referGameVariants><option value=true>启用<option value=false>关闭</select></div><div class=row><label>查询游戏版本优先使用搜索</label><select id=preferSearchForFindingVariants><option value=true>启用<option value=false>关闭</select></div><div class=row><label>展开隐藏的子评论</label><select id=expandCollapsedSubcomments><option value=true>启用<option value=false>关闭</select></div><div class=row><label>白金杯游戏封面修饰</label><select id=platinumGlow><option value=true>启用<option value=false>关闭</select></div><div class=row><label>无白金游戏图标透明度</label><input id=filterNonePlatinum class=slider type=range min=0 max=1 step=0.1><span id=filterNonePlatinumValue class=sliderValue></span></div><div class=row><label>热门标签回复数阈值</label><input id=hotTagThreshold class=slider type=range min=10 max=100 step=5><span id=hotTagThresholdValue class=sliderValue></span></div><div class=btnbox><button class=confirm>确定</button><button class=cancel>取消</button></div></div>`);
       // 点击打开设置面板
       $('#psnine-enhanced-version-opensetting').on('click', () => {
         $('.setting-panel-box').addClass('show');
