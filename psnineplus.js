@@ -1071,7 +1071,7 @@
       GM_addStyle('.tipContainer > ul.list > li:first-child { padding:4px 14px 4px 8px;}');
       GM_addStyle('table.list td > p > em.alert-success{cursor:pointer; transition: color .2s ease;}');
       GM_addStyle('table.list td > p > em.alert-success::after{content:"▼"; color:#659f13; margin-left: 6px; display: inline-block; font-size: 10px; line-height: 1; vertical-align: middle; transition: color .2s ease;}');
-      GM_addStyle('table.list td > p > em.alert-success.tipBadgeExpanded::after{content:"▲"; color:#2e8b57;}');
+      GM_addStyle('table.list td > p > em.alert-success.tipBadgeExpanded::after{content:"▲";}');
       GM_addStyle('table.list td > p > em.alert-success.tipBadgeLoading::after{content:"⟳"; color:#3890ff; display:inline-block; animation:tipSpin .8s linear infinite;}');
       GM_addStyle('@keyframes tipSpin{to{transform:rotate(360deg)}}');
 
@@ -3126,7 +3126,7 @@
     * 功能：汇总以获得和未获得奖杯
     */
     const addEarnedTrophiesSummary = () => {
-      const trophyTitleStyle = `border-radius: 2px; padding:5px; background-color:${$('li.current').css('background-color')}; min-width: 780px;`;
+      const trophyTitleStyle = `border-radius: 2px; padding:5px; background-color:${$('li.current').css('background-color')}; cursor:pointer; min-width: 780px;`;
       // tippy弹出框的样式
       GM_addStyle(`.tippy-tooltip.psnine-theme {background-color: ${$('.box').css('background-color')};}`);
       // 奖杯tips颜色
