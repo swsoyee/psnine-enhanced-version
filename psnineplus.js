@@ -990,54 +990,59 @@
       });
     };
 
-    // 获取个人 ID
-    const myUserId = document.querySelector('div.nav-user > button.auth-user > span.name').innerText.trim();
-    // const myGamePageURLRegex = new RegExp(`psnid/${myUserId}/?(?:psngame(?:\\?page=(\\d+))?|$)`);
-    const myHomepageURLRegex = new RegExp(`psnid/${myUserId}/?`);
-    const myGamePageURLRegex = new RegExp(`psnid/${myUserId}/psngame(?:\\?page=(\\d+))?`);
+    const refreshPersonalGameCompletionCache = () => {
+      // 获取个人 ID
+      const myUserIdNode = document.querySelector('div.nav-user > button.auth-user > span.name');
+      if (!myUserIdNode) return;
+      const myUserId = myUserIdNode.innerText.trim();
+      // const myGamePageURLRegex = new RegExp(`psnid/${myUserId}/?(?:psngame(?:\\?page=(\\d+))?|$)`);
+      const myHomepageURLRegex = new RegExp(`psnid/${myUserId}/?`);
+      const myGamePageURLRegex = new RegExp(`psnid/${myUserId}/psngame(?:\\?page=(\\d+))?`);
 
-    // 后台更新频次控制（递增式间隔：无更新则 +1h，最多 144h；有更新则重置为 1h）
-    const bgUpdateMyGameCompletion = () => {
-      const pagesUpdateTime = GM_getValue('personalGameCompletionsLastUpdate', []);
-      const intervalHours = GM_getValue('personalGameCompletionInterval', 1);
-      const now = new Date().getTime();
-      if (pagesUpdateTime[0] === undefined || now - pagesUpdateTime[0] > intervalHours * 60 * 60 * 1000) {
-        loadGameCompletions(myUserId, 1, (addCounts) => {
-          const newInterval = addCounts > 0 ? 1 : Math.min(intervalHours + 1, 144);
-          GM_setValue('personalGameCompletionInterval', newInterval);
-        });
+      // 后台更新频次控制（递增式间隔：无更新则 +1h，最多 144h；有更新则重置为 1h）
+      const bgUpdateMyGameCompletion = () => {
+        const pagesUpdateTime = GM_getValue('personalGameCompletionsLastUpdate', []);
+        const intervalHours = GM_getValue('personalGameCompletionInterval', 1);
+        const now = new Date().getTime();
+        if (pagesUpdateTime[0] === undefined || now - pagesUpdateTime[0] > intervalHours * 60 * 60 * 1000) {
+          loadGameCompletions(myUserId, 1, (addCounts) => {
+            const newInterval = addCounts > 0 ? 1 : Math.min(intervalHours + 1, 144);
+            GM_setValue('personalGameCompletionInterval', newInterval);
+          });
+        }
+      };
+
+      // 在用户浏览个人页面或个人游戏列表页时，无视 Interval 白嫖一次数据更新
+      if (myGamePageURLRegex.test(window.location.href)) {
+        const pageid = parseInt(window.location.href.match(myGamePageURLRegex)[1], 10) || 1;
+        const { totalItems, thisPageCompletions } = parseCompletionPage(document);
+        const { addCounts, totalRecords } = updateCompletions(thisPageCompletions);
+
+        // 有实质更新则重置间隔为 1h，无更新则仅刷时间戳，间隔不变
+        if (addCounts > 0) GM_setValue('personalGameCompletionInterval', 1);
+        const pagesUpdateTime = GM_getValue('personalGameCompletionsLastUpdate', []);
+        pagesUpdateTime[pageid - 1] = new Date().getTime();
+        GM_setValue('personalGameCompletionsLastUpdate', pagesUpdateTime);
+
+        if (totalRecords < totalItems || totalItems === 0) {
+          const nextPageID = pageid === 1 ? 2 : 1;
+          loadGameCompletions(myUserId, nextPageID);
+        }
+      } else if (myHomepageURLRegex.test(window.location.href)) {
+        if (document.querySelector('table.list > tbody > tr')) {
+          const { thisPageCompletions } = parseCompletionPage(document);
+          const { addCounts } = updateCompletions(thisPageCompletions);
+          if (addCounts > 0) GM_setValue('personalGameCompletionInterval', 1);
+        }
+
+        const pagesUpdateTime = GM_getValue('personalGameCompletionsLastUpdate', []);
+        pagesUpdateTime[0] = new Date().getTime();
+        GM_setValue('personalGameCompletionsLastUpdate', pagesUpdateTime);
+      } else {
+        bgUpdateMyGameCompletion(); // 定时更新
       }
     };
-
-    // 在用户浏览个人页面或个人游戏列表页时，无视 Interval 白嫖一次数据更新
-    if (myGamePageURLRegex.test(window.location.href)) {
-      const pageid = parseInt(window.location.href.match(myGamePageURLRegex)[1], 10) || 1;
-      const { totalItems, thisPageCompletions } = parseCompletionPage(document);
-      const { addCounts, totalRecords } = updateCompletions(thisPageCompletions);
-
-      // 有实质更新则重置间隔为 1h，无更新则仅刷时间戳，间隔不变
-      if (addCounts > 0) GM_setValue('personalGameCompletionInterval', 1);
-      const pagesUpdateTime = GM_getValue('personalGameCompletionsLastUpdate', []);
-      pagesUpdateTime[pageid - 1] = new Date().getTime();
-      GM_setValue('personalGameCompletionsLastUpdate', pagesUpdateTime);
-
-      if (totalRecords < totalItems || totalItems === 0) {
-        const nextPageID = pageid === 1 ? 2 : 1;
-        loadGameCompletions(myUserId, nextPageID);
-      }
-    } else if (myHomepageURLRegex.test(window.location.href)) {
-      if (document.querySelector('table.list > tbody > tr')) {
-        const { thisPageCompletions } = parseCompletionPage(document);
-        const { addCounts } = updateCompletions(thisPageCompletions);
-        if (addCounts > 0) GM_setValue('personalGameCompletionInterval', 1);
-      }
-
-      const pagesUpdateTime = GM_getValue('personalGameCompletionsLastUpdate', []);
-      pagesUpdateTime[0] = new Date().getTime();
-      GM_setValue('personalGameCompletionsLastUpdate', pagesUpdateTime);
-    } else {
-      bgUpdateMyGameCompletion(); // 定时更新
-    }
+    refreshPersonalGameCompletionCache();
 
     /// /////////////////////////////////////////////////////////////////////////////////
 
