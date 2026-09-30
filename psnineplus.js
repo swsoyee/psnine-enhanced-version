@@ -3312,19 +3312,94 @@
     * 功能：汇总以获得和未获得奖杯
     */
     const addEarnedTrophiesSummary = () => {
-      const trophyTitleStyle = `border-radius: 2px; padding:5px; background-color:${$('li.current').css('background-color')}; cursor:pointer; width: 100%; max-width: 100%; box-sizing: border-box;`;
+      const trophyTitleStyle = `border-radius: 6px; padding: 8px 12px; background: rgba(0,0,0,0.03); cursor: pointer; width: 100%; max-width: 100%; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; font-size: 13px; font-weight: 500; user-select: none;`;
+      // 奖杯小图标与容器专属现代样式
+      GM_addStyle(`
+        .trophySummarySection {
+          margin: 10px 0;
+          border-radius: 8px;
+          overflow: hidden;
+          background: rgba(0,0,0,0.015);
+          border: 1px solid rgba(0,0,0,0.06);
+        }
+        :root[data-theme="dark"] .trophySummarySection {
+          background: rgba(255,255,255,0.02);
+          border-color: rgba(255,255,255,0.08);
+        }
+        .trophyContainer {
+          display: flex !important;
+          flex-wrap: wrap !important;
+          gap: 6px !important;
+          padding: 10px 8px !important;
+          align-items: center !important;
+          box-sizing: border-box !important;
+        }
+        .trophySmallBox {
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          width: 36px !important;
+          height: 36px !important;
+          padding: 2px !important;
+          border-radius: 4px !important;
+          background: rgba(0,0,0,0.03) !important;
+          box-sizing: border-box !important;
+          flex-shrink: 0 !important;
+          vertical-align: middle !important;
+          transition: transform .15s ease !important;
+        }
+        .trophySmallBox:active {
+          transform: scale(0.92) !important;
+        }
+        :root[data-theme="dark"] .trophySmallBox {
+          background: rgba(255,255,255,0.06) !important;
+        }
+        .trophySmallBox a {
+          display: block !important;
+          line-height: 0 !important;
+        }
+        .trophySmallBox img {
+          width: 30px !important;
+          height: 30px !important;
+          object-fit: cover !important;
+          border-radius: 2px !important;
+          display: block !important;
+        }
+        .trophyChartContent {
+          display: flex !important;
+          flex-wrap: wrap !important;
+          justify-content: space-around !important;
+          align-items: center !important;
+          gap: 12px !important;
+          padding: 8px 0 !important;
+          width: 100% !important;
+          box-sizing: border-box !important;
+        }
+        #trophyRatioChart {
+          width: 320px;
+          height: 220px;
+          max-width: 100% !important;
+          flex: 1 1 300px !important;
+        }
+        #trophyGetTimeChart {
+          width: 440px;
+          height: 220px;
+          max-width: 100% !important;
+          flex: 2 1 320px !important;
+        }
+      `);
       // tippy弹出框的样式
-      GM_addStyle(`.tippy-tooltip.psnine-theme {background-color: ${$('.box').css('background-color')};}`);
+      GM_addStyle(`.tippy-tooltip.psnine-theme {background-color: ${$('.box').css('background-color') || '#fff'};}`);
       // 奖杯tips颜色
       let tipColor = '';
       // 创建奖杯汇总框架函数
       const createTrophyContainer = (object, className, title) => {
         // 添加标题框在汇总图下
         $('#trophyChartContainer').append(
-          `<div class='${className}'><p class='trophyCount' style='${trophyTitleStyle}'></p><div class='trophyContainer' style='padding:5px;'></div></div>`,
+          `<div class='trophySummarySection ${className}'><div class='trophyCount' style='${trophyTitleStyle}'></div><div class='trophyContainer'></div></div>`,
         );
         object.each(function (i) {
-          // 如果这个奖杯有Tips，就设置左边框为绿色，否则就为底色（边框颜色和底色一致）
+          // 如果这个奖杯有Tips，就设置左边框为绿色，否则为透明
           if (
             $(this).parent().parent().next()
               .find('.alert-success.pd5')
@@ -3332,11 +3407,11 @@
           ) {
             tipColor = '#8cc14c';
           } else {
-            tipColor = $('.box').css('background-color');
+            tipColor = 'transparent';
           }
-          // 添加奖杯图标
+          // 添加奖杯图标 (使用独立的 inline-flex 盒子，修复未闭合标签)
           $(`.${className}> .trophyContainer`).append(
-            `<span id='${className}Small${i}' style='padding:3px; border-left: 3px solid ${tipColor};'><a href='${$(this).parent().attr('href')}'><img src='${$(this).attr('src')}' width='30px'></img><a></span>`,
+            `<span id='${className}Small${i}' class='trophySmallBox' style='border-left: 3px solid ${tipColor};'><a href='${$(this).parent().attr('href')}'><img src='${$(this).attr('src')}' width='30' height='30' alt='trophy' /></a></span>`,
           );
           // 添加鼠标悬浮弹出消息
           tippy(`#${className}Small${i}`, {
@@ -3393,7 +3468,15 @@
         window.location.href,
       )
     ) {
-      $('.box.pd10').append('<div id="trophyChartContainer" style="float: left"></div>');
+      if ($('#trophyChartContainer').length === 0) {
+        const chartBox = $('<div class="box pd10" id="trophyChartContainer" style="width: 100%; box-sizing: border-box; clear: both; margin: 12px 0;"></div>');
+        const listTableBox = $('.main > .box:has(table.list), .min-inner > .box:has(table.list)').first();
+        if (listTableBox.length > 0) {
+          listTableBox.before(chartBox);
+        } else {
+          $('.box.pd10').first().after(chartBox);
+        }
+      }
       repeatUntilSuccessful(() => {
         if (httpCSSFixed()) {
           // 追加奖杯统计扇形图
@@ -3547,11 +3630,11 @@
       };
       const createReferenceDiv = (text, style = '') => {
         const referenceDiv = document.createElement('div');
-        referenceDiv.className = 'box';
-        referenceDiv.style.cssText = style;
-        const innerTextEm = document.createElement('strong');
+        referenceDiv.className = 'box pd10';
+        referenceDiv.style.cssText = style || 'margin-bottom: 12px; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; border-radius: 8px;';
+        const innerTextEm = document.createElement('span');
         innerTextEm.innerText = text;
-        innerTextEm.style.cssText = 'color:#1E5AE6; margin-right:8px; display:inline-block;';
+        innerTextEm.style.cssText = 'color: var(--c-brand, #1E5AE6); font-weight: 600; font-size: 13px; margin-right: 4px; display: inline-flex; align-items: center; gap: 4px;';
         referenceDiv.appendChild(innerTextEm);
         return referenceDiv;
       };
@@ -3560,7 +3643,8 @@
         referenceA.href = url;
         referenceA.innerText = text;
         referenceA.target = '_blank';
-        referenceA.style.cssText = 'display:inline-block; margin:2px 5px; padding:3px 10px; background:#1E5AE6; color:#ffffff !important; border-radius:4px; font-size:12px; text-decoration:none; font-weight:500;';
+        referenceA.className = 'variant-pill';
+        referenceA.style.cssText = 'display: inline-flex; align-items: center; padding: 4px 10px; background: rgba(30, 90, 230, 0.08); color: #1E5AE6 !important; border: 1px solid rgba(30, 90, 230, 0.2); border-radius: 999px; font-size: 12px; font-weight: 500; text-decoration: none; transition: all .15s ease;';
         referenceDiv.appendChild(referenceA);
       };
       const referVariantsOnTrophyList = (gameId, gameIds) => {
