@@ -2,7 +2,7 @@
 // ==UserScript==
 // @name         PSN中文网功能增强
 // @namespace    https://swsoyee.github.io
-// @version      1.0.41
+// @version      1.0.42
 // @description  数折价格走势图，显示人民币价格，奖杯统计和筛选，发帖字数统计和即时预览，楼主高亮，自动翻页，屏蔽黑名单用户发言，被@用户的发言内容显示等多项功能优化P9体验
 // eslint-disable-next-line max-len
 // @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAMFBMVEVHcEw0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNs0mNuEOyNSAAAAD3RSTlMAQMAQ4PCApCBQcDBg0JD74B98AAABN0lEQVRIx+2WQRaDIAxECSACWLn/bdsCIkNQ2XXT2bTyHEx+glGIv4STU3KNRccp6dNh4qTM4VDLrGVRxbLGaa3ZQSVQulVJl5JFlh3cLdNyk/xe2IXz4DqYLhZ4mWtHd4/SLY/QQwKmWmGcmUfHb4O1mu8BIPGw4Hg1TEvySQGWoBcItgxndmsbhtJd6baukIKnt525W4anygNECVc1UD8uVbRNbumZNl6UmkagHeRJfX0BdM5NXgA+ZKESpiJ9tRFftZEvue2cS6cKOrGk/IOLTLUcaXuZHrZDq3FB2IonOBCHIy8Bs1Zzo1MxVH+m8fQ+nFeCQM3MWwEsWsy8e8Di7meA5Bb5MDYCt4SnUbP3lv1xOuWuOi3j5kJ5tPiZKahbi54anNRaaG7YElFKQBHR/9PjN3oD6fkt9WKF9rgAAAAASUVORK5CYII=
@@ -134,6 +134,14 @@
         node.type = 'text/css';
         node.appendChild(document.createTextNode(`
           li[style="background:#f5faec"]{background:#344836 !important;}li[style="background:#fdf7f7"]{background:#4f3945 !important;}li[style="background:#faf8f0"]{background:#4e4c39 !important;}li[style="background:#f4f8fa"]{background:#505050 !important;}span[style="color:blue;"]{color:#64a5ff !important;}span[style="color:red;"],span[style="color:#a10000"]{color:#ff6464 !important;}span[style="color:brown;"]{color:#ff8864 !important;}.tit3{color:white !important;}.mark{background:#bbb !important;color:#bbb;}body.bg{background:#2b2b2b !important;}.list li,.box .post,td,th{border-bottom:1px solid #555;}.list li:nth-last-child(1),th:nth-last-child(1){border-bottom:none;}.psnnode{background:#656565;}.box{background:#3d3d3d !important;}.title a{color:#bbb;}.text-strong,strong,.storeinfo,.content{color:#bbb !important;}.alert-warning,.alert-error,.alert-success,.alert-info{background:#4b4b4b !important;}.alert-error{color:#ec6666;}.text-error{color:#ec6666 !important;}h1,.title2{color:#ffffff !important;}.twoge{color:#ffffff !important;}.inav{background:#3d3d3d !important;}.inav li.current{background:#4b4b4b !important;}.ml100 p{color:#ffffff !important;}.t1{background:#657caf !important;}.t2{background:#845e2f !important;}.t3{background:#707070 !important;}.t4{background:#8b4d2d !important;}blockquote{background:#bababa !important;}.text-gray{color:#bbb !important;}.tradelist li{color:white !important;border-bottom:1px solid #666;}.tbl{background:#3c3c3c !important;}.genelist li:hover,.touchclick:hover{background:#333 !important;}.showbar{background:radial-gradient(at center top,#7B8492,#3c3c3c);}.darklist,.cloud{background-color:#3c3c3c;}.side .hd3,.header,.dropdown ul{background-color:#222;}.list li .sonlist li{background-color:#333;border-color:#555;}.node{background-color:#3b4861;}.rep{background-color:#3b4861;}.btn-gray{background-color:#666;}.btn-white{background-color:#444;color:#999 !important;}.dropmenu .o_btn{margin-right:0;color:#bbb;border-color:#bbb;}.dropmenu .o_btn.select{margin-right:0;color:#fff;border-color:#3498db;background-color:#3498db;}.tipContainer > .list{box-shadow:rgba(0,0,0,0.2) 0px 0px 100px inset !important;}.replyTraceback{background:rgba(0,0,0,0.2) !important;}.sidetitle{background:#222;}form[method="POST"]{color:#999;}
+          :root[data-theme="dark"] .site-nav { background: #111a27 !important; }
+          :root[data-theme="dark"] .setting-panel-box { background-color: #1a222d !important; color: #e6edf7 !important; border: 1px solid #354152 !important; }
+          :root[data-theme="dark"] .setting-panel-box h2, :root[data-theme="dark"] .setting-panel-box h4 { color: #e6edf7 !important; }
+          :root[data-theme="dark"] .setting-panel-box .row label, :root[data-theme="dark"] .setting-panel-box .row span { color: #a2adbb !important; }
+          :root[data-theme="dark"] .setting-panel-box .row input, :root[data-theme="dark"] .setting-panel-box .row textarea, :root[data-theme="dark"] .setting-panel-box .row select { background-color: #202a36 !important; color: #e6edf7 !important; border-color: #354152 !important; }
+          :root[data-theme="dark"] .setting-panel-box button { background-color: #202a36 !important; color: #a2adbb !important; border-color: #354152 !important; }
+          :root[data-theme="dark"] .setting-panel-box button.confirm { background-color: #1E5AE6 !important; color: #fff !important; }
+
         `));
         const heads = document.getElementsByTagName('head');
         if (heads.length > 0) {
@@ -147,6 +155,15 @@
     };
     const setNightMode = (isOn) => {
       settings.nightMode = isOn;
+      try {
+        if (isOn) {
+          document.documentElement.dataset.theme = 'dark';
+          localStorage.setItem('psnine-theme', 'dark');
+        } else {
+          document.documentElement.dataset.theme = 'light';
+          localStorage.setItem('psnine-theme', 'light');
+        }
+      } catch (_) {}
       toggleNightMode();
     };
     switch (settings.autoNightMode.value) {
@@ -179,6 +196,10 @@
         });
         $(document).on('mouseleave', '.mark', function () {
           $(this).css({ color: '' });
+        });
+        // 手机端触摸点击直接显示
+        $(document).on('click touchend', '.mark', function () {
+          $(this).css({ color: settings.nightMode ? 'rgb(0,0,0)' : 'rgb(255,255,255)' });
         });
       }
     };
@@ -470,7 +491,10 @@
       2.游戏列表根据已记录的完成度添加染色
     */
     const hdElement = document.querySelector('.hd');
-    if (hdElement && hdElement.textContent.trim() === '游戏列表') {
+    const isGameListPage = (hdElement && hdElement.textContent.trim() === '游戏列表')
+      || (/\/psngame(\/|(\?.*)?$)/.test(window.location.pathname) && !/\/psngame\/\d+/.test(window.location.pathname))
+      || (document.title.includes('游戏列表') && !/\/psngame\/\d+/.test(window.location.pathname));
+    if (isGameListPage) {
       // 添加徽章 CSS 类
       GM_addStyle(`
         span.completion-badge {
@@ -524,18 +548,32 @@
       const spanElement = document.createElement('span');
       spanElement.className = 'btn';
       spanElement.textContent = '按难度排列';
-      // 添加 span 元素并设置样式
-      hdElement.appendChild(spanElement);
-      const style = document.createElement('style');
-      style.textContent = `
-        .hd {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
+      spanElement.style.cursor = 'pointer';
+      // 添加 span 元素并设置样式（适配有无 .hd）
+      if (hdElement) {
+        hdElement.appendChild(spanElement);
+        const style = document.createElement('style');
+        style.textContent = `
+          .hd {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+          .hd span { margin-top: 0px; }
+          `;
+        document.head.appendChild(style);
+      } else {
+        const dropmenu = document.querySelector('.dropmenu');
+        if (dropmenu) {
+          const sortLi = document.createElement('li');
+          sortLi.style.cssText = 'float:right;list-style:none;margin-right:12px;';
+          sortLi.appendChild(spanElement);
+          dropmenu.appendChild(sortLi);
+        } else {
+          const container = document.querySelector('.min-inner > .box, .box');
+          if (container) container.prepend(spanElement);
         }
-        .hd span { margin-top: 0px; }
-        `;
-      document.head.appendChild(style);
+      }
 
       // 状态变量，跟踪当前的排序顺序，初始为 false 表示降序
       let ascending = false;
@@ -679,16 +717,17 @@
       lista.forEach((item) => {
         if (listb.includes(item)) count += 1;
       });
+      const noticeTargets = document.querySelectorAll('#pcmenu li, #mobilemenu li, .site-nav .nav-menu a, .mobile-nav-panel nav a');
       if (count > 0) {
-        document.querySelectorAll('#pcmenu li, #mobilemenu li').forEach((el) => {
-          const a = el.querySelector('a');
-          if (a && a.innerText === '约战') {
+        noticeTargets.forEach((el) => {
+          const a = el.tagName === 'A' ? el : el.querySelector('a');
+          if (a && a.innerText.trim() === '约战') {
             el.classList.add('notice');
             el.setAttribute('data-notice', count);
           }
         });
       } else {
-        document.querySelectorAll('#pcmenu li, #mobilemenu li').forEach((el) => el.classList.remove('notice'));
+        noticeTargets.forEach((el) => el.classList.remove('notice'));
       }
     };
 
@@ -814,17 +853,51 @@
     * @param  isOn  是否开启功能
     */
     const repeatUntilSuccessful = (functionPtr, interval) => {
-      if (!functionPtr()) {
+      let success = false;
+      try {
+        success = !!functionPtr();
+      } catch (e) {
+        success = false;
+      }
+      if (!success) {
         setTimeout(() => {
           repeatUntilSuccessful(functionPtr, interval);
         }, interval);
       }
     };
     const automaticSignIn = (isOn) => {
-      // 如果签到按钮存在页面上
-      if (isOn && $('[class$=yuan]').length > 0) {
+      if (!isOn) return;
+      // 1. 新版 v2 页面悬浮签到按钮
+      const checkinBtn = document.querySelector('.float-btn.sign');
+      if (checkinBtn && checkinBtn.offsetParent !== null) {
+        checkinBtn.click();
+        setTimeout(() => {
+          const checkinModal = document.getElementById('checkin-modal');
+          if (checkinModal) {
+            checkinModal.hidden = true;
+            document.body.style.overflow = '';
+          }
+        }, 1000);
+        return;
+      }
+      // 2. 备用直接 Ajax 请求签到（如果已登录且今天未签到）
+      try {
+        const todayStr = new Date().toISOString().slice(0, 10);
+        const lastSigned = GM_getValue('lastAutoSignDate', '');
+        if (lastSigned !== todayStr && document.cookie.includes('__Psnine_psnid')) {
+          $.ajax({
+            type: 'GET',
+            url: (window.u || 'https://psnine.com') + '/set/qidao/ajax',
+            success: () => {
+              GM_setValue('lastAutoSignDate', todayStr);
+              if (checkinBtn) checkinBtn.style.display = 'none';
+            },
+          });
+        }
+      } catch (_) {}
+      // 3. 旧版签到按钮
+      if ($('[class$=yuan]').length > 0) {
         repeatUntilSuccessful(() => {
-          if (typeof qidao !== 'function') return false;
           let signed = false;
           $('[class$=yuan]').each((i, e) => {
             if (!signed && /^\s*签\s*$/.test(e.innerText)) {
@@ -848,13 +921,14 @@
       const nextPage = Number($('.page > ul > .current:last').text()) + 1;
       // 如果地址已经有地址信息
       let nextPageLink = '';
-      if (/page/.test(window.location.href)) {
+      if (/([?&])page=\d+/.test(window.location.href)) {
         nextPageLink = window.location.href.replace(
-          /page=.+/,
-          `page=${nextPage}`,
+          /([?&])page=\d+/,
+          `$1page=${nextPage}`,
         );
       } else {
-        nextPageLink = `${window.location.href}&page=${nextPage}`;
+        const sep = window.location.href.includes('?') ? '&' : '?';
+        nextPageLink = `${window.location.href}${sep}page=${nextPage}`;
       }
       return { nextPage, nextPageLink };
     };
@@ -991,10 +1065,28 @@
     };
 
     const refreshPersonalGameCompletionCache = () => {
-      // 获取个人 ID
-      const myUserIdNode = document.querySelector('div.nav-user > button.auth-user > span.name');
-      if (!myUserIdNode) return;
-      const myUserId = myUserIdNode.innerText.trim();
+      // 获取个人 ID (安全兼顾 Cookie、新版与旧版顶栏，杜绝异常中断)
+      const resolveUserId = () => {
+        try {
+          const cookieMatch = document.cookie.match(/__Psnine_psnid=([A-Za-z0-9_-]+)/);
+          if (cookieMatch && cookieMatch[1]) return cookieMatch[1];
+          const myUserIdNode = document.querySelector('div.nav-user > button.auth-user > span.name');
+          if (myUserIdNode && myUserIdNode.innerText.trim()) return myUserIdNode.innerText.trim();
+          const userMenuA = document.querySelector('.user-menu-list a[href*="/psnid/"]');
+          if (userMenuA && userMenuA.getAttribute('href')) {
+            const m = userMenuA.getAttribute('href').match(/\/psnid\/([A-Za-z0-9_-]+)/);
+            if (m && m[1]) return m[1];
+          }
+          const oldA = document.querySelector('ul.r li.dropdown ul li a');
+          if (oldA && oldA.href) {
+            const m = oldA.href.match(/\/psnid\/([A-Za-z0-9_-]+)/);
+            if (m && m[1]) return m[1];
+          }
+        } catch (_) {}
+        return null;
+      };
+      const myUserId = resolveUserId();
+      if (!myUserId) return;
       // const myGamePageURLRegex = new RegExp(`psnid/${myUserId}/?(?:psngame(?:\\?page=(\\d+))?|$)`);
       const myHomepageURLRegex = new RegExp(`psnid/${myUserId}/?`);
       const myGamePageURLRegex = new RegExp(`psnid/${myUserId}/psngame(?:\\?page=(\\d+))?`);
@@ -1479,9 +1571,10 @@
     * @param  userId  用户（楼主）ID
     */
     const addOPBadge = (userId) => {
+      if (!userId) return;
       $('.psnnode').each((i, n) => {
         // 匹配楼主ID，变更CSS
-        if ($(n).text() === userId) {
+        if ($(n).text().trim() === userId && !$(n).next().hasClass('badge-1')) {
           $(n).after('<span class="badge badge-1">楼主</span>');
         }
       });
@@ -1554,9 +1647,14 @@
       /(gene|trade|topic)\//.test(window.location.href)
       && !/comment/.test(window.location.href)
     ) {
-      // 获取楼主ID
-      const authorId = $('.title2').text();
-      addOPBadge(authorId);
+      // 获取楼主ID (适配新版 itemscope / itemprop="author" 与旧版 .title2)
+      const authorId = $('a.psnnode[itemprop="author"]').text().trim()
+        || $('.title2').text().trim()
+        || $('div.meta a.psnnode').first().text().trim()
+        || '';
+      if (authorId) {
+        addOPBadge(authorId);
+      }
     }
 
     /*
@@ -1564,9 +1662,18 @@
     */
     const addHighlightOnID = () => {
       settings.highlightSpecificID.forEach((i) => {
-        $(`.meta>[href="${window.location.href.match('(.*)\\.com')[0]}/psnid/${i}"]`).css({
-          'background-color': settings.highlightSpecificBack,
-          color: settings.highlightSpecificFront,
+        const idLower = i.toLowerCase();
+        $('.meta a, .topic-row .author a').each(function () {
+          const href = $(this).attr('href') || '';
+          const text = $(this).text().trim().toLowerCase();
+          if (text === idLower || href.toLowerCase().endsWith(`/psnid/${idLower}`)) {
+            $(this).css({
+              'background-color': settings.highlightSpecificBack,
+              color: settings.highlightSpecificFront,
+              padding: '1px 4px',
+              'border-radius': '2px',
+            });
+          }
         });
       });
     };
@@ -1950,6 +2057,7 @@
           FilterRegular('div.post .psnnode', 'div.post'); // 机因回复
         } else if (windowHref.match(/\.co(m\/|m)$/) !== null || windowHref.indexOf('node') > -1 || windowHref.indexOf('qa') > -1 || windowHref.match(/\/trad(e\/|e)$/) !== null) {
           FilterRegular('div.ml64>.meta>.psnnode', 'li'); // 主页一览、问答一览、问答回复、交易一览
+          FilterRegular('.topic-row .author a', '.topic-row'); // 新版首页主题列表
         } else if (windowHref.indexOf('topic') > -1 || windowHref.indexOf('trade') > -1 || windowHref.match(/\/battle\/[1-9][0-9]+/) !== null) {
           FilterRegular('div.ml64>.meta>.psnnode', 'div.post'); // 主页帖回复、交易帖回复、约战帖回复
         } else if (windowHref.match(/\/my\/notice/)) {
@@ -2215,8 +2323,10 @@
       if (settings.hoverHomepage) {
         $("a[href*='psnid/'] > img").parent().each(function (i) {
           const url = $(this).attr('href');
-          $(this).attr('id', `profile${i}`);
-          tippy(`#profile${i}`, {
+          if (!url) return;
+          const pid = `profile_${i}`;
+          $(this).attr('id', pid);
+          tippy(`#${pid}`, {
             content: '加载中...',
             delay: 700,
             maxWidth: '500px',
@@ -2231,6 +2341,35 @@
               tip.setContent('加载中...');
             },
           });
+        });
+
+        // 新版首页卡片头像与作者
+        $('.topic-row').each(function (i) {
+          const authorA = $(this).find('.author a[href*="psnid/"]');
+          const authorUrl = authorA.attr('href');
+          if (authorUrl) {
+            const avatar = $(this).find('img.avatar');
+            if (avatar.length > 0 && !avatar.attr('id')) {
+              const aid = `topic_avatar_${i}`;
+              avatar.attr('id', aid);
+              avatar.css('cursor', 'pointer');
+              tippy(`#${aid}`, {
+                content: '加载中...',
+                delay: 700,
+                maxWidth: '500px',
+                animateFill: false,
+                interactive: true,
+                placement: 'right',
+                async onShow(tip) {
+                  tippyOnShow(authorUrl, tip, getUserCardByAjax);
+                },
+                onHidden(tip) {
+                  tip.state.ajax.canFetch = true;
+                  tip.setContent('加载中...');
+                },
+              });
+            }
+          }
         });
       }
     };
@@ -2925,7 +3064,7 @@
         credits: { enabled: false },
       };
       // 插入页面
-      const chartTitleStyle = `border-radius: 2px; padding:5px; background-color:${$('li.current').css('background-color')}; cursor: pointer; min-width: 780px;`;
+      const chartTitleStyle = `border-radius: 2px; padding:5px; background-color:${$('li.current').css('background-color')}; cursor: pointer; width: 100%; max-width: 100%; box-sizing: border-box;`;
       $('#trophyChartContainer').append(
         `<div class="trophyChartSection">
           <p class="trophyChartTitle" style="${chartTitleStyle}"><span style="color:#808080;">奖杯统计图表</span><span class="foldIcon" style="float:right;"><svg style="width:12px;height:12px;vertical-align:middle;" viewBox="0 0 12 12"><polygon points="2,3 10,3 6,6" fill="#808080"/><polygon points="2,6 10,6 6,9" fill="#808080"/></svg></span></p>
@@ -2960,18 +3099,26 @@
     * @return {object}   用于绘线形图的数据集
     */
     const trophyGetTimeElementParser = (timeElement) => {
-      // 奖杯时间丢失部分处理
-      const dayTime = $(timeElement).text().trim();
-      if (dayTime === '时间丢失') return 0;
-      // 从页面上获取奖杯时间，生成时间对象并且放入数组中保存
-      const timeArray = [
-        $(timeElement).attr('tips').replace('年', ''), // 年
-        Number(dayTime.substr(0, 2)) - 1, // 月
-        dayTime.substr(3, 2), // 日
-        dayTime.substr(5, 2), // 时
-        dayTime.substr(8, 2), // 分
-      ].map((x) => Number(x));
-      return Date.UTC(...timeArray);
+      if (!timeElement) return 0;
+      const $el = $(timeElement);
+      const text = $el.text().trim();
+      if (!text || text === '时间丢失') return 0;
+
+      const tips = $el.attr('tips') || '';
+      const yearMatch = tips.match(/(\d{4})/);
+      const year = yearMatch ? parseInt(yearMatch[1], 10) : new Date().getFullYear();
+
+      // 正则匹配月-日 时:分，兼容换行符、空格与<br>
+      const m = text.match(/(\d{1,2})[-/](\d{1,2})[\s\S]*?(\d{1,2}):(\d{1,2})/);
+      if (!m) return 0;
+
+      const month = parseInt(m[1], 10) - 1;
+      const day = parseInt(m[2], 10);
+      const hour = parseInt(m[3], 10);
+      const min = parseInt(m[4], 10);
+
+      const timeMs = Date.UTC(year, month, day, hour, min);
+      return Number.isNaN(timeMs) ? 0 : timeMs;
     };
     const createTrophyGetTimeData = (className) => {
       const timeElements = $(className);
@@ -3106,23 +3253,58 @@
       Highcharts.chart('trophyGetTimeChart', trophyGetTime);
     };
 
+    let trophyTimeSortOrder = 0; // 0: 初始XMB, 1: 降序(最新在前), 2: 升序(最早在前)
     const sortTrophiesByTimestamp = () => {
-      const trophyTableEntries = $('table.list').eq(0).children().find('tr');
-      const trophies = trophyTableEntries.filter((i, e) => e.id !== '');
-      if (trophies.eq(0).hasClass('t1')) { // Platinum
-        trophyTableEntries.filter((i, e) => e.id === '').eq(0).after(trophyGetTimeData.trophyElements);
-      } else {
-        trophies.eq(0).after(trophyGetTimeData.trophyElements);
+      trophyTimeSortOrder = (trophyTimeSortOrder + 1) % 3;
+      if (trophyTimeSortOrder === 0) {
+        // 恢复默认 XMB 顺序
+        $('table.list').each(function () {
+          const rows = $(this).find('tr[id]').get();
+          rows.sort((a, b) => (parseInt(a.id, 10) || 0) - (parseInt(b.id, 10) || 0));
+          const tbody = $(this).find('tbody').length ? $(this).find('tbody') : $(this);
+          rows.forEach((r) => tbody.append(r));
+        });
+        $('#sortTrophiesByTimestamp a').text('获得时间');
+        return;
       }
+
+      const isDesc = trophyTimeSortOrder === 1;
+      $('#sortTrophiesByTimestamp a').text(isDesc ? '获得时间 ↓' : '获得时间 ↑');
+
+      $('table.list').each(function () {
+        const rows = $(this).find('tr[id]').get();
+        if (rows.length === 0) return;
+
+        rows.sort((a, b) => {
+          const timeAEl = $(a).find('em.lh180.alert-success.pd5.r, em.alert-success.pd5.r')[0];
+          const timeBEl = $(b).find('em.lh180.alert-success.pd5.r, em.alert-success.pd5.r')[0];
+          const timeA = timeAEl ? trophyGetTimeElementParser(timeAEl) : 0;
+          const timeB = timeBEl ? trophyGetTimeElementParser(timeBEl) : 0;
+
+          // 未获得的排在最后
+          if (timeA === 0 && timeB === 0) {
+            return (parseInt(a.id, 10) || 0) - (parseInt(b.id, 10) || 0);
+          }
+          if (timeA === 0) return 1;
+          if (timeB === 0) return -1;
+
+          return isDesc ? (timeB - timeA) : (timeA - timeB);
+        });
+
+        const tbody = $(this).find('tbody').length ? $(this).find('tbody') : $(this);
+        rows.forEach((r) => tbody.append(r));
+      });
     };
 
     const addTrophySortByTimestamp = () => {
-      $('div.main ul.dropmenu > li.dropdown > ul').eq(0).append('<li id="sortTrophiesByTimestamp"><a>获得时间</a></li>');
-      $('#sortTrophiesByTimestamp').css('cursor', 'pointer');
-      $('#sortTrophiesByTimestamp').click(() => {
+      const dropUl = $('ul.dropmenu > li.dropdown > ul').eq(0);
+      if (dropUl.length === 0 || $('#sortTrophiesByTimestamp').length > 0) return;
+
+      dropUl.append('<li id="sortTrophiesByTimestamp"><a href="javascript:void(0);" style="cursor:pointer;">获得时间</a></li>');
+      $('#sortTrophiesByTimestamp').on('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         sortTrophiesByTimestamp();
-        // $('#sortTrophiesByTimestamp').remove();
-        // $('div.main ul.dropmenu > li.dropdown').removeClass('hover');
       });
     };
 
@@ -3130,19 +3312,94 @@
     * 功能：汇总以获得和未获得奖杯
     */
     const addEarnedTrophiesSummary = () => {
-      const trophyTitleStyle = `border-radius: 2px; padding:5px; background-color:${$('li.current').css('background-color')}; cursor:pointer; min-width: 780px;`;
+      const trophyTitleStyle = `border-radius: 6px; padding: 8px 12px; background: rgba(0,0,0,0.03); cursor: pointer; width: 100%; max-width: 100%; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; font-size: 13px; font-weight: 500; user-select: none;`;
+      // 奖杯小图标与容器专属现代样式
+      GM_addStyle(`
+        .trophySummarySection {
+          margin: 10px 0;
+          border-radius: 8px;
+          overflow: hidden;
+          background: rgba(0,0,0,0.015);
+          border: 1px solid rgba(0,0,0,0.06);
+        }
+        :root[data-theme="dark"] .trophySummarySection {
+          background: rgba(255,255,255,0.02);
+          border-color: rgba(255,255,255,0.08);
+        }
+        .trophyContainer {
+          display: flex !important;
+          flex-wrap: wrap !important;
+          gap: 6px !important;
+          padding: 10px 8px !important;
+          align-items: center !important;
+          box-sizing: border-box !important;
+        }
+        .trophySmallBox {
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          width: 36px !important;
+          height: 36px !important;
+          padding: 2px !important;
+          border-radius: 4px !important;
+          background: rgba(0,0,0,0.03) !important;
+          box-sizing: border-box !important;
+          flex-shrink: 0 !important;
+          vertical-align: middle !important;
+          transition: transform .15s ease !important;
+        }
+        .trophySmallBox:active {
+          transform: scale(0.92) !important;
+        }
+        :root[data-theme="dark"] .trophySmallBox {
+          background: rgba(255,255,255,0.06) !important;
+        }
+        .trophySmallBox a {
+          display: block !important;
+          line-height: 0 !important;
+        }
+        .trophySmallBox img {
+          width: 30px !important;
+          height: 30px !important;
+          object-fit: cover !important;
+          border-radius: 2px !important;
+          display: block !important;
+        }
+        .trophyChartContent {
+          display: flex !important;
+          flex-wrap: wrap !important;
+          justify-content: space-around !important;
+          align-items: center !important;
+          gap: 12px !important;
+          padding: 8px 0 !important;
+          width: 100% !important;
+          box-sizing: border-box !important;
+        }
+        #trophyRatioChart {
+          width: 320px;
+          height: 220px;
+          max-width: 100% !important;
+          flex: 1 1 300px !important;
+        }
+        #trophyGetTimeChart {
+          width: 440px;
+          height: 220px;
+          max-width: 100% !important;
+          flex: 2 1 320px !important;
+        }
+      `);
       // tippy弹出框的样式
-      GM_addStyle(`.tippy-tooltip.psnine-theme {background-color: ${$('.box').css('background-color')};}`);
+      GM_addStyle(`.tippy-tooltip.psnine-theme {background-color: ${$('.box').css('background-color') || '#fff'};}`);
       // 奖杯tips颜色
       let tipColor = '';
       // 创建奖杯汇总框架函数
       const createTrophyContainer = (object, className, title) => {
         // 添加标题框在汇总图下
         $('#trophyChartContainer').append(
-          `<div class='${className}'><p class='trophyCount' style='${trophyTitleStyle}'></p><div class='trophyContainer' style='padding:5px;'></div></div>`,
+          `<div class='trophySummarySection ${className}'><div class='trophyCount' style='${trophyTitleStyle}'></div><div class='trophyContainer'></div></div>`,
         );
         object.each(function (i) {
-          // 如果这个奖杯有Tips，就设置左边框为绿色，否则就为底色（边框颜色和底色一致）
+          // 如果这个奖杯有Tips，就设置左边框为绿色，否则为透明
           if (
             $(this).parent().parent().next()
               .find('.alert-success.pd5')
@@ -3150,11 +3407,11 @@
           ) {
             tipColor = '#8cc14c';
           } else {
-            tipColor = $('.box').css('background-color');
+            tipColor = 'transparent';
           }
-          // 添加奖杯图标
+          // 添加奖杯图标 (使用独立的 inline-flex 盒子，修复未闭合标签)
           $(`.${className}> .trophyContainer`).append(
-            `<span id='${className}Small${i}' style='padding:3px; border-left: 3px solid ${tipColor};'><a href='${$(this).parent().attr('href')}'><img src='${$(this).attr('src')}' width='30px'></img><a></span>`,
+            `<span id='${className}Small${i}' class='trophySmallBox' style='border-left: 3px solid ${tipColor};'><a href='${$(this).parent().attr('href')}'><img src='${$(this).attr('src')}' width='30' height='30' alt='trophy' /></a></span>`,
           );
           // 添加鼠标悬浮弹出消息
           tippy(`#${className}Small${i}`, {
@@ -3211,7 +3468,15 @@
         window.location.href,
       )
     ) {
-      $('.box.pd10').append('<div id="trophyChartContainer" style="float: left"></div>');
+      if ($('#trophyChartContainer').length === 0) {
+        const chartBox = $('<div class="box pd10" id="trophyChartContainer" style="width: 100%; box-sizing: border-box; clear: both; margin: 12px 0;"></div>');
+        const listTableBox = $('.main > .box:has(table.list), .min-inner > .box:has(table.list)').first();
+        if (listTableBox.length > 0) {
+          listTableBox.before(chartBox);
+        } else {
+          $('.box.pd10').first().after(chartBox);
+        }
+      }
       repeatUntilSuccessful(() => {
         if (httpCSSFixed()) {
           // 追加奖杯统计扇形图
@@ -3344,26 +3609,32 @@
           const page = document.createElement('html');
           page.innerHTML = data;
           func(page);
+        }).catch((err) => {
+          console.warn('[P9增强] 抓取页面失败:', url, err);
         });
       };
       const gameIdFromPsngameUrl = (url) => {
-        const idMatch = url.match(/\/psngame\/\d+/);
-        if (idMatch.length > 0) return Number.parseInt(idMatch[0].replace('/psngame/', ''), 10);
+        if (!url) return -1;
+        const idMatch = url.match(/\/psngame\/(\d+)/);
+        if (idMatch && idMatch[1]) return parseInt(idMatch[1], 10);
         return -1;
       };
       const gameIdFromTrophyUrl = (url) => {
-        const idMatch = url.match(/\/trophy\/\d+\/?$/);
-        // 奖杯ID除去后三位即为游戏ID
-        if (idMatch.length > 0) return Number.parseInt(idMatch[0].replace(/\/trophy\/(\d+)\d{3}/, '$1'), 10);
+        if (!url) return -1;
+        const idMatch = url.match(/\/trophy\/(\d+)\/?$/);
+        if (idMatch && idMatch[1]) {
+          const s = idMatch[1];
+          if (s.length > 3) return parseInt(s.slice(0, -3), 10);
+        }
         return -1;
       };
-      // 创建包含多个游戏版本链接的板块
       const createReferenceDiv = (text, style = '') => {
         const referenceDiv = document.createElement('div');
-        referenceDiv.className = 'box';
-        referenceDiv.style.cssText = style;
-        const innerTextEm = document.createElement('em');
+        referenceDiv.className = 'box pd10';
+        referenceDiv.style.cssText = style || 'margin-bottom: 12px; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; border-radius: 8px;';
+        const innerTextEm = document.createElement('span');
         innerTextEm.innerText = text;
+        innerTextEm.style.cssText = 'color: var(--c-brand, #1E5AE6); font-weight: 600; font-size: 13px; margin-right: 4px; display: inline-flex; align-items: center; gap: 4px;';
         referenceDiv.appendChild(innerTextEm);
         return referenceDiv;
       };
@@ -3372,42 +3643,66 @@
         referenceA.href = url;
         referenceA.innerText = text;
         referenceA.target = '_blank';
+        referenceA.className = 'variant-pill';
+        referenceA.style.cssText = 'display: inline-flex; align-items: center; padding: 4px 10px; background: rgba(30, 90, 230, 0.08); color: #1E5AE6 !important; border: 1px solid rgba(30, 90, 230, 0.2); border-radius: 999px; font-size: 12px; font-weight: 500; text-decoration: none; transition: all .15s ease;';
         referenceDiv.appendChild(referenceA);
       };
-      // 适用于奖杯列表页面
       const referVariantsOnTrophyList = (gameId, gameIds) => {
-        const psngameNavBar = $('div.main > ul.inav');
-        const referenceDiv = createReferenceDiv('查看该游戏的其他版本：', 'margin-bottom: 20px; padding:12px 10px;');
+        if ($('#psnine-variants-box').length > 0) return;
+        const referenceDiv = createReferenceDiv('🎮 该游戏的其他版本：', 'margin-bottom: 20px; padding: 12px 14px; background: rgba(30,90,230,0.06); border: 1px solid rgba(30,90,230,0.18); border-radius: 6px;');
+        referenceDiv.id = 'psnine-variants-box';
+        let count = 0;
         gameIds.forEach((otherGameId) => {
           if (gameId === otherGameId) return;
-          createReferenceA(referenceDiv, `https://psnine.com/psngame/${otherGameId}`, ` #${otherGameId}`);
+          createReferenceA(referenceDiv, `https://psnine.com/psngame/${otherGameId}`, `版本 #${otherGameId}`);
+          count += 1;
         });
-        psngameNavBar.after(referenceDiv);
+        if (count === 0) return;
+        const psngameNavBar = $('ul.inav, .main > ul.inav').first();
+        if (psngameNavBar.length > 0) {
+          psngameNavBar.after(referenceDiv);
+        } else {
+          $('.box.pd10, .box').first().after(referenceDiv);
+        }
       };
-      // 适用于奖杯TIPS页面
       const referVariantsOnTrophyTips = (gameId, gameIds) => {
-        const trophy = $('body > div.min-inner.mt40 > div.box.pd5');
-        const trophyIdStr = window.location.href.match(/\/trophy\/\d+/)[0].replace(`/trophy/${gameId}`, '');
-        const referenceDiv = createReferenceDiv('查看该游戏其他版本的奖杯Tips：', 'margin-bottom: 20px; margin-top: 20px; padding:12px 10px;');
+        if ($('#psnine-variants-box').length > 0) return;
+        const trophy = $('body > div.min-inner.mt40 > div.box.pd5, .box.pd5, .box').first();
+        const m = window.location.href.match(/\/trophy\/\d+/);
+        if (!m) return;
+        const trophyIdStr = m[0].replace(`/trophy/${gameId}`, '');
+        const referenceDiv = createReferenceDiv('🎮 该游戏其他版本的奖杯Tips：', 'margin-bottom: 20px; margin-top: 20px; padding: 12px 14px; background: rgba(30,90,230,0.06); border: 1px solid rgba(30,90,230,0.18); border-radius: 6px;');
+        referenceDiv.id = 'psnine-variants-box';
+        let count = 0;
         gameIds.forEach((otherGameId) => {
           if (gameId === otherGameId) return;
-          createReferenceA(referenceDiv, `https://psnine.com/trophy/${otherGameId}${trophyIdStr}`, ` #${otherGameId}${trophyIdStr}`);
+          createReferenceA(referenceDiv, `https://psnine.com/trophy/${otherGameId}${trophyIdStr}`, `Tips #${otherGameId}${trophyIdStr}`);
+          count += 1;
         });
+        if (count === 0) return;
         trophy.after(referenceDiv);
       };
-      // 适用于其他游戏子页面
       const referVariantsOnRankThroughGamelist = (gameId, gameIds) => {
-        const psngameNavBar = $('body > div.min-inner.mt40 > ul.inav');
-        const referenceDiv = createReferenceDiv('查看该游戏的其他版本：', 'margin-bottom: 20px; margin-top: 20px; padding:12px 10px;');
+        if ($('#psnine-variants-box').length > 0) return;
+        const referenceDiv = createReferenceDiv('🎮 该游戏的其他版本：', 'margin-bottom: 20px; margin-top: 20px; padding: 12px 14px; background: rgba(30,90,230,0.06); border: 1px solid rgba(30,90,230,0.18); border-radius: 6px;');
+        referenceDiv.id = 'psnine-variants-box';
+        let count = 0;
         gameIds.forEach((otherGameId) => {
           if (gameId === otherGameId) return;
-          createReferenceA(referenceDiv, window.location.href.replace(`/psngame/${gameId}/`, `/psngame/${otherGameId}/`), ` #${otherGameId}`);
+          createReferenceA(referenceDiv, window.location.href.replace(`/psngame/${gameId}/`, `/psngame/${otherGameId}/`), `版本 #${otherGameId}`);
+          count += 1;
         });
-        psngameNavBar.after(referenceDiv);
+        if (count === 0) return;
+        const psngameNavBar = $('ul.inav, .min-inner ul.inav').first();
+        if (psngameNavBar.length > 0) {
+          psngameNavBar.after(referenceDiv);
+        } else {
+          $('.box.pd10, .box').first().after(referenceDiv);
+        }
       };
       const psngameTrophyListUrlRegex = /\/psngame\/\d+\/?($|\?)/;
       const referVariantsDelegate = (gameId, gameIds) => {
-        if (gameIds.length === 1) return;
+        if (gameIds.length <= 1) return;
         if (psngameTrophyListUrlRegex.test(window.location.href)) {
           referVariantsOnTrophyList(gameId, gameIds);
         } else if (/\/trophy\/\d+\/?$/.test(window.location.href)) {
@@ -3416,7 +3711,6 @@
           referVariantsOnRankThroughGamelist(gameId, gameIds);
         }
       };
-      // 缓存游戏的多版本信息
       const gameVariantCacheID = (gameId) => `psngame-variants-${gameId}`;
       const gameVariantCacheEncode = (gameId, gameIds) => {
         const cache = { timestamp: Date.now(), variants: gameIds };
@@ -3424,31 +3718,41 @@
       };
       const gameVariantCacheDecode = (cacheText) => {
         if (!cacheText) return null;
-        const cache = JSON.parse(cacheText);
-        // 缓存有效时间24小时
-        if (Date.now() - cache.timestamp > 24 * 60 * 60 * 1000) return null;
-        return cache.variants;
+        try {
+          const cache = JSON.parse(cacheText);
+          if (Date.now() - cache.timestamp > 24 * 60 * 60 * 1000) return null;
+          return cache.variants;
+        } catch (_) { return null; }
       };
       const gameVariantCacheStore = (gameIds) => {
         gameIds.forEach((gameId) => {
-          // eslint-disable-next-line no-undef
-          GM_setValue(gameVariantCacheID(gameId),
-            gameVariantCacheEncode(gameId, gameIds));
+          GM_setValue(gameVariantCacheID(gameId), gameVariantCacheEncode(gameId, gameIds));
         });
       };
-      // 查询尚未由管理员关联的游戏是否存在多版本
-      const gameTitleTrim = (title) => title.replace(/(^(\s*《\s*)+)|((\s*》\s*)+$)/g, '')
+      const gameTitleTrim = (title) => (title || '')
+        .replace(/(^(\s*《\s*)+)|((\s*》\s*)+$)/g, '')
         .replace(/\s*[（(]VR2?(\s*可选)?[）)]\s*$/gi, '')
-        .replace(/\s*Trophies\s*$/gi, '');
+        .replace(/\s*Trophies\s*$/gi, '')
+        .replace(/^(PS[345V]|PSVITA|PSVR2?|PSPC)\s*/i, '')
+        .replace(/\s*(中文)?(奖杯列表|测评评分|约战|问答|主题|游列)\s*$/i, '')
+        .trim();
+
       function findGameVariantsBySearch(gameId, gameTitle, tryGameMeta = false) {
+        if (!gameTitle) return;
         const searchUrl = `${window.location.protocol}//${window.location.hostname}/psngame?title=${encodeURIComponent(gameTitle).replaceAll('%20', '+')}`;
         fetchPageAndProcess(searchUrl, (page) => {
-          const psngameMatches = $(page).find('div.min-inner.mt40 > div.box > table > tbody > tr > td.pd1015.title.lh180 > a');
+          const psngameMatches = $(page).find('table.list td.title a, td.pd1015.title.lh180 a, .title.lh180 a, a[href*="/psngame/"]');
           if (psngameMatches.length <= 0) return;
           let gameIds = [gameId];
+          const cleanTitle = gameTitleTrim(gameTitle).toLowerCase();
           psngameMatches.each((i, a) => {
-            if (gameTitleTrim(a.innerText) !== gameTitle) return;
-            gameIds.push(gameIdFromPsngameUrl(a.href));
+            const rawTitle = $(a).text().trim();
+            const t = gameTitleTrim(rawTitle).toLowerCase();
+            if (!t) return;
+            if (t === cleanTitle || t.includes(cleanTitle) || cleanTitle.includes(t)) {
+              const gid = gameIdFromPsngameUrl(a.href);
+              if (gid > 0) gameIds.push(gid);
+            }
           });
           gameIds = gameIds.filter((value, index, array) => array.indexOf(value) === index);
           gameIds.sort((a, b) => a - b);
@@ -3456,77 +3760,98 @@
           referVariantsDelegate(gameId, gameIds);
           if (gameIds.length === 1 && tryGameMeta) {
             if (psngameTrophyListUrlRegex.test(window.location.href)) {
-              // 无缓存、当前页面为奖杯列表，直接查询
-              // eslint-disable-next-line no-use-before-define
               findGameVariantsByMeta(gameId, document.body);
             } else {
-              // 无缓存、当前页面并非奖杯列表，抓取奖杯列表页面再查询
-              // eslint-disable-next-line no-use-before-define
               fetchPageAndProcess(`${window.location.protocol}//${window.location.hostname}/psngame/${gameId}`, (_page) => { findGameVariantsByMeta(gameId, _page); });
             }
           }
         });
       }
-      // 在不同页面查找游戏标题
+
       const findGameTitle = () => {
-        const gameTitleExtaction = (title) => title.replace(/(^[^《]*)|([^》]*$)/g, '');
+        const gameTitleExtaction = (title) => {
+          if (!title) return '';
+          const m = title.match(/《([^》]+)》/);
+          if (m) return m[1].trim();
+          return title
+            .replace(/^(PS[345V]|PSVITA|PSVR2?|PSPC)\s*/i, '')
+            .replace(/\s*(中文)?(奖杯列表|测评评分|约战|问答|主题|游列)\s*$/i, '')
+            .trim();
+        };
+
         if (psngameTrophyListUrlRegex.test(window.location.href)) {
-          return gameTitleTrim(gameTitleExtaction($('div.inner.mt40 > div.main > div.box.pd10 > h1')[0].innerText));
+          const el = $('div.inner.mt40 > div.main > div.box.pd10 > h1, .box.pd10 > h1, h1').first()[0];
+          return el ? gameTitleTrim(gameTitleExtaction(el.innerText)) : null;
         }
         if (/\/trophy\/\d+\/?$/.test(window.location.href)) {
-          return gameTitleTrim($('div.min-inner.mt40 > ul > li > div.ml100 > p > a')[0].innerText);
+          const el = $('div.min-inner.mt40 > ul > li > div.ml100 > p > a, ul > li > div.ml100 > p > a, .ml100 > p > a').first()[0];
+          return el ? gameTitleTrim(el.innerText) : null;
         }
         if (/\/(rank|comment|qa|topic|battle|gamelist)\/?$/.test(window.location.href)) {
-          return gameTitleTrim(gameTitleExtaction($('div.min-inner.mt40 > div.box.pd10 > h1')[0].innerText));
+          const el = $('div.min-inner.mt40 > div.box.pd10 > h1, .box.pd10 > h1, h1').first()[0];
+          return el ? gameTitleTrim(gameTitleExtaction(el.innerText)) : null;
         }
         return null;
       };
-      // 查询游戏多版本
+
       function findGameVariantsByMeta(gameId, page, trySearch = false) {
-        // 查询已由管理员关联的游戏的多版本
         const fetchGameMetaPage = (url, _gameId) => {
           fetchPageAndProcess(url, (_page) => {
-            const psngameMatches = $(_page).find('div.min-inner.mt20 > ul > li > a[href*="https://psnine.com/psngame/"]').slice(1);
             const gameIds = [];
-            psngameMatches.each((i, a) => { gameIds.push(gameIdFromPsngameUrl(a.href)); });
-            gameIds.sort();
-            gameVariantCacheStore(gameIds);
-            referVariantsDelegate(_gameId, gameIds);
-            if (gameIds.length === 1 && trySearch) {
+            const idSet = new Set();
+            $(_page).find('a[href*="/psngame/"]').each((i, a) => {
+              const gid = gameIdFromPsngameUrl(a.href);
+              if (gid > 0 && !idSet.has(gid)) {
+                idSet.add(gid);
+                gameIds.push(gid);
+              }
+            });
+            gameIds.sort((a, b) => a - b);
+            if (gameIds.length > 1) {
+              gameVariantCacheStore(gameIds);
+              referVariantsDelegate(_gameId, gameIds);
+            } else if (trySearch) {
               findGameVariantsBySearch(_gameId, findGameTitle());
             }
           });
         };
-        // 在参数的奖杯列表页面查找游戏是否已经被关联
-        const gameMetaUrl = $(page).find('div.side > div.hd3:contains("关联游戏")').length > 0 ? $(page).find('div.side > ul > center > a')[0].href : null;
+
+        const sideHd = $(page).find('.side .hd3:contains("关联游戏")');
+        let gameMetaUrl = null;
+        if (sideHd.length > 0) {
+          gameMetaUrl = sideHd.next('ul').find('a[href*="/game/"]').first().attr('href');
+        }
+        if (!gameMetaUrl) {
+          const anyGameLink = $(page).find('.side a[href*="/game/"]').first().attr('href');
+          if (anyGameLink) gameMetaUrl = anyGameLink;
+        }
+
         if (gameMetaUrl) {
           fetchGameMetaPage(gameMetaUrl, gameId);
         } else if (trySearch) {
           findGameVariantsBySearch(gameId, findGameTitle());
         }
       }
+
       const referVariants = (gameId) => {
-        // 查找缓存
-        // eslint-disable-next-line no-undef
+        if (!gameId || gameId <= 0) return;
         const gameIds = gameVariantCacheDecode(GM_getValue(gameVariantCacheID(gameId), null));
         if (gameIds) {
-          // 有缓存时直接链接
           referVariantsDelegate(gameId, gameIds);
-          console.log('游戏关联版本信息已使用缓存');
         } else if (psngameTrophyListUrlRegex.test(window.location.href) && !searchFirst) {
-          // 无缓存、当前页面为奖杯列表、非搜索优先
           findGameVariantsByMeta(gameId, document.body, true);
         } else if (searchFirst) {
-          // 无缓存、搜索优先
           findGameVariantsBySearch(gameId, findGameTitle(), true);
         } else {
-          // 无缓存、当前页面并非奖杯列表、非搜索优先，抓取奖杯列表页面再查询
-          fetchPageAndProcess(`${window.location.protocol}//${window.location.hostname}/psngame/${gameId}`, (page) => { findGameVariantsByMeta(gameId, page, true); });
+          fetchPageAndProcess(`${window.location.protocol}//${window.location.hostname}/psngame/${gameId}`, (page) => {
+            findGameVariantsByMeta(gameId, page, true);
+          });
         }
       };
-      if (/\/psngame\//g.test(window.location.href)) {
+
+      if (/\/psngame\/\d+/.test(window.location.href)) {
         referVariants(gameIdFromPsngameUrl(window.location.href));
-      } else if (/\/trophy\//g.test(window.location.href)) {
+      } else if (/\/trophy\/\d+/.test(window.location.href)) {
         referVariants(gameIdFromTrophyUrl(window.location.href));
       }
     };
@@ -4383,15 +4708,200 @@
         'expandCollapsedSubcomments',
         'platinumGlow',
       ]; // 只有true/false或者enum的设置项
-      $('.header .dropdown ul').append(`
-                <li><a href="javascript:void(0);" id="psnine-enhanced-version-opensetting">插件设置</a></li>`);
+      // 插入设置入口：兼容旧版顶栏与新版 v2 顶栏
+      const injectSettingTrigger = () => {
+        if ($('#psnine-enhanced-version-opensetting').length > 0) return;
+
+        // 1. 旧版顶栏下拉菜单
+        if ($('.header .dropdown ul').length > 0) {
+          $('.header .dropdown ul').append(`
+            <li><a href="javascript:void(0);" id="psnine-enhanced-version-opensetting">插件设置</a></li>`);
+        }
+
+        // 2. 新版顶栏用户下拉菜单
+        if ($('.user-menu-list').length > 0) {
+          $('.user-menu-list').append(`
+            <a href="javascript:void(0);" id="psnine-enhanced-version-opensetting" style="display:flex;align-items:center;gap:6px;">
+              <svg style="width:14px;height:14px;flex-shrink:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              插件设置
+            </a>`);
+        }
+
+        // 3. 新版顶栏常驻入口（移动端自动紧凑，仅显示图标；桌面端显示完整文字胶囊）
+        if ($('.site-nav .nav-user').length > 0 && $('#psnine-enhanced-nav-btn').length === 0) {
+          $('.site-nav .nav-user').append(`
+            <a href="javascript:void(0);" id="psnine-enhanced-nav-btn" class="login-link" title="PSNINE功能增强插件设置" style="display:inline-flex;align-items:center;justify-content:center;gap:4px;cursor:pointer;white-space:nowrap;user-select:none;flex-shrink:0;">
+              <svg style="width:14px;height:14px;flex-shrink:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              <span class="p9-setting-text">P9设置</span>
+            </a>`);
+          $('#psnine-enhanced-nav-btn').on('click', () => {
+            $('#psnine-enhanced-version-opensetting').trigger('click');
+          });
+        }
+
+        // 4. 移动端抽屉主菜单挂载入口（手机端汉堡菜单里一目了然）
+        if ($('.mobile-nav-panel nav').length > 0 && $('#mobile-psnine-setting-btn').length === 0) {
+          $('.mobile-nav-panel nav').append(`
+            <a href="javascript:void(0);" id="mobile-psnine-setting-btn" style="color:var(--c-brand,#1E5AE6);font-weight:600;display:flex;align-items:center;gap:6px;border-top:1px dashed var(--c-line,rgba(0,0,0,0.08));padding-top:10px;margin-top:6px;">
+              <svg style="width:16px;height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              <span>⚙️ P9插件设置</span>
+            </a>`);
+          $('#mobile-psnine-setting-btn').on('click', () => {
+            const panel = document.getElementById('mobile-nav-panel');
+            if (panel) panel.hidden = true;
+            $('#psnine-enhanced-version-opensetting').trigger('click');
+          });
+        }
+      };
+      injectSettingTrigger();
       const visiblePageHeight = $(window.top).height();
       $('body').append(`
-                <style>.setting-panel-box{z-index:9999;background-color:#fff;transition:all .4s ease;position:fixed;left:50%;transform:translateX(-50%);top:-5000px;width:500px;box-shadow:0 0 20px rgba(0,0,0,0.3);padding:10px 0;box-sizing:border-box;border-radius:4px;max-height:${visiblePageHeight < 740 ? visiblePageHeight - 40 : 700}px;overflow-y:scroll;scrollbar-color:#dcdcdc #fff;scrollbar-width:thin}.setting-panel-box::-webkit-scrollbar{width:4px;background-color:#fff}.setting-panel-box::-webkit-scrollbar-button{display:none}.setting-panel-box::-webkit-scrollbar-thumb{background-color:#dcdcdc}.setting-panel-box.show{top:20px}.setting-panel-box h2{margin-bottom:10px;padding-left:20px}.setting-panel-box h4{margin-bottom:10px;padding-left:20px;font-weight:400;color:#1f2f3d;font-size:22px}.setting-panel-box .row{display:flex;align-items:center;justify-content:flex-start;width:100%;margin-bottom:5px;padding-left:20px;box-sizing:border-box}.setting-panel-box .row label{line-height:32px;text-align:left;font-size:14px;color:#606266;width:190px}.setting-panel-box .row .mini{line-height:26px;text-align:left;font-size:14px;color:#606266;margin:0 10px 0 0;width:50px}.setting-panel-box .row .normal{line-height:26px;text-align:left;font-size:14px;color:#606266;margin:0 10px 0 0;width:205px}.setting-panel-box .row textarea{resize:vertical;min-height:30px;border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;line-height:26px;box-sizing:border-box;width:227px;padding:0 10px}.setting-panel-box .row input{border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;height:26px;line-height:26px;display:inline-block;width:227px;padding:0 10px}.setting-panel-box .row input.slider{height:6px;background-color:#e4e7ed;margin:16px 0;border-radius:3px;position:relative;cursor:pointer;vertical-align:middle;outline:none;padding:0}.setting-panel-box .row input.slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border:2px solid #409eff;background-color:#fff;border-radius:50%;transition:.2s;user-select:none}.setting-panel-box .row input.slider::-moz-range-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border:2px solid #409eff;background-color:#fff;border-radius:50%;transition:.2s;user-select:none}.setting-panel-box .row .sliderValue{margin-left:5px}.setting-panel-box .row select{border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;height:26px;line-height:26px;display:inline-block;width:227px;padding:0 10px}.setting-panel-box .row span{line-height:32px;text-align:left;font-size:14px;color:#606266;margin-right:10px}.setting-panel-box .btnbox{display:flex;align-items:center;justify-content:center}.setting-panel-box button{-webkit-appearance:button;padding:9px 15px;font-size:12px;border-radius:3px;display:inline-block;line-height:1;white-space:nowrap;cursor:pointer;background:#fff;border:1px solid #dcdfe6;color:#606266;text-align:center;box-sizing:border-box;outline:0;margin:0;transition:.1s;font-weight:500;margin:0 10px}.setting-panel-box button:hover{color:#409eff;border-color:#c6e2ff;background-color:#ecf5ff}.setting-panel-box button.confirm{color:#fff;background-color:#3890ff}.setting-panel-box button.confirm:hover{background-color:#9ec9ff}</style>
+                <style>
+/* 蒙版背景 */
+.setting-panel-mask {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+  z-index: 9998; opacity: 0; pointer-events: none;
+  transition: opacity .3s ease;
+}
+.setting-panel-mask.show { opacity: 1; pointer-events: auto; }
+
+/* 设置面板主体 (桌面 + 移动端自适应) */
+.setting-panel-box {
+  z-index: 9999; background-color: #fff;
+  transition: transform .3s cubic-bezier(0.16, 1, 0.3, 1), opacity .25s ease;
+  position: fixed; left: 50%; top: 50%;
+  transform: translate(-50%, -46%) scale(0.96);
+  opacity: 0; pointer-events: none;
+  width: 90vw; max-width: 500px;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.2);
+  padding: 16px 0; box-sizing: border-box;
+  border-radius: 12px;
+  max-height: 85vh;
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+  scrollbar-color: #dcdcdc transparent; scrollbar-width: thin;
+}
+.setting-panel-box::-webkit-scrollbar { width: 4px; background-color: transparent; }
+.setting-panel-box::-webkit-scrollbar-thumb { background-color: #dcdcdc; border-radius: 2px; }
+.setting-panel-box.show {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1; pointer-events: auto;
+}
+.setting-panel-box h2 {
+  margin: 0 0 12px 0; padding: 0 20px 10px 20px;
+  font-size: 18px; font-weight: 700; color: #1f2937;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+.setting-panel-box h4 {
+  margin: 10px 0; padding-left: 20px; font-weight: 500; color: #1f2f3d; font-size: 16px;
+}
+.setting-panel-box .row {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; margin-bottom: 8px; padding: 4px 20px;
+  box-sizing: border-box; gap: 8px;
+}
+.setting-panel-box .row label {
+  line-height: 1.4; text-align: left; font-size: 14px; color: #4b5563;
+  flex: 1; word-break: break-word; font-weight: 500;
+}
+.setting-panel-box .row .mini { width: 50px; }
+.setting-panel-box .row .normal { width: 140px; }
+.setting-panel-box .row textarea {
+  resize: vertical; min-height: 34px; border: 1px solid #dcdfe6; color: #374151;
+  background-color: #fff; border-radius: 6px; line-height: 22px;
+  box-sizing: border-box; width: 200px; padding: 6px 10px; font-size: 13px;
+}
+.setting-panel-box .row input:not(.slider) {
+  border: 1px solid #dcdfe6; color: #374151; background-color: #fff;
+  border-radius: 6px; height: 32px; line-height: 32px;
+  width: 200px; padding: 0 10px; box-sizing: border-box; font-size: 13px;
+}
+.setting-panel-box .row input.slider {
+  height: 6px; background-color: #e4e7ed; margin: 10px 0; border-radius: 3px;
+  cursor: pointer; outline: none; padding: 0; width: 140px;
+}
+.setting-panel-box .row input.slider::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; width: 18px; height: 18px;
+  border: 2px solid #1E5AE6; background-color: #fff; border-radius: 50%;
+}
+.setting-panel-box .row .sliderValue { min-width: 44px; text-align: right; font-size: 13px; color: #6b7280; }
+.setting-panel-box .row select {
+  border: 1px solid #dcdfe6; color: #374151; background-color: #fff;
+  border-radius: 6px; height: 32px; line-height: 32px;
+  width: 140px; padding: 0 8px; box-sizing: border-box; font-size: 13px;
+}
+.setting-panel-box .btnbox {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  margin-top: 16px; padding: 12px 20px 4px 20px;
+  border-top: 1px solid rgba(0,0,0,0.06);
+}
+.setting-panel-box button {
+  padding: 8px 24px; font-size: 14px; border-radius: 6px;
+  cursor: pointer; background: #fff; border: 1px solid #dcdfe6; color: #606266;
+  transition: all .15s ease; font-weight: 500;
+}
+.setting-panel-box button.confirm { color: #fff; background-color: #1E5AE6; border-color: #1E5AE6; }
+.setting-panel-box button.confirm:hover { background-color: #164ac0; }
+
+/* 针对手机端 Safari 与触屏的专属优雅响应式适配 */
+@media screen and (max-width: 768px) {
+  .setting-panel-box {
+    width: 94vw !important; max-height: 86vh !important;
+    border-radius: 14px !important;
+    padding: 14px 0 calc(14px + env(safe-area-inset-bottom, 0px)) 0 !important;
+  }
+  .setting-panel-box h2 {
+    font-size: 16px !important; padding: 0 14px 10px 14px !important;
+  }
+  .setting-panel-box .row {
+    flex-direction: column !important; align-items: flex-start !important;
+    padding: 8px 14px !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  }
+  .setting-panel-box .row label {
+    width: 100% !important; margin-bottom: 6px !important;
+    font-size: 14px !important; color: #374151 !important;
+  }
+  /* iOS Safari 防聚焦放大：字体必须 >= 16px */
+  .setting-panel-box .row input:not(.slider),
+  .setting-panel-box .row select,
+  .setting-panel-box .row textarea {
+    width: 100% !important; max-width: 100% !important;
+    height: 38px !important; line-height: 38px !important;
+    font-size: 16px !important; box-sizing: border-box !important;
+    border-radius: 6px !important;
+  }
+  .setting-panel-box .row textarea {
+    height: 60px !important; line-height: 20px !important; padding: 8px 10px !important;
+  }
+  .setting-panel-box .row input.slider { width: 75% !important; height: 8px !important; }
+  .setting-panel-box .row .sliderValue { font-size: 15px !important; }
+  .setting-panel-box .btnbox {
+    padding: 12px 14px 0 14px !important; gap: 10px !important;
+  }
+  .setting-panel-box button {
+    flex: 1 !important; height: 42px !important; font-size: 15px !important;
+  }
+  /* 移动端顶栏按钮紧凑化：隐藏文字只留图标 */
+  #psnine-enhanced-nav-btn {
+    padding: 0 6px !important; height: 28px !important; line-height: 28px !important;
+  }
+  #psnine-enhanced-nav-btn .p9-setting-text {
+    display: none !important;
+  }
+  /* 奖杯图表在移动端单列自适应 */
+  #trophyRatioChart, #trophyGetTimeChart, #scoreChartContainer {
+    width: 100% !important; max-width: 100% !important;
+    display: block !important; margin: 8px auto !important;
+  }
+  .tipContainer { padding: 8px 6px !important; }
+}
+</style>
                 <div class=setting-panel-box><h2>PSN中文网功能增强插件设置</h2><div class=row><a href=https://github.com/swsoyee/psnine-enhanced-version><img src=https://img.shields.io/github/stars/swsoyee/psnine-enhanced-version.svg?style=social></img></a></div><div class=row><label>夜间模式</label><select id=nightMode><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动夜间模式</label><select id=autoNightMode><option value="&quot;SYSTEM&quot;">跟随系统<option value="&quot;TIME&quot;">跟据时间<option value="&quot;OFF&quot;">关闭</select></div><div class=row><label>高亮用户ID</label><textarea name="" id="highlightSpecificID" cols="30" rows="2"></textarea></div><div class=row><label>黑名单ID</label><textarea name="" id="blockList" cols="30" rows="2"></textarea></div><div class=row><label>关键词屏蔽</label><textarea name="" id="blockWordsList" cols="30" rows="2"></textarea></div><div class=row><label>机因中显示被@的内容</label><select id=replyTraceback><option value=true>启用<option value=false>关闭</select></div><div class=row><label>悬浮显示刮刮卡内容</label><select id=hoverUnmark><option value=true>启用<option value=false>关闭</select></div><div class=row><label>个人主页下显示所有游戏</label><select id=autoPagingInHomepage><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动签到</label><select id=autoCheckIn><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动向后翻页数</label><input type=number class=normal id=autoPaging></div><div class=row><label>问答区状态优化</label><select id=newQaStatus><option value=true>启用<option value=false>关闭</select></div><div class=row><label>悬浮头像显示个人信息</label><select id=hoverHomepage><option value=true>启用<option value=false>关闭</select></div><div class=row><label>奖杯默认折叠</label><select id=foldTrophySummary><option value=true>启用<option value=false>关闭</select></div><div class=row><label>奖杯图表默认折叠</label><select id=foldTrophyChart><option value=true>启用<option value=false>关闭</select></div><div class=row><label>约战页面去掉发起人头像</label><select id=removeHeaderInBattle><option value=true>启用<option value=false>关闭</select></div><div class=row><label>机因、问答页面按最新排序</label><select id=listPostsByNew><option value=true>启用<option value=false>关闭</select></div><div class=row><label>载入全部问答答案</label><select id=showAllQAAnswers><option value=true>启用<option value=false>关闭</select></div><div class=row><label>答案按最新排列</label><select id=listQAAnswersByNew><option value=true>启用<option value=false>关闭</select></div><div class=row><label>答案显示隐藏回复</label><select id=showHiddenQASubReply><option value=true>启用<option value=false>关闭</select></div><div class=row><label>检测纯文本中的链接</label><select id=fixTextLinks><option value=true>启用<option value=false>关闭</select></div><div class=row><label>修复D7VG链接</label><select id=fixD7VGLinks><option value=true>启用<option value=false>关闭</select></div><div class=row><label>站内使用HTTPS链接</label><select id=fixHTTPLinks><option value=true>启用<option value=false>关闭</select></div><div class=row><label>尝试关联不同版本的游戏</label><select id=referGameVariants><option value=true>启用<option value=false>关闭</select></div><div class=row><label>查询游戏版本优先使用搜索</label><select id=preferSearchForFindingVariants><option value=true>启用<option value=false>关闭</select></div><div class=row><label>展开隐藏的子评论</label><select id=expandCollapsedSubcomments><option value=true>启用<option value=false>关闭</select></div><div class=row><label>白金杯游戏封面修饰</label><select id=platinumGlow><option value=true>启用<option value=false>关闭</select></div><div class=row><label>无白金游戏图标透明度</label><input id=filterNonePlatinum class=slider type=range min=0 max=1 step=0.1><span id=filterNonePlatinumValue class=sliderValue></span></div><div class=row><label>热门标签回复数阈值</label><input id=hotTagThreshold class=slider type=range min=10 max=100 step=5><span id=hotTagThresholdValue class=sliderValue></span></div><div class=btnbox><button class=confirm>确定</button><button class=cancel>取消</button></div></div>`);
       // 点击打开设置面板
       $('#psnine-enhanced-version-opensetting').on('click', () => {
-        $('.setting-panel-box').addClass('show');
+        $('.setting-panel-box, .setting-panel-mask').addClass('show');
         ['#highlightSpecificID', '#blockList'].forEach((item) => {
           tippy(item, {
             content: 'ID以英文逗号隔开，不区分大小写',
@@ -4453,8 +4963,8 @@
         $('#blockWordsList').val(blockWordsList);
       });
       // 点击取消
-      $('.setting-panel-box .btnbox .cancel').on('click', () => {
-        $('.setting-panel-box').removeClass('show');
+      $('.setting-panel-box .btnbox .cancel, .setting-panel-mask').on('click', () => {
+        $('.setting-panel-box, .setting-panel-mask').removeClass('show');
       });
       // 点击确定
       $('.setting-panel-box .btnbox .confirm').on('click', () => {
@@ -4479,7 +4989,7 @@
         newSettings.filterNonePlatinumAlpha = Number($('#filterNonePlatinum').val());
         newSettings.hotTagThreshold = Number($('#hotTagThreshold').val());
         newSettings.autoPaging = Number($('#autoPaging').val());
-        $('.setting-panel-box').removeClass('show');
+        $('.setting-panel-box, .setting-panel-mask').removeClass('show');
         localStorage['psnine-night-mode-CSS-settings'] = JSON.stringify(
           newSettings,
         );
