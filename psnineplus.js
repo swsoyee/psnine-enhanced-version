@@ -197,6 +197,10 @@
         $(document).on('mouseleave', '.mark', function () {
           $(this).css({ color: '' });
         });
+        // 手机端触摸点击直接显示
+        $(document).on('click touchend', '.mark', function () {
+          $(this).css({ color: settings.nightMode ? 'rgb(0,0,0)' : 'rgb(255,255,255)' });
+        });
       }
     };
     showMarkMessage(settings.hoverUnmark);
@@ -3060,7 +3064,7 @@
         credits: { enabled: false },
       };
       // 插入页面
-      const chartTitleStyle = `border-radius: 2px; padding:5px; background-color:${$('li.current').css('background-color')}; cursor: pointer; min-width: 780px;`;
+      const chartTitleStyle = `border-radius: 2px; padding:5px; background-color:${$('li.current').css('background-color')}; cursor: pointer; width: 100%; max-width: 100%; box-sizing: border-box;`;
       $('#trophyChartContainer').append(
         `<div class="trophyChartSection">
           <p class="trophyChartTitle" style="${chartTitleStyle}"><span style="color:#808080;">奖杯统计图表</span><span class="foldIcon" style="float:right;"><svg style="width:12px;height:12px;vertical-align:middle;" viewBox="0 0 12 12"><polygon points="2,3 10,3 6,6" fill="#808080"/><polygon points="2,6 10,6 6,9" fill="#808080"/></svg></span></p>
@@ -3308,7 +3312,7 @@
     * 功能：汇总以获得和未获得奖杯
     */
     const addEarnedTrophiesSummary = () => {
-      const trophyTitleStyle = `border-radius: 2px; padding:5px; background-color:${$('li.current').css('background-color')}; cursor:pointer; min-width: 780px;`;
+      const trophyTitleStyle = `border-radius: 2px; padding:5px; background-color:${$('li.current').css('background-color')}; cursor:pointer; width: 100%; max-width: 100%; box-sizing: border-box;`;
       // tippy弹出框的样式
       GM_addStyle(`.tippy-tooltip.psnine-theme {background-color: ${$('.box').css('background-color')};}`);
       // 奖杯tips颜色
@@ -4639,14 +4643,28 @@
             </a>`);
         }
 
-        // 3. 新版顶栏常驻入口（即使未登录也可以点击配置插件）
+        // 3. 新版顶栏常驻入口（移动端自动紧凑，仅显示图标；桌面端显示完整文字胶囊）
         if ($('.site-nav .nav-user').length > 0 && $('#psnine-enhanced-nav-btn').length === 0) {
           $('.site-nav .nav-user').append(`
-            <a href="javascript:void(0);" id="psnine-enhanced-nav-btn" class="login-link" title="PSNINE功能增强插件设置" style="display:inline-flex;align-items:center;gap:4px;cursor:pointer;white-space:nowrap;user-select:none;">
-              <svg style="width:13px;height:13px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-              <span>P9设置</span>
+            <a href="javascript:void(0);" id="psnine-enhanced-nav-btn" class="login-link" title="PSNINE功能增强插件设置" style="display:inline-flex;align-items:center;justify-content:center;gap:4px;cursor:pointer;white-space:nowrap;user-select:none;flex-shrink:0;">
+              <svg style="width:14px;height:14px;flex-shrink:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              <span class="p9-setting-text">P9设置</span>
             </a>`);
           $('#psnine-enhanced-nav-btn').on('click', () => {
+            $('#psnine-enhanced-version-opensetting').trigger('click');
+          });
+        }
+
+        // 4. 移动端抽屉主菜单挂载入口（手机端汉堡菜单里一目了然）
+        if ($('.mobile-nav-panel nav').length > 0 && $('#mobile-psnine-setting-btn').length === 0) {
+          $('.mobile-nav-panel nav').append(`
+            <a href="javascript:void(0);" id="mobile-psnine-setting-btn" style="color:var(--c-brand,#1E5AE6);font-weight:600;display:flex;align-items:center;gap:6px;border-top:1px dashed var(--c-line,rgba(0,0,0,0.08));padding-top:10px;margin-top:6px;">
+              <svg style="width:16px;height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              <span>⚙️ P9插件设置</span>
+            </a>`);
+          $('#mobile-psnine-setting-btn').on('click', () => {
+            const panel = document.getElementById('mobile-nav-panel');
+            if (panel) panel.hidden = true;
             $('#psnine-enhanced-version-opensetting').trigger('click');
           });
         }
@@ -4654,11 +4672,152 @@
       injectSettingTrigger();
       const visiblePageHeight = $(window.top).height();
       $('body').append(`
-                <style>.setting-panel-box{z-index:9999;background-color:#fff;transition:all .4s ease;position:fixed;left:50%;transform:translateX(-50%);top:-5000px;width:500px;box-shadow:0 0 20px rgba(0,0,0,0.3);padding:10px 0;box-sizing:border-box;border-radius:4px;max-height:${visiblePageHeight < 740 ? visiblePageHeight - 40 : 700}px;overflow-y:scroll;scrollbar-color:#dcdcdc #fff;scrollbar-width:thin}.setting-panel-box::-webkit-scrollbar{width:4px;background-color:#fff}.setting-panel-box::-webkit-scrollbar-button{display:none}.setting-panel-box::-webkit-scrollbar-thumb{background-color:#dcdcdc}.setting-panel-box.show{top:20px}.setting-panel-box h2{margin-bottom:10px;padding-left:20px}.setting-panel-box h4{margin-bottom:10px;padding-left:20px;font-weight:400;color:#1f2f3d;font-size:22px}.setting-panel-box .row{display:flex;align-items:center;justify-content:flex-start;width:100%;margin-bottom:5px;padding-left:20px;box-sizing:border-box}.setting-panel-box .row label{line-height:32px;text-align:left;font-size:14px;color:#606266;width:190px}.setting-panel-box .row .mini{line-height:26px;text-align:left;font-size:14px;color:#606266;margin:0 10px 0 0;width:50px}.setting-panel-box .row .normal{line-height:26px;text-align:left;font-size:14px;color:#606266;margin:0 10px 0 0;width:205px}.setting-panel-box .row textarea{resize:vertical;min-height:30px;border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;line-height:26px;box-sizing:border-box;width:227px;padding:0 10px}.setting-panel-box .row input{border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;height:26px;line-height:26px;display:inline-block;width:227px;padding:0 10px}.setting-panel-box .row input.slider{height:6px;background-color:#e4e7ed;margin:16px 0;border-radius:3px;position:relative;cursor:pointer;vertical-align:middle;outline:none;padding:0}.setting-panel-box .row input.slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border:2px solid #409eff;background-color:#fff;border-radius:50%;transition:.2s;user-select:none}.setting-panel-box .row input.slider::-moz-range-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border:2px solid #409eff;background-color:#fff;border-radius:50%;transition:.2s;user-select:none}.setting-panel-box .row .sliderValue{margin-left:5px}.setting-panel-box .row select{border:1px solid #dcdfe6;color:#606266;background-color:#fff;background-image:none;border-radius:4px;-webkit-appearance:none;height:26px;line-height:26px;display:inline-block;width:227px;padding:0 10px}.setting-panel-box .row span{line-height:32px;text-align:left;font-size:14px;color:#606266;margin-right:10px}.setting-panel-box .btnbox{display:flex;align-items:center;justify-content:center}.setting-panel-box button{-webkit-appearance:button;padding:9px 15px;font-size:12px;border-radius:3px;display:inline-block;line-height:1;white-space:nowrap;cursor:pointer;background:#fff;border:1px solid #dcdfe6;color:#606266;text-align:center;box-sizing:border-box;outline:0;margin:0;transition:.1s;font-weight:500;margin:0 10px}.setting-panel-box button:hover{color:#409eff;border-color:#c6e2ff;background-color:#ecf5ff}.setting-panel-box button.confirm{color:#fff;background-color:#3890ff}.setting-panel-box button.confirm:hover{background-color:#9ec9ff}</style>
+                <style>
+/* 蒙版背景 */
+.setting-panel-mask {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+  z-index: 9998; opacity: 0; pointer-events: none;
+  transition: opacity .3s ease;
+}
+.setting-panel-mask.show { opacity: 1; pointer-events: auto; }
+
+/* 设置面板主体 (桌面 + 移动端自适应) */
+.setting-panel-box {
+  z-index: 9999; background-color: #fff;
+  transition: transform .3s cubic-bezier(0.16, 1, 0.3, 1), opacity .25s ease;
+  position: fixed; left: 50%; top: 50%;
+  transform: translate(-50%, -46%) scale(0.96);
+  opacity: 0; pointer-events: none;
+  width: 90vw; max-width: 500px;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.2);
+  padding: 16px 0; box-sizing: border-box;
+  border-radius: 12px;
+  max-height: 85vh;
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+  scrollbar-color: #dcdcdc transparent; scrollbar-width: thin;
+}
+.setting-panel-box::-webkit-scrollbar { width: 4px; background-color: transparent; }
+.setting-panel-box::-webkit-scrollbar-thumb { background-color: #dcdcdc; border-radius: 2px; }
+.setting-panel-box.show {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1; pointer-events: auto;
+}
+.setting-panel-box h2 {
+  margin: 0 0 12px 0; padding: 0 20px 10px 20px;
+  font-size: 18px; font-weight: 700; color: #1f2937;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+.setting-panel-box h4 {
+  margin: 10px 0; padding-left: 20px; font-weight: 500; color: #1f2f3d; font-size: 16px;
+}
+.setting-panel-box .row {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; margin-bottom: 8px; padding: 4px 20px;
+  box-sizing: border-box; gap: 8px;
+}
+.setting-panel-box .row label {
+  line-height: 1.4; text-align: left; font-size: 14px; color: #4b5563;
+  flex: 1; word-break: break-word; font-weight: 500;
+}
+.setting-panel-box .row .mini { width: 50px; }
+.setting-panel-box .row .normal { width: 140px; }
+.setting-panel-box .row textarea {
+  resize: vertical; min-height: 34px; border: 1px solid #dcdfe6; color: #374151;
+  background-color: #fff; border-radius: 6px; line-height: 22px;
+  box-sizing: border-box; width: 200px; padding: 6px 10px; font-size: 13px;
+}
+.setting-panel-box .row input:not(.slider) {
+  border: 1px solid #dcdfe6; color: #374151; background-color: #fff;
+  border-radius: 6px; height: 32px; line-height: 32px;
+  width: 200px; padding: 0 10px; box-sizing: border-box; font-size: 13px;
+}
+.setting-panel-box .row input.slider {
+  height: 6px; background-color: #e4e7ed; margin: 10px 0; border-radius: 3px;
+  cursor: pointer; outline: none; padding: 0; width: 140px;
+}
+.setting-panel-box .row input.slider::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; width: 18px; height: 18px;
+  border: 2px solid #1E5AE6; background-color: #fff; border-radius: 50%;
+}
+.setting-panel-box .row .sliderValue { min-width: 44px; text-align: right; font-size: 13px; color: #6b7280; }
+.setting-panel-box .row select {
+  border: 1px solid #dcdfe6; color: #374151; background-color: #fff;
+  border-radius: 6px; height: 32px; line-height: 32px;
+  width: 140px; padding: 0 8px; box-sizing: border-box; font-size: 13px;
+}
+.setting-panel-box .btnbox {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  margin-top: 16px; padding: 12px 20px 4px 20px;
+  border-top: 1px solid rgba(0,0,0,0.06);
+}
+.setting-panel-box button {
+  padding: 8px 24px; font-size: 14px; border-radius: 6px;
+  cursor: pointer; background: #fff; border: 1px solid #dcdfe6; color: #606266;
+  transition: all .15s ease; font-weight: 500;
+}
+.setting-panel-box button.confirm { color: #fff; background-color: #1E5AE6; border-color: #1E5AE6; }
+.setting-panel-box button.confirm:hover { background-color: #164ac0; }
+
+/* 针对手机端 Safari 与触屏的专属优雅响应式适配 */
+@media screen and (max-width: 768px) {
+  .setting-panel-box {
+    width: 94vw !important; max-height: 86vh !important;
+    border-radius: 14px !important;
+    padding: 14px 0 calc(14px + env(safe-area-inset-bottom, 0px)) 0 !important;
+  }
+  .setting-panel-box h2 {
+    font-size: 16px !important; padding: 0 14px 10px 14px !important;
+  }
+  .setting-panel-box .row {
+    flex-direction: column !important; align-items: flex-start !important;
+    padding: 8px 14px !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  }
+  .setting-panel-box .row label {
+    width: 100% !important; margin-bottom: 6px !important;
+    font-size: 14px !important; color: #374151 !important;
+  }
+  /* iOS Safari 防聚焦放大：字体必须 >= 16px */
+  .setting-panel-box .row input:not(.slider),
+  .setting-panel-box .row select,
+  .setting-panel-box .row textarea {
+    width: 100% !important; max-width: 100% !important;
+    height: 38px !important; line-height: 38px !important;
+    font-size: 16px !important; box-sizing: border-box !important;
+    border-radius: 6px !important;
+  }
+  .setting-panel-box .row textarea {
+    height: 60px !important; line-height: 20px !important; padding: 8px 10px !important;
+  }
+  .setting-panel-box .row input.slider { width: 75% !important; height: 8px !important; }
+  .setting-panel-box .row .sliderValue { font-size: 15px !important; }
+  .setting-panel-box .btnbox {
+    padding: 12px 14px 0 14px !important; gap: 10px !important;
+  }
+  .setting-panel-box button {
+    flex: 1 !important; height: 42px !important; font-size: 15px !important;
+  }
+  /* 移动端顶栏按钮紧凑化：隐藏文字只留图标 */
+  #psnine-enhanced-nav-btn {
+    padding: 0 6px !important; height: 28px !important; line-height: 28px !important;
+  }
+  #psnine-enhanced-nav-btn .p9-setting-text {
+    display: none !important;
+  }
+  /* 奖杯图表在移动端单列自适应 */
+  #trophyRatioChart, #trophyGetTimeChart, #scoreChartContainer {
+    width: 100% !important; max-width: 100% !important;
+    display: block !important; margin: 8px auto !important;
+  }
+  .tipContainer { padding: 8px 6px !important; }
+}
+</style>
                 <div class=setting-panel-box><h2>PSN中文网功能增强插件设置</h2><div class=row><a href=https://github.com/swsoyee/psnine-enhanced-version><img src=https://img.shields.io/github/stars/swsoyee/psnine-enhanced-version.svg?style=social></img></a></div><div class=row><label>夜间模式</label><select id=nightMode><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动夜间模式</label><select id=autoNightMode><option value="&quot;SYSTEM&quot;">跟随系统<option value="&quot;TIME&quot;">跟据时间<option value="&quot;OFF&quot;">关闭</select></div><div class=row><label>高亮用户ID</label><textarea name="" id="highlightSpecificID" cols="30" rows="2"></textarea></div><div class=row><label>黑名单ID</label><textarea name="" id="blockList" cols="30" rows="2"></textarea></div><div class=row><label>关键词屏蔽</label><textarea name="" id="blockWordsList" cols="30" rows="2"></textarea></div><div class=row><label>机因中显示被@的内容</label><select id=replyTraceback><option value=true>启用<option value=false>关闭</select></div><div class=row><label>悬浮显示刮刮卡内容</label><select id=hoverUnmark><option value=true>启用<option value=false>关闭</select></div><div class=row><label>个人主页下显示所有游戏</label><select id=autoPagingInHomepage><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动签到</label><select id=autoCheckIn><option value=true>启用<option value=false>关闭</select></div><div class=row><label>自动向后翻页数</label><input type=number class=normal id=autoPaging></div><div class=row><label>问答区状态优化</label><select id=newQaStatus><option value=true>启用<option value=false>关闭</select></div><div class=row><label>悬浮头像显示个人信息</label><select id=hoverHomepage><option value=true>启用<option value=false>关闭</select></div><div class=row><label>奖杯默认折叠</label><select id=foldTrophySummary><option value=true>启用<option value=false>关闭</select></div><div class=row><label>奖杯图表默认折叠</label><select id=foldTrophyChart><option value=true>启用<option value=false>关闭</select></div><div class=row><label>约战页面去掉发起人头像</label><select id=removeHeaderInBattle><option value=true>启用<option value=false>关闭</select></div><div class=row><label>机因、问答页面按最新排序</label><select id=listPostsByNew><option value=true>启用<option value=false>关闭</select></div><div class=row><label>载入全部问答答案</label><select id=showAllQAAnswers><option value=true>启用<option value=false>关闭</select></div><div class=row><label>答案按最新排列</label><select id=listQAAnswersByNew><option value=true>启用<option value=false>关闭</select></div><div class=row><label>答案显示隐藏回复</label><select id=showHiddenQASubReply><option value=true>启用<option value=false>关闭</select></div><div class=row><label>检测纯文本中的链接</label><select id=fixTextLinks><option value=true>启用<option value=false>关闭</select></div><div class=row><label>修复D7VG链接</label><select id=fixD7VGLinks><option value=true>启用<option value=false>关闭</select></div><div class=row><label>站内使用HTTPS链接</label><select id=fixHTTPLinks><option value=true>启用<option value=false>关闭</select></div><div class=row><label>尝试关联不同版本的游戏</label><select id=referGameVariants><option value=true>启用<option value=false>关闭</select></div><div class=row><label>查询游戏版本优先使用搜索</label><select id=preferSearchForFindingVariants><option value=true>启用<option value=false>关闭</select></div><div class=row><label>展开隐藏的子评论</label><select id=expandCollapsedSubcomments><option value=true>启用<option value=false>关闭</select></div><div class=row><label>白金杯游戏封面修饰</label><select id=platinumGlow><option value=true>启用<option value=false>关闭</select></div><div class=row><label>无白金游戏图标透明度</label><input id=filterNonePlatinum class=slider type=range min=0 max=1 step=0.1><span id=filterNonePlatinumValue class=sliderValue></span></div><div class=row><label>热门标签回复数阈值</label><input id=hotTagThreshold class=slider type=range min=10 max=100 step=5><span id=hotTagThresholdValue class=sliderValue></span></div><div class=btnbox><button class=confirm>确定</button><button class=cancel>取消</button></div></div>`);
       // 点击打开设置面板
       $('#psnine-enhanced-version-opensetting').on('click', () => {
-        $('.setting-panel-box').addClass('show');
+        $('.setting-panel-box, .setting-panel-mask').addClass('show');
         ['#highlightSpecificID', '#blockList'].forEach((item) => {
           tippy(item, {
             content: 'ID以英文逗号隔开，不区分大小写',
@@ -4720,8 +4879,8 @@
         $('#blockWordsList').val(blockWordsList);
       });
       // 点击取消
-      $('.setting-panel-box .btnbox .cancel').on('click', () => {
-        $('.setting-panel-box').removeClass('show');
+      $('.setting-panel-box .btnbox .cancel, .setting-panel-mask').on('click', () => {
+        $('.setting-panel-box, .setting-panel-mask').removeClass('show');
       });
       // 点击确定
       $('.setting-panel-box .btnbox .confirm').on('click', () => {
@@ -4746,7 +4905,7 @@
         newSettings.filterNonePlatinumAlpha = Number($('#filterNonePlatinum').val());
         newSettings.hotTagThreshold = Number($('#hotTagThreshold').val());
         newSettings.autoPaging = Number($('#autoPaging').val());
-        $('.setting-panel-box').removeClass('show');
+        $('.setting-panel-box, .setting-panel-mask').removeClass('show');
         localStorage['psnine-night-mode-CSS-settings'] = JSON.stringify(
           newSettings,
         );
