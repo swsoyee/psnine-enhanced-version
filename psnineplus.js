@@ -2514,10 +2514,24 @@
         GBP: 8.770269230346404,
         JPY: 0.06453927675754388,
       };
+      const requestRates = (url) => {
+        const req = new XMLHttpRequest();
+        req.open('GET', url, false);
+        req.send(null);
+        return req;
+      };
       try { // 获取实时汇率
-        const httpReq = new XMLHttpRequest();
-        httpReq.open('GET', 'https://api.exchangeratesapi.io/latest', false);
-        httpReq.send(null);
+        let httpReq = null;
+        try {
+          httpReq = requestRates('https://api.exchangeratesapi.io/latest');
+        } catch (e) {
+          httpReq = null;
+        }
+        if (!httpReq || httpReq.status !== 200) {
+          // 备用汇率源：AllRatesToday 免 key 端点，返回与 exchangeratesapi.io 相同的结构（ECB 参考汇率）
+          httpReq = requestRates('https://allratestoday.com/api/compat/exchangeratesapi/latest');
+          exchangeRate.credit = '<a href="https://allratestoday.com" target="_blank" rel="noopener">Exchange rates by AllRatesToday</a>';
+        }
         const startTime = Date.now();
         repeatUntilSuccessful(() => {
           // Wait until HTTP GET SUCCESSFULL or TIMEOUT
@@ -2531,10 +2545,12 @@
             && (httpReq.readyState === XMLHttpRequest.DONE)) {
             rawExchangeRate = JSON.parse(httpReq.response);
           }
-          if (rawExchangeRate) { // HTTP GET SUCCESSFULL
+          if (rawExchangeRate && rawExchangeRate.rates) { // HTTP GET SUCCESSFULL
             ['HKD', 'USD', 'GBP', 'JPY'].forEach((currency) => {
               exchangeRate[currency] = rawExchangeRate.rates.CNY / rawExchangeRate.rates[currency];
             });
+          } else {
+            delete exchangeRate.credit;
           }
           callbackSuccess(exchangeRate);
           return true;
@@ -2573,6 +2589,7 @@
             priceSpan(CNY[1], 'dd_price_off'),
             priceSpan(CNY[0], 'dd_price_old', 'text-decoration:line-through'),
             priceSpan('CNY：', 'dd_price_off', 'font-size:12px;'),
+            i === 0 && exchangeRate.credit ? priceSpan(exchangeRate.credit, 'dd_price_off', 'font-size:12px;margin-right:6px;') : '',
           ].filter(Boolean).join('');
           // 添加到页面中
           $('.dd_price span:last-child').eq(i).after(addCNYPriceBlock);
@@ -2599,6 +2616,9 @@
             $(priceTag).text($(priceTag).attr('converted-price'));
           });
         });
+        if (exchangeRate.credit) {
+          $('.store_box>.store_price').first().append(`<span style="font-size:12px;margin-left:6px;">${exchangeRate.credit}</span>`);
+        }
       };
       retrieveRealTimeExchangeRate(changeToConvertedPriceTags, changeToConvertedPriceTags);
     };
